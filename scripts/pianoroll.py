@@ -1,10 +1,11 @@
 from dolphin import controller, event, gui, memory
 import csv
 
-# Initialize GC Inputs
+# setting some static values
 base_inputs = {'Left': False, 'Right': False, 'Down': False, 'Up': False, 'Z': False, 'R': False, 'L': False, 'A': True, 'B': False, 'X': False, 'Y': False, 'Start': False, 'StickX': 128, 'StickY': 128, 'CStickX': 128, 'CStickY': 128, 'TriggerLeft': 0, 'TriggerRight': 0, 'AnalogA': 0, 'AnalogB': 0, 'Connected': True}
 stick_dict = {-7: 0, -6: 60, -5: 70, -4: 80, -3: 90, -2: 100, -1: 110, 0: 128, 1: 155, 2: 165, 3: 175, 4: 185, 5: 195, 6: 200, 7: 255}
 dpad_map = {0: (False, False, False, False), 1: (True, False, False, False), 2: (False, True, False, False), 3: (False, False, True, False), 4: (False, False, False, True) }
+
 def load_pianoroll(filepath: str) -> dict:
     # Loads the entire CSV as a dictionary formatted like so: [row number]:[row contents]
     pianoroll = {}
@@ -23,8 +24,6 @@ def write_pianoroll(pianoroll: list, row: int, data: list):
     pianoroll[str(row)] = data
 
 def decode_pianoroll(row: list) -> list:
-    #preprocessing (turn the pianoroll list into something that a controller can accept)
-
     #If the row is empty then return imnmediately with a special value str('no inputs')
     #This can be detected by the input sender and it will know not to do anything
     if not row:
@@ -56,7 +55,7 @@ def decode_pianoroll(row: list) -> list:
     # Assign Dpad to 4 different bools (UDLR)
     row[5:9] = dpad_map.get(row[5], (False, False, False, False))
 
-    # Processing
+    # Turn the data into a controller state
     inputs = base_inputs.copy()
     inputs['A'] = row[0]
     inputs['R'] = row[1]
@@ -74,7 +73,7 @@ def decode_pianoroll(row: list) -> list:
 
 
 # Run on script start
-race_frame = memory.read_u32(0x809BF0B8)
+race_frame = memory.read_u32(0x809BF0B8) #hardcoded for NTSCU
 last_race_frame = race_frame -1
 pianoroll_path = r'' #you have to do this because windows filepaths are cursed
 pianoroll = load_pianoroll(pianoroll_path)
@@ -83,12 +82,12 @@ pianoroll = load_pianoroll(pianoroll_path)
 colour = 0xffffff00
 while True:
     await event.frameadvance()
-    race_frame = memory.read_u32(0x809BF0B8) # race frame
+    race_frame = memory.read_u32(0x809BF0B8) #hardcoded for NTSCU
     if last_race_frame +1 != race_frame:
         pianoroll = load_pianoroll(pianoroll_path)
     row_data = read_pianoroll(pianoroll, race_frame) # read from the row associated with this race frame
     controller_state = decode_pianoroll(row_data) #turn the pianoroll into a set of inputs
-    if controller_state != 'no inputs':
+    if controller_state != 'no inputs': #If there are inputs on this frame, send the inputs
         controller.set_gc_buttons(0, controller_state)
     gui.draw_text((10, 10) , colour, f"Frame: {race_frame}\ntable row: {row_data}\nDecoded Inputs:{controller_state}")
     last_race_frame = race_frame
