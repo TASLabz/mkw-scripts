@@ -79,7 +79,7 @@ if __name__ == '__main__':
     colour = 0xffffff00
     race_frame = memory.read_u32(0x809BF0B8) #hardcoded for NTSCU
     last_race_frame = race_frame -1
-    pianoroll_path = r'C:/Users/Sean/Downloads/MKW_Player_Inputs.csv' #you have to do this because windows filepaths are cursed
+    pianoroll_path = r'' #you have to do this because windows filepaths are cursed
     pianoroll = load_pianoroll(pianoroll_path)
     
     event.on_frameadvance(onFrameAdvance)
