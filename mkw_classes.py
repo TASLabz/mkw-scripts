@@ -1313,5 +1313,3 @@ class RaceInfo:
         
     def cutscene_mode():
         return chase_pointer(getRaceInfoHolder(), [0x2F], 'u8')
-
-# scope of InputMgr
