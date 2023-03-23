@@ -1,7 +1,6 @@
 from dolphin import controller, event, gui, memory
 import csv
 import mkw_core as core
-import mkw_translations as translate
 
 # setting some static values
 base_inputs = {'Left': False, 'Right': False, 'Down': False, 'Up': False, 'Z': False, 'R': False, 'L': False, 'A': True, 'B': False, 'X': False, 'Y': False, 'Start': False, 'StickX': 128, 'StickY': 128, 'CStickX': 128, 'CStickY': 128, 'TriggerLeft': 0, 'TriggerRight': 0, 'AnalogA': 0, 'AnalogB': 0, 'Connected': True}
