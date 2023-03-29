@@ -7,9 +7,11 @@ import mkw_translations as translate
 # NOTE (xi): wait for get_game_id() to be put in dolphin.memory before clearing
 #  these commented-out lines:
 
-# class RegionError(Exception):
-#    def __init__(self, message=f"Expected Mario Kart Wii game ID (RMCX01), got {get_game_id()}"):
-#        super().__init__(message)
+"""
+class RegionError(Exception):
+    def __init__(self, message=f"Expected Mario Kart Wii game ID (RMCX01), got {get_game_id()}"):
+        super().__init__(message)
+"""
 
 # TODO: put in dolphin.memory
 
