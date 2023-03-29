@@ -8,10 +8,16 @@ from framesequence import FrameSequence
 def on_frame_advance():
     race_frame = core.get_frame_of_input()
     global last_race_frame, sequence
+
+    # HACK: Due to an issue where Dolphin fails to update the frame counter (unknown why this happens),
+    # this is currently needed for inputs to sync reliably.
     if 0 < race_frame == last_race_frame:
         race_frame += 1
+
+    # HACK: Detect both savestates and race restarts
     if last_race_frame > race_frame:
         sequence.refresh()
+
     inputs = sequence.get_controller_inputs(race_frame)
     if inputs and classes.RaceInfo.stage() >= 1:  # If there are inputs on this frame, send the inputs
         controller.set_gc_buttons(0, inputs)
@@ -27,7 +33,6 @@ def on_savestate_load(is_slot, slot):
 
 
 if __name__ == '__main__':
-    global sequence
     # Run on script start
     race_frame = core.get_frame_of_input()
     last_race_frame = race_frame - 1
