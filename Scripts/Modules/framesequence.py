@@ -130,6 +130,7 @@ class FrameSequence:
         Args: None
         Returns: None
         """
+        self.frames = []
         with open(self.filename, 'r') as f:
             reader = csv.reader(f)
             for row in reader:
@@ -159,7 +160,7 @@ class FrameSequence:
 
         return frame
 
-    def get_controller_inputs(self, idx: int) -> Optional[dict]:
+    def get_gc_inputs(self, idx: int) -> Optional[dict]:
         """
         Gets the controller inputs for a given frame in the sequence. Compatible with Dolphin's "set_gc_buttons" method.
 
@@ -176,7 +177,7 @@ class FrameSequence:
         inputs = dict()
 
         inputs['A'] = frame.accel
-        inputs['B'] = frame.brake
+        inputs['R'] = frame.brake
         inputs['L'] = frame.item
 
         raw_stick_inputs = [0, 60, 70, 80, 90, 100,
@@ -188,5 +189,51 @@ class FrameSequence:
         inputs['Down'] = frame.dpad_down
         inputs['Left'] = frame.dpad_left
         inputs['Right'] = frame.dpad_right
+
+        return inputs
+
+    def get_wiimote_inputs(self, idx: int) -> Optional[dict]:
+        """
+        Gets the controller inputs for a given frame in the sequence. Compatible with Dolphin's "set_wii_buttons" method.
+
+        Args:
+            idx (int): The index for the sequence.
+
+        Returns:
+            The controller input dict for the provided frame, or None if the frame is not in the sequence.
+        """
+        if idx >= len(self.frames):
+            return None
+
+        frame = self.frames[idx]
+        inputs = dict()
+
+        inputs['A'] = frame.accel
+        inputs['B'] = frame.brake
+
+        return inputs
+
+    def get_nunchuck_inputs(self, idx: int) -> Optional[dict]:
+        """
+        Gets the controller inputs for a given frame in the sequence. Compatible with Dolphin's "set_nunchuck_buttons" method.
+
+        Args:
+            idx (int): The index for the sequence.
+
+        Returns:
+            The controller input dict for the provided frame, or None if the frame is not in the sequence.
+        """
+        if idx >= len(self.frames):
+            return None
+
+        frame = self.frames[idx]
+        inputs = dict()
+
+        inputs['Z'] = frame.item
+
+        raw_stick_inputs = [0, 60, 70, 80, 90, 100,
+                            110, 128, 155, 165, 175, 185, 195, 200, 255]
+        inputs['StickX'] = raw_stick_inputs[frame.stick_x + 7]
+        inputs['StickY'] = raw_stick_inputs[frame.stick_y + 7]
 
         return inputs
