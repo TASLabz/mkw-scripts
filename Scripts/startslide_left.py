@@ -15,21 +15,32 @@ def calc():
     global sequence
     race_frame = core.get_frame_of_input()
 
+    # Checks if the correct slide is being used at the start of the race.
+    if race_frame == 0:
+        check_vehicle()
+
     inputs = sequence.get_gc_inputs(race_frame)
-    if inputs and classes.RaceInfo.stage() == 1:  # If there are inputs on this frame and the race is in the countdown phase, send the inputs.
+
+    # If there are inputs on this frame and the race is in the countdown phase, send the inputs.
+    if inputs and classes.RaceInfo.stage() == 1:
         controller.set_gc_buttons(0, inputs)
 
 
 @event.on_savestateload
 def reload(is_slot, slot):
     global sequence
+    check_vehicle()
     if (is_slot):
         sequence.refresh()
 
 
-if __name__ == '__main__':
-    # Run on script start
-    if bool(classes.KartParam.is_bike()):  # Returns True if the player is using a bike.
+# Ensures the right slide for the currently selected bike is being loaded,
+# even through savestates and vehicle swaps.
+def check_vehicle():
+    global sequence
+
+    # Returns True if the player is using a bike.
+    if bool(classes.KartParam.is_bike()):
         pianoroll_path = utils.get_script_dir() + r'\MKW_Inputs\Startslides'
         
         if translate.vehicle_id() in flame_slide_bikes:
@@ -42,4 +53,9 @@ if __name__ == '__main__':
             pianoroll_path += r'\star_left.csv'
         
         sequence = FrameSequence(pianoroll_path)
-        gui.add_osd_message("Startslide successfully loaded!")
+
+if __name__ == '__main__':
+    # Runs on script activation. 'sequence' can not be defined inside 'check_vehicle',
+    # so it is done here instead.
+    sequence = None
+    check_vehicle()
