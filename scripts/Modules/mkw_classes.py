@@ -1316,3 +1316,9 @@ class RaceInfo:
         
     def cutscene_mode():
         return chase_pointer(getRaceInfoHolder(), [0x2F], 'u8')
+
+class InputMgr:
+    @staticmethod
+    def chain():
+        address = {"RMCE01": 0x809b8f4c, "RMCP01": 0x809bd70c, "RMCJ01": 0x809bc76c, "RMCK01": 0x809abd4c}
+        return address[get_game_id()]
