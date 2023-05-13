@@ -7,9 +7,8 @@ from framesequence import FrameSequence
 @event.on_frameadvance
 def calc():
     global sequence
-    race_frame = core.get_frame_of_input()
 
-    inputs = sequence.get_gc_inputs(race_frame)
+    inputs = sequence.get_gc_inputs(core.get_frame_of_input())
     if inputs and classes.RaceInfo.stage() >= 1:  # If there are inputs on this frame, send the inputs.
         controller.set_gc_buttons(0, inputs)
 
