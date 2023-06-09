@@ -3,6 +3,7 @@
 
 from dolphin import memory
 from dataclasses import dataclass
+from typing import List
 # will be removed soon
 import mkw_core as core
   
@@ -11,7 +12,7 @@ def chase_pointer(base_address, offsets, data_type):
     current_address = memory.read_u32(base_address)
     for offset in offsets:
         value_address = current_address + offset
-        current_address = memory.read_u32(current_address + offset)
+        current_address = memory.read_u32(value_address)
     data_types = {
         'u8': memory.read_u8,
         'u16': memory.read_u16,
@@ -23,8 +24,8 @@ def chase_pointer(base_address, offsets, data_type):
         's64': memory.read_s64,
         'f32': memory.read_f32,
         'f64': memory.read_f64,
-        'vec3': read_vec3,
-        'mat34': read_mat34,
+        'vec3': vec3.read,
+        'mat34': mat34.read_mat34,
         'quatf': read_quatf,
         'jump_pad': read_jump_pad_properties,
         'trick': read_trick_properties,
@@ -40,43 +41,19 @@ class vec3:
   y: float = 0.0
   z: float = 0.0
   
-def read_vec3(ptr):
-  x = memory.read_f32(ptr + 0x0)
-  y = memory.read_f32(ptr + 0x4)
-  z = memory.read_f32(ptr + 0x8)
+  @staticmethod
+  def read(ptr):
+    # This is called argument unpacking
+    # vabold - "You can tell this is Malleo's code"
+    return vec3(*map(memory.read_f32, [ptr + x for x in range(0x0, 0xC, 0x4)]))
 
-  return vec3(x, y, z)
-  
-@dataclass
 class mat34:
-  e00: float = 0.0
-  e01: float = 0.0
-  e02: float = 0.0
-  e03: float = 0.0
-  e10: float = 0.0
-  e11: float = 0.0
-  e12: float = 0.0
-  e13: float = 0.0
-  e20: float = 0.0
-  e21: float = 0.0
-  e22: float = 0.0
-  e23: float = 0.0
+  def __init__(self, args: List[float]):
+    self.e00, self.e01, self.e02, self.e03, self.e10, self.e11, self.e12, self.e13, self.e20, self.e21, self.e22, self.e23 = args
   
-def read_mat34(ptr):
-  e00 = memory.read_f32(ptr + 0x0)
-  e01 = memory.read_f32(ptr + 0x4)
-  e02 = memory.read_f32(ptr + 0x8)
-  e03 = memory.read_f32(ptr + 0xC)
-  e10 = memory.read_f32(ptr + 0x10)
-  e11 = memory.read_f32(ptr + 0x14)
-  e12 = memory.read_f32(ptr + 0x18)
-  e13 = memory.read_f32(ptr + 0x1C)
-  e20 = memory.read_f32(ptr + 0x20)
-  e21 = memory.read_f32(ptr + 0x24)
-  e22 = memory.read_f32(ptr + 0x28)
-  e23 = memory.read_f32(ptr + 0x2C)
-
-  return mat34(e00, e01, e02, e03, e10, e11, e12, e13, e20, e21, e22, e23)
+  @staticmethod
+  def read_mat34(ptr):
+    return mat34(map(memory.read_f32, [ptr + x for x in range(0x0, 0x30, 0x4)]))
   
 @dataclass
 class quatf:
@@ -85,13 +62,9 @@ class quatf:
   z: float = 0.0
   w: float = 0.0
   
-def read_quatf(ptr):
-  x = memory.read_f32(ptr + 0x0)
-  y = memory.read_f32(ptr + 0x4)
-  z = memory.read_f32(ptr + 0x8)
-  w = memory.read_f32(ptr + 0xC)
-  
-  return vec3(x, y, z, w)
+  @staticmethod
+  def read(ptr):
+    return quatf(*map(memory.read_f32, [ptr + x for x in range(0x0, 0x10, 0x4)]))
   
 @dataclass
 class jump_pad_properties:
