@@ -1,7 +1,7 @@
 # NOTE (xi): unfinished, vabold is taking the duty of rewriting this
 # currently only for the use of testing other scripts that rely on this module
 
-from dolphin import memory
+from dolphin import memory, utils
 from dataclasses import dataclass
 # will be removed soon
 import mkw_core as core
@@ -179,17 +179,10 @@ def read_wheel_properties(ptr):
   sphere_radius     = memory.read_f32(ptr + 0x24)
 
   return wheel_properties(enable, dist_suspension, speed_suspension, slack_y, rel_pos, x_rot, wheel_radius, sphere_radius)
-    
-def get_game_id():
-    gameID = ""
-    for i in range(6):
-        gameID += chr(memory.read_u8(0x80000000 + i))
-        i += 1
-    return gameID
 
 # scope of KartObjectManager
 def getKartObjectHolder():
-    id = get_game_id()
+    id = utils.get_game_id()
     address = {"RMCE01": 0x809BD110, "RMCP01": 0x809C18F8, "RMCJ01": 0x809C0958, "RMCK01": 0x809AFF38}
     return address[id]
 
@@ -1097,7 +1090,7 @@ class VehiclePhysics:
 
 # scope of RaceData
 def getRaceDataHolder(playerIdx=0):
-    id = get_game_id()
+    id = utils.get_game_id()
     address = {"RMCE01": 0x809B8F68 + (playerIdx * 0x4), "RMCP01": 0x809BD728 + (playerIdx * 0x4), "RMCJ01": 0x809BC788 + (playerIdx * 0x4), "RMCK01": 0x809ABD68 + (playerIdx * 0x4)}
     return address[id]
 
@@ -1222,10 +1215,39 @@ class RaceDataSettings:
     
 # scope of RaceInfo
 def getRaceInfoHolder(playerIdx=0):
-    id = get_game_id()
+    id = utils.get_game_id()
     address = {"RMCE01": 0x809B8F70 + (playerIdx * 0x4), "RMCP01": 0x809BD730 + (playerIdx * 0x4), "RMCJ01": 0x809BC790 + (playerIdx * 0x4), "RMCK01": 0x809ABD70 + (playerIdx * 0x4)}
     return address[id]
     
+# this is for player only
+def getInputStorageAddresses():
+    addrFace = chase_pointer(getRaceInfoHolder(), [0xC, 0x0, 0x48, 0xE8, 0x10], 'u32')
+    addrDI = addrFace + 0x276C
+    addrTrick = addrDI + 0x276C
+    
+    return [addrFace, addrDI, addrTrick]
+    
+def GetGhostAddressBase():
+    raceData = chase_pointer(getRaceInfoHolder(0), [0xC, 0x4, 0x48, 0x4], 'u32')
+    addrFace = memory.read_u32(raceData + 0x94)
+    addrDI = memory.read_u32(raceData + 0x98)
+    addrTrick = memory.read_u32(raceData + 0x9C)
+    
+    return [addrFace, addrDI, addrTrick]
+    
+def getGhostAddressPointer():
+    addrFace, addrDI, addrTrick = GetGhostAddressBase()
+    return [addrFace + 0x4, addrDI + 0x4, addrTrick + 0x4]
+    
+def getGhostAddresses():
+    addrFace, addrDI, addrTrick = getGhostAddressPointer()
+    
+    return [memory.read_u32(addrFace), memory.read_u32(addrDI), memory.read_u32(addrTrick)]
+    
+def getGhostAddressLengthPointer():
+    addrFace, addrDI, addrTrick = GetGhostAddressBase()
+    return [addrFace + 0xC, addrDI + 0xC, addrTrick + 0xC]
+
 # should work
 class RaceInfoPlayer:
     def __init__(self, playerIdx=0):
@@ -1321,4 +1343,7 @@ class InputMgr:
     @staticmethod
     def chain():
         address = {"RMCE01": 0x809b8f4c, "RMCP01": 0x809bd70c, "RMCJ01": 0x809bc76c, "RMCK01": 0x809abd4c}
-        return address[get_game_id()]
+        return address[utils.get_game_id()]
+        
+    def drift_id(playerIdx=0):
+        return chase_pointer(InputMgr.chain() + (playerIdx * 0x4), [0xC4], 'u16')
