@@ -3,6 +3,9 @@ import mkw_translations as trans
 # uses R button instead of B button to drift when enabled
 useRbutton = True
 
+# modifies input ranges defined in framesequence.py to match the symmetrical full input range code for keyboard TASers
+useKeyboardRanges = False
+
 # when running MKW_UndoStateBackup.py, creates up to backupAmount backup files for your race inputs while you are TASing
 backupAmount = 10
 

@@ -151,8 +151,11 @@ class Frame:
             inputs['B'] = self.brake
         inputs['L'] = self.item
 
-        raw_stick_inputs = [0, 60, 70, 80, 90, 100,
-                            110, 128, 155, 165, 175, 185, 195, 200, 255]
+        raw_stick_inputs = [59, 68, 77, 86, 95, 104, 112, 128,
+                                152, 161, 170, 179, 188, 197, 205]
+        if (config.useKeyboardRanges):
+            raw_stick_inputs = [input - 4 for input in raw_stick_inputs]
+        
         inputs['StickX'] = raw_stick_inputs[self.stick_x + 7]
         inputs['StickY'] = raw_stick_inputs[self.stick_y + 7]
 
