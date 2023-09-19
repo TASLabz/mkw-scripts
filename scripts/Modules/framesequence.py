@@ -1,5 +1,6 @@
 from typing import List, Optional
 import csv
+import TTK_config as config
 
 
 class Frame:
@@ -17,6 +18,7 @@ class Frame:
         dpad_left (bool): Whether or not we press 'Left' on that frame.
         dpad_right (bool): Whether or not we press 'Right' on that frame.
         valid (bool): Whether or not the Frame is valid.
+        iter_idx (int): Tracks current iteration across the inputs
     """
     accel: bool
     brake: bool
@@ -31,6 +33,8 @@ class Frame:
     dpad_right: bool
 
     valid: bool
+    
+    iter_idx: int
 
     def __init__(self, raw: List):
         """
@@ -55,6 +59,20 @@ class Frame:
         self.stick_x = self.read_stick(raw[3])
         self.stick_y = self.read_stick(raw[4])
         self.read_dpad(raw[5])
+    
+    def __iter__(self):
+        self.iter_idx = 0
+        return self
+    
+    def __next__(self):
+        self.iter_idx += 1
+        if (self.iter_idx == 1): return int(self.accel)
+        if (self.iter_idx == 2): return int(self.brake)
+        if (self.iter_idx == 3): return int(self.item)
+        if (self.iter_idx == 4): return self.stick_x
+        if (self.iter_idx == 5): return self.stick_y
+        if (self.iter_idx == 6): return self.dpad_raw()
+        raise StopIteration
 
     def read_button(self, button: str) -> bool:
         """
@@ -103,6 +121,50 @@ class Frame:
         self.dpad_down = val == 2
         self.dpad_left = val == 3
         self.dpad_right = val == 4
+        
+    def dpad_raw(self) -> int:
+        """
+        Converts dpad values back into its raw form, for writing to the csv
+        """
+        if self.dpad_up: return 1
+        if self.dpad_down: return 2
+        if self.dpad_left: return 3
+        if self.dpad_right: return 4
+        return 0
+        
+    def get_controller_inputs(self) -> Optional[dict]:
+        """
+        Gets the controller inputs. Compatible with Dolphin's "set_gc_buttons" method.
+
+        Args:
+            idx (int): The index for the sequence.
+
+        Returns:
+            The controller input dict for this frame
+        """
+        inputs = dict()
+
+        inputs['A'] = self.accel
+        if (config.useRbutton):
+            inputs['R'] = self.brake
+        else:
+            inputs['B'] = self.brake
+        inputs['L'] = self.item
+
+        raw_stick_inputs = [59, 68, 77, 86, 95, 104, 112, 128,
+                                152, 161, 170, 179, 188, 197, 205]
+        if (config.useKeyboardRanges):
+            raw_stick_inputs = [input - 4 for input in raw_stick_inputs]
+        
+        inputs['StickX'] = raw_stick_inputs[self.stick_x + 7]
+        inputs['StickY'] = raw_stick_inputs[self.stick_y + 7]
+
+        inputs['Up'] = self.dpad_up
+        inputs['Down'] = self.dpad_down
+        inputs['Left'] = self.dpad_left
+        inputs['Right'] = self.dpad_right
+
+        return inputs
 
 
 class FrameSequence:
@@ -115,30 +177,84 @@ class FrameSequence:
     """
     frames: list
     filename: str
+    iter_idx: int
 
-    # TODO: Make filename optional and allow for non-CSV frame sequences
-    def __init__(self, filename: str):
+    def __init__(self, filename: Optional[str]=None):
         self.frames = []
         self.filename = filename
 
-        self.refresh()
-
-    def refresh(self) -> None:
+        if self.filename:
+            self.readFromFile()
+    
+    def __len__(self):
+        return len(self.frames)
+        
+    def __getitem__(self, i):
+        if (i < len(self.frames)):
+            return self.frames[i]
+        return None
+        
+    def __iter__(self):
+        self.iter_idx = -1
+        return self
+        
+    def __next__(self):
+        self.iter_idx += 1
+        if (self.iter_idx < len(self.frames)):
+            return self.frames[self.iter_idx]
+        raise StopIteration
+        
+    def readFromList(self, inputs: List) -> None:
+        """
+        Constructs the frames list by using a list instead of a csv
+        
+        Args:
+            input (List): The raw input data we want to store
+        Returns: None
+        """
+        for input in inputs:
+            frame = self.process(input)
+            if not frame:
+                pass
+            self.frames.append(frame)
+    
+    def readFromFile(self) -> None:
         """
         Loads the CSV into a new frame sequence. Ideally called on savestate load.
 
         Args: None
         Returns: None
         """
-        with open(self.filename, 'r') as f:
-            reader = csv.reader(f)
-            for row in reader:
-                frame = self.process(row)
-                if not frame:
-                    # TODO: Handle error
-                    pass
+        self.frames.clear()
+        try:
+            with open(self.filename, 'r') as f:
+                reader = csv.reader(f)
+                for row in reader:
+                    frame = self.process(row)
+                    if not frame:
+                        # TODO: Handle error
+                        pass
 
-                self.frames.append(frame)
+                    self.frames.append(frame)
+        except IOError as x:
+            return
+                
+    def writeToFile(self, filename: str) -> bool:
+        """
+        Writes the frame sequence to a csv
+        
+        Args:
+            filename (str): The path to the file we wish to write to
+        Returns:
+            A boolean indicating whether the write was successful
+        """
+        try:
+            with open(filename, 'w', newline='') as f:
+                writer = csv.writer(f, delimiter=',')
+                writer.writerows(self.frames)
+        except IOError as x:
+            return False
+        return True
 
     def process(self, raw_frame: List) -> Optional[Frame]:
         """
@@ -158,35 +274,3 @@ class FrameSequence:
             return None
 
         return frame
-
-    def get_controller_inputs(self, idx: int) -> Optional[dict]:
-        """
-        Gets the controller inputs for a given frame in the sequence. Compatible with Dolphin's "set_gc_buttons" method.
-
-        Args:
-            idx (int): The index for the sequence.
-
-        Returns:
-            The controller input dict for the provided frame, or None if the frame is not in the sequence.
-        """
-        if idx >= len(self.frames):
-            return None
-
-        frame = self.frames[idx]
-        inputs = dict()
-
-        inputs['A'] = frame.accel
-        inputs['B'] = frame.brake
-        inputs['L'] = frame.item
-
-        raw_stick_inputs = [0, 60, 70, 80, 90, 100,
-                            110, 128, 155, 165, 175, 185, 195, 200, 255]
-        inputs['StickX'] = raw_stick_inputs[frame.stick_x + 7]
-        inputs['StickY'] = raw_stick_inputs[frame.stick_y + 7]
-
-        inputs['Up'] = frame.dpad_up
-        inputs['Down'] = frame.dpad_down
-        inputs['Left'] = frame.dpad_left
-        inputs['Right'] = frame.dpad_right
-
-        return inputs

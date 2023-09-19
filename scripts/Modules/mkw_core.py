@@ -1,4 +1,4 @@
-from dolphin import memory
+from dolphin import memory, utils
 from dataclasses import dataclass
 import math
 import mkw_classes as classes
@@ -15,16 +15,8 @@ class RegionError(Exception):
 
 # TODO: put in dolphin.memory
 
-
-def get_game_id():
-    game_id = ""
-    for i in range(6):
-        game_id += chr(memory.read_u8(0x80000000 + i))
-    return game_id
-
-
 def is_mkw() -> bool:
-    game = get_game_id()
+    game = utils.get_game_id()()
     valid_ids = ["RMCE01", "RMCP01", "RMCJ01", "RMCK01"]
     return game in valid_ids
 
