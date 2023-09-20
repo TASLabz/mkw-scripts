@@ -1,4 +1,4 @@
-from dolphin import controller, event, gui, memory, utils
+from dolphin import controller, event, gui
 import TTK_Lib
 import mkw_classes as classes
 import mkw_core as core
@@ -31,7 +31,11 @@ def main() -> None:
     global playerInputs
     playerInputs = TTK_Lib.getInputSequenceFromCSV(TTK_Lib.PlayerType.PLAYER)
     
-    gui.add_osd_message("TTK | Player: {} | Ghost: {}".format(len(playerInputs) > 0, False))
+    gui.add_osd_message(
+        "TTK | Player: {} | Ghost: {}".format(
+            len(playerInputs) > 0, False
+        )
+    )
     
 
 if __name__ == '__main__':

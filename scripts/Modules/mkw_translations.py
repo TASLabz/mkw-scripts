@@ -1,7 +1,6 @@
 # NOTE (xi): unfinished, currently only for the use of testing other scripts
 #            that rely on this module
 
-import mkw_core as core
 import mkw_classes as classes
 
 

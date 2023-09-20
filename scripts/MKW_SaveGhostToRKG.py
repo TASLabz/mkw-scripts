@@ -4,7 +4,7 @@ import TTK_Lib
 """
 MKW_SaveGhostToRKG
 
-This script takes the current ghost's inputs and writes them to a csv file and an rkg file.
+Takes the current ghost's inputs and writes them to a csv file and an rkg file.
 """
 
 def main() -> None:

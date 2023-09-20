@@ -2,18 +2,16 @@ from dolphin import memory, utils
 from dataclasses import dataclass
 import math
 import mkw_classes as classes
-import mkw_translations as translate
 
 # NOTE (xi): wait for get_game_id() to be put in dolphin.memory before clearing
 #  these commented-out lines:
 
 """
 class RegionError(Exception):
-    def __init__(self, message=f"Expected Mario Kart Wii game ID (RMCX01), got {get_game_id()}"):
+    def __init__(self, message=f"Expected Mario Kart Wii game ID (RMCX01),
+                                 got {get_game_id()}"):
         super().__init__(message)
 """
-
-# TODO: put in dolphin.memory
 
 def is_mkw() -> bool:
     game = utils.get_game_id()()
@@ -67,7 +65,7 @@ def calc_stick_pos(center, bounding_radius, stick_x, stick_y, move_radius):
 
 
 def get_frame_of_input():
-    id = get_game_id()
+    id = utils.get_game_id()
     address = {"RMCE01": 0x809BF0B8, "RMCP01": 0x809C38C0,
                "RMCJ01": 0x809C2920, "RMCK01": 0x809B1F00}
     return memory.read_u32(address[id])
