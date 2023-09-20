@@ -65,13 +65,20 @@ class Frame:
         return self
     
     def __next__(self):
+        # If we update to Python 3.10, replace with switch statement
         self.iter_idx += 1
-        if (self.iter_idx == 1): return int(self.accel)
-        if (self.iter_idx == 2): return int(self.brake)
-        if (self.iter_idx == 3): return int(self.item)
-        if (self.iter_idx == 4): return self.stick_x
-        if (self.iter_idx == 5): return self.stick_y
-        if (self.iter_idx == 6): return self.dpad_raw()
+        if (self.iter_idx == 1):
+            return int(self.accel)
+        if (self.iter_idx == 2):
+            return int(self.brake)
+        if (self.iter_idx == 3):
+            return int(self.item)
+        if (self.iter_idx == 4):
+            return self.stick_x
+        if (self.iter_idx == 5):
+            return self.stick_y
+        if (self.iter_idx == 6):
+            return self.dpad_raw()
         raise StopIteration
 
     def read_button(self, button: str) -> bool:
@@ -126,10 +133,14 @@ class Frame:
         """
         Converts dpad values back into its raw form, for writing to the csv
         """
-        if self.dpad_up: return 1
-        if self.dpad_down: return 2
-        if self.dpad_left: return 3
-        if self.dpad_right: return 4
+        if self.dpad_up:
+            return 1
+        if self.dpad_down:
+            return 2
+        if self.dpad_left:
+            return 3
+        if self.dpad_right:
+            return 4
         return 0
         
     def get_controller_inputs(self) -> Optional[dict]:
@@ -236,7 +247,7 @@ class FrameSequence:
                         pass
 
                     self.frames.append(frame)
-        except IOError as x:
+        except IOError:
             return
                 
     def writeToFile(self, filename: str) -> bool:
@@ -252,19 +263,21 @@ class FrameSequence:
             with open(filename, 'w', newline='') as f:
                 writer = csv.writer(f, delimiter=',')
                 writer.writerows(self.frames)
-        except IOError as x:
+        except IOError:
             return False
         return True
 
     def process(self, raw_frame: List) -> Optional[Frame]:
         """
-        Processes a raw frame into an instance of the Frame class. Ideally used internally.
+        Processes a raw frame into an instance of
+        the Frame class. Ideally used internally.
 
         Args:
             raw_frame (List): Line from the CSV to process.
 
         Returns:
-            A new Frame object initialized with the raw frame, or None if the frame is invalid.
+            A new Frame object initialized with the raw frame,
+            or None if the frame is invalid.
         """
         if len(raw_frame) != 6:
             return None

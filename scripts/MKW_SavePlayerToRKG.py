@@ -4,7 +4,7 @@ import TTK_Lib
 """
 MKW_SavePlayerToRKG
 
-This script takes the player's inputs from the RKG buffer and writes them to a csv file and an rkg file.
+This script takes the player's inputs and writes them to a csv file and an rkg file.
 """
 
 def main() -> None:

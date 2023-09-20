@@ -1,10 +1,13 @@
 from dolphin import gui, memory, utils
+from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple, List, Optional
 from framesequence import FrameSequence
-import mkw_classes as classes
-import math, zlib, os
 import TTK_config as config
+import mkw_classes as classes
+import math
+import os
+import zlib
 
 class ControllerInputType(Enum):
     FACE = 0
@@ -16,29 +19,29 @@ class PlayerType(Enum):
     GHOST = 1
     
 def decodeFaceButton(input):
-    a = input % 0x2
-    b = (input >> 1) % 0x2
-    l = (input >> 2) % 0x2
+    A = input % 0x2
+    B = (input >> 1) % 0x2
+    L = (input >> 2) % 0x2
     
-    return [a, b, l]
+    return [A, B, L]
   
 def decodeDirectionInput(input):
-    x = input >> 4
-    y = input % 0x10
+    X = input >> 4
+    Y = input % 0x10
     
-    return [x, y]
+    return [X, Y]
     
 def decodeTrickInput(input):
     return input >> 4
     
-def encodeFaceButton(a, b, l, prevMask):
+def encodeFaceButton(A, B, L, prevMask):
     x8Mask = 0x0
-    if a and b and not prevMask in (0x0, 0x2, 0x3, 0x7):
+    if A and B and prevMask not in (0x0, 0x2, 0x3, 0x7):
         x8Mask = 0x8
-    return int(a) + int(b) * 0x2 + int(l) * 0x4 + x8Mask
+    return int(A) + int(B) * 0x2 + int(L) * 0x4 + x8Mask
     
-def encodeDirectionInput(x, y):
-    return (x << 4) + y
+def encodeDirectionInput(X, Y):
+    return (X << 4) + Y
     
 def encodeTrickInput(input):
     return input * 0x10
@@ -107,7 +110,8 @@ def decodeRKGData(data: list, inputType: ControllerInputType) -> List[List[int]]
                 if (inputType == ControllerInputType.FACE):
                     retList += [decodeFaceButton(rawInput)] * dataByte
                 else:
-                    retList += [list(map(lambda x: x-7, decodeDirectionInput(rawInput)))] * dataByte
+                    inputs = decodeDirectionInput(rawInput)
+                    retList += [list(map(lambda x: x-7, inputs))] * dataByte
     return retList
 
 # Transform raw RKG data into a FrameSequence
@@ -129,17 +133,32 @@ def readFullDecodedRKGData(playerType: PlayerType) -> Optional[FrameSequence]:
         return None
     
     # Expand into a list where each index is a frame
-    faceDataList = decodeRKGData(faceData, ControllerInputType.FACE)
-    diDataList = decodeRKGData(diData, ControllerInputType.DI)
-    trickDataList = decodeRKGData(trickData, ControllerInputType.TRICK)
+    faceData = decodeRKGData(faceData, ControllerInputType.FACE)
+    diData = decodeRKGData(diData, ControllerInputType.DI)
+    trickData = decodeRKGData(trickData, ControllerInputType.TRICK)
     
     # Now transform into a framesequence
-    list = [faceDataList[x] + diDataList[x] + [trickDataList[x]] for x in range(len(faceDataList))]
+    list = [faceData[x] + diData[x] + [trickData[x]] for x in range(len(faceData))]
     sequence = FrameSequence()
     sequence.readFromList(list)
     return sequence
+
+@dataclass
+class RKGTuple:
+    data: int
+    frames: int
     
-def encodeRKGDataType(inputList: FrameSequence, inputType: ControllerInputType) -> Tuple[List[int], int]:
+    def __bytes__(self):
+        return bytes([self.data, self.frames])
+
+def encodeTuple(input: int, frames: int, inputType: ControllerInputType) -> RKGTuple:
+    if (inputType == ControllerInputType.TRICK):
+        return RKGTuple(input + frames >> 8, frames % 0x100)
+    else:
+        return RKGTuple(input, frames)
+
+def encodeRKGDataType(inputList: FrameSequence,
+                      inputType: ControllerInputType) -> List[RKGTuple]:
     retData = []
     prevInput = 0
     bytes = 0
@@ -148,17 +167,19 @@ def encodeRKGDataType(inputList: FrameSequence, inputType: ControllerInputType) 
     isDI = (inputType == ControllerInputType.DI)
     isTrick = (inputType == ControllerInputType.TRICK)
     
+    input = inputList[0]
     if (isFace):
-        prevInput = encodeFaceButton(inputList[0].accel, inputList[0].brake, inputList[0].item, 0x0)
+        prevInput = encodeFaceButton(input.accel, input.brake, input.item, 0x0)
     elif (isDI):
-        prevInput = encodeDirectionInput(inputList[0].stick_x + 7, inputList[0].stick_y + 7)
+        prevInput = encodeDirectionInput(input.stick_x + 7, input.stick_y + 7)
     else:
-        prevInput = encodeTrickInput(inputList[0].dpad_raw())
+        prevInput = encodeTrickInput(input.dpad_raw())
     
     for input in inputList:
         currInput = 0
         if (isFace):
-            currInput = encodeFaceButton(input.accel, input.brake, input.item, prevInput)
+            currInput = encodeFaceButton(input.accel, input.brake,
+                                         input.item, prevInput)
         elif (isDI):
             currInput = encodeDirectionInput(input.stick_x + 7, input.stick_y + 7)
         else:
@@ -166,87 +187,94 @@ def encodeRKGDataType(inputList: FrameSequence, inputType: ControllerInputType) 
         
         frameLimit = 0xFFF if isTrick else 0xFF
         if (prevInput != currInput or currFrames >= frameLimit):
-            if (isTrick):
-                retData.append(prevInput + (currFrames >> 8))
-                retData.append(currFrames % 0x100)
-            else:
-                retData.append(prevInput)
-                retData.append(currFrames)
+            retData.append(encodeTuple(prevInput, currFrames, inputType))
             currFrames = 1
             bytes += 1
             prevInput = currInput
         else:
             currFrames += 1
-    if (isTrick):
-        retData.append(prevInput + (currFrames >> 8))
-        retData.append(currFrames % 0x100)
-    else:
-        retData.append(prevInput)
-        retData.append(currFrames)
+    retData.append(encodeTuple(prevInput, currFrames, inputType))
     bytes += 1
     
-    return retData, bytes
-    
-def encodeRKGData(inputList: FrameSequence) -> Tuple[List[int], List[int]]:
-    retData = []
+    return retData
 
-    faceData, faceBytes = encodeRKGDataType(inputList, ControllerInputType.FACE)
-    diData, diBytes = encodeRKGDataType(inputList, ControllerInputType.DI)
-    trickData, trickBytes = encodeRKGDataType(inputList, ControllerInputType.TRICK)
+def encodeRKGData(inputList: FrameSequence) -> Tuple[List[int], List[int]]:
+    faceTuples = encodeRKGDataType(inputList, ControllerInputType.FACE)
+    diTuples = encodeRKGDataType(inputList, ControllerInputType.DI)
+    trickTuples = encodeRKGDataType(inputList, ControllerInputType.TRICK)
     
-    return faceData+diData+trickData, [faceBytes,diBytes,trickBytes]
+    allTuples = faceTuples+diTuples+trickTuples
+    tupleLengths = [len(x) for x in (faceTuples, diTuples, trickTuples)]
+    return allTuples, tupleLengths
     
-def createRKGFile(input_data: FrameSequence, trackID: int, vehicleID: int, characterID: int, driftID: int) -> bytearray:
-    data, bytes = encodeRKGData(input_data)
-    bytesFace, bytesDI, bytesTrick = bytes
-    dataIndex = sum(bytes) * 2
+def createRKGFile(input_data: FrameSequence, trackID: int,
+                  vehicleID: int, characterID: int, driftID: int) -> bytearray:
+    tuples, lengths = encodeRKGData(input_data)
+    tuplesFace, tuplesDI, tuplesTrick = lengths
+    dataIndex = sum(lengths) * 2
     inputLength = dataIndex + 8
     byteNr8 = (vehicleID << 2) + ((characterID >> 4) & 0x3)
     byteNr9 = (characterID << 4) & 0xFF
     byteNrD = 0x4 + (driftID << 1)
     
-    accessData = \
-        [0x54, 0xA8, 0x2A, trackID << 2, byteNr8, byteNr9, 0x02, 0x10, 0x00, byteNrD, math.floor(inputLength / 0x100), inputLength % 0x100
-        ,0x03, 0x54, 0x00, 0x00, 0x00, 0xA8, 0x00, 0x00, 0x00, 0x2A, 0x00, 0x00 ,0x00, 0x00, 0x00, 0x00
-        ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-        ,0x00, 0x00, 0x00, 0x00, 0xAA, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x10, 0x00, 0x54
-        ,0x00, 0x41, 0x00, 0x53, 0x00, 0x54, 0x00, 0x6F, 0x00, 0x6F, 0x00, 0x6C, 0x00, 0x6B, 0x00, 0x69
-        ,0x00, 0x74, 0x00, 0x22, 0x87, 0x30, 0x89, 0x66, 0xC2, 0xC4, 0xED, 0xC3, 0x20, 0x44, 0x3C, 0x40
-        ,0x28, 0x38, 0x0C, 0x84, 0x48, 0xCF, 0x0E, 0x00, 0x08, 0x00, 0xB9, 0x09, 0x00, 0x8A, 0x81, 0x06
-        ,0xC4, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-        ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7A, 0x6E, math.floor(bytesFace / 0x100), bytesFace % 0x100, math.floor(bytesDI / 0x100), bytesDI % 0x100, math.floor(bytesTrick / 0x100), bytesTrick % 0x100, 0x00, 0x00]
+    headerData = \
+        [0x54, 0xA8, 0x2A, trackID << 2, byteNr8, byteNr9, 0x02, 0x10, 0x00, byteNrD,
+        *divmod(inputLength, 0x100) ,0x03, 0x54, 0x00, 0x00, 0x00, 0xA8, 0x00, 0x00,
+        0x00, 0x2A, 0x00, 0x00 ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0xAA, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x10, 0x00,
+        0x54, 0x00, 0x41, 0x00, 0x53, 0x00, 0x54, 0x00, 0x6F, 0x00, 0x6F, 0x00, 0x6C,
+        0x00, 0x6B, 0x00, 0x69, 0x00, 0x74, 0x00, 0x22, 0x87, 0x30, 0x89, 0x66, 0xC2,
+        0xC4, 0xED, 0xC3, 0x20, 0x44, 0x3C, 0x40, 0x28, 0x38, 0x0C, 0x84, 0x48, 0xCF,
+        0x0E, 0x00, 0x08, 0x00, 0xB9, 0x09, 0x00, 0x8A, 0x81, 0x06, 0xC4, 0x10, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7A, 0x6E, *divmod(tuplesFace, 0x100),
+        *divmod(tuplesDI, 0x100), *divmod(tuplesTrick, 0x100), 0x00, 0x00]
     
-    fileBytes = bytearray("RKGD", "utf-8") + bytearray(accessData) + bytearray(data)
+    try:
+        idBytes = bytearray("RKGD", "utf-8")
+        headerBytes = bytearray(headerData)
+        tupleBytes = bytearray()
+        for tuple in tuples:
+            tupleBytes += bytes(tuple)
+        # Pad the rest of the file
+        padBytes = bytearray(0x276C - dataIndex)
+        
+        fileBytes = idBytes + headerBytes + tupleBytes + padBytes
+        
+        crc = zlib.crc32(fileBytes)
+        arg1 = math.floor(crc / 0x1000000)
+        arg2 = math.floor((crc & 0x00FF0000) / 0x10000)
+        arg3 = math.floor((crc & 0x0000FF00) / 0x100)
+        arg4 = math.floor(crc % 0x100)
+        
+        
+        fileBytes += bytearray([arg1, arg2, arg3, arg4])
     
-    # Pad the rest of the file
-    fileBytes.extend(b'' * (0x276C - dataIndex))
+        return fileBytes
+    except ValueError:
+        gui.add_osd_message("Attempted to parse byte > 0xFF! Aborting RKG write.")
+        return bytearray()
     
-    crc = zlib.crc32(fileBytes)
-    arg1 = math.floor(crc / 0x1000000)
-    arg2 = math.floor((crc & 0x00FF0000) / 0x10000)
-    arg3 = math.floor((crc & 0x0000FF00) / 0x100)
-    arg4 = math.floor(crc % 0x100)
-    
-    
-    fileBytes += bytearray([arg1, arg2, arg3, arg4])
-    
-    return fileBytes
-    
-# This is a tiny helper function that just prevents slight repetition in filepath lookups
+# This is a tiny helper function that prevents slight repetition in filepath lookups
 def writeToCSV(inputs: FrameSequence, playerType: PlayerType) -> None:
     # Get csv file path
     playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    fileRelativePath = config.textFilePath(playerStr)
+    relativePath = config.textFilePath(playerStr)
+    absolutePath = os.path.join(os.getcwd(), "User/Load/Scripts/", relativePath)
     
     # Write to csv, error if cannot write
-    if inputs.writeToFile(os.path.join(os.getcwd(), "User/Load/Scripts/", fileRelativePath)):
-        gui.add_osd_message("{} inputs written to {}".format(playerStr, fileRelativePath))
+    if inputs.writeToFile(absolutePath):
+        gui.add_osd_message("{} inputs written to {}".format(playerStr, relativePath))
     else:
-        gui.add_osd_message("{} is currently locked by another program.".format(fileRelativePath))
+        gui.add_osd_message(
+            "{} is currently locked by another program.".format(relativePath)
+        )
         
 def writeToBackupCSV(inputs: FrameSequence, backupNumber: int) -> None:
-    fileRelativePath = config.textFilePath("Backup").replace("##", "{:02d}".format(backupNumber))
-    inputs.writeToFile(os.path.join(os.getcwd(), "User/Load/Scripts/", fileRelativePath))
+    relativePath = config.textFilePath("Backup")
+    relativePath = relativePath.replace("##", "{:02d}".format(backupNumber))
+    inputs.writeToFile(os.path.join(os.getcwd(), "User/Load/Scripts/", relativePath))
         
 def getMetadataAndWriteToRKG(inputs: FrameSequence, playerType: PlayerType) -> None:
     # Get metadata
@@ -257,39 +285,48 @@ def getMetadataAndWriteToRKG(inputs: FrameSequence, playerType: PlayerType) -> N
     
     # Get bytes to write
     fileBytes = createRKGFile(inputs, trackID, vehicleID, characterID, driftID)
-
-    # Write bytes to appropriate file
-    writeToRKG(fileBytes, playerType)
+    
+    if (len(fileBytes)):
+        # Write bytes to appropriate file
+        writeToRKG(fileBytes, playerType)
+    else:
+        gui.add_osd_message("No bytes to write to RKG file.")
         
 def writeToRKG(fileBytes: bytearray, playerType: PlayerType) -> None:
     # Get csv file path
     playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    fileRelativePath = "rkgFilePath" + playerStr
-    fileRelativePath = config.rkgFilePath[fileRelativePath]
+    relativePath = config.rkgFilePath[playerStr]
+    absolutePath = os.path.join(os.getcwd(), "User/Load/Scripts/", relativePath)
     
     try:
-        with open(os.path.join(os.getcwd(), "User/Load/Scripts/", fileRelativePath), "wb") as f:
+        with open(absolutePath, "wb") as f:
             f.write(fileBytes)
-        gui.add_osd_message("{} inputs written to {}".format(playerStr, fileRelativePath))
-    except IOError as x:
-        gui.add_osd_message("{} is currently locked by another program.".format(fileRelativePath))
+        gui.add_osd_message("{} inputs written to {}".format(playerStr, relativePath))
+    except IOError:
+        gui.add_osd_message(
+            "{} is currently locked by another program.".format(relativePath)
+        )
         
 def getInputSequenceFromCSV(playerType: PlayerType) -> FrameSequence:
     # Get csv file path
-    fileRelativePath = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    fileRelativePath = config.textFilePath(fileRelativePath)
+    playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
+    relativePath = config.textFilePath(playerStr)
+    absolutePath = os.path.join(os.getcwd(), "User/Load/Scripts/", relativePath)
     
     # Get the frame sequence
-    return FrameSequence(os.path.join(os.getcwd(), "User/Load/Scripts/", fileRelativePath))
+    return FrameSequence(absolutePath)
 
 def getDBS():
-    address = {"RMCE01": 0x8051c8d8, "RMCP01": 0x80520d4c, "RMCJ01": 0x805206cc, "RMCK01": 0x8050ed70}
+    address = {"RMCE01": 0x8051c8d8, "RMCP01": 0x80520d4c,
+               "RMCJ01": 0x805206cc, "RMCK01": 0x8050ed70}
     return address[utils.get_game_id()]
 def getFBS():
-    address = {"RMCE01": 0x8051eacc, "RMCP01": 0x80522f40, "RMCJ01": 0x805228c0, "RMCK01": 0x80510f64}
+    address = {"RMCE01": 0x8051eacc, "RMCP01": 0x80522f40,
+               "RMCJ01": 0x805228c0, "RMCK01": 0x80510f64}
     return address[utils.get_game_id()]
 def getTBS():
-    address = {"RMCE01": 0x8051e7e8, "RMCP01": 0x80522c5c, "RMCJ01": 0x805225dc, "RMCK01": 0x80510c80}
+    address = {"RMCE01": 0x8051e7e8, "RMCP01": 0x80522c5c,
+               "RMCJ01": 0x805225dc, "RMCK01": 0x80510c80}
     return address[utils.get_game_id()]
     
 dbs = getDBS()

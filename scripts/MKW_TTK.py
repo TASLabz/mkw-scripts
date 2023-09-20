@@ -1,4 +1,4 @@
-from dolphin import controller, event, gui, memory, utils
+from dolphin import controller, event, gui
 import TTK_Lib
 import mkw_classes as classes
 import mkw_core as core
@@ -10,7 +10,7 @@ ghostInputs = FrameSequence()
 """
 MKW_TTK
 
-This script reads inputs from the player and ghost csv files, and applies them live in-game
+This script reads inputs from the player and ghost csv files, and applies them in-game
 The inputs are reloaded on every state load
 """
 
@@ -40,7 +40,11 @@ def main() -> None:
     playerInputs = TTK_Lib.getInputSequenceFromCSV(TTK_Lib.PlayerType.PLAYER)
     ghostInputs = TTK_Lib.getInputSequenceFromCSV(TTK_Lib.PlayerType.GHOST)
     
-    gui.add_osd_message("TTK | Player: {} | Ghost: {}".format(len(playerInputs) > 0, len(ghostInputs) > 0))
+    gui.add_osd_message(
+        "TTK | Player: {} | Ghost: {}".format(
+            len(playerInputs) > 0, len(ghostInputs) > 0
+        )
+    )
     
 
 if __name__ == '__main__':
