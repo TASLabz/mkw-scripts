@@ -1,8 +1,6 @@
 from dolphin import controller, event, gui
-import TTK_Lib
-import mkw_classes as classes
-import mkw_core as core
-from framesequence import FrameSequence
+from Modules import TTK_Lib, mkw_classes as classes, mkw_core as core
+from Modules.framesequence import FrameSequence
 
 playerInputs = FrameSequence()
 ghostInputs = FrameSequence()

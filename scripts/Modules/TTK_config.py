@@ -1,4 +1,4 @@
-import mkw_translations as trans
+from Modules import mkw_translations as trans
 
 # uses R button instead of B button to drift when enabled
 useRbutton = True
@@ -27,5 +27,4 @@ def textFilePath(pathName: str) -> str:
 course = trans.course_slot_abbreviation()
 rkgFilePath = {
     "Player": "MKW_Inputs/MKW_Player_Inputs_" + course + ".rkg",
-	"Ghost": "MKW_Inputs/MKW_Ghost_Inputs_" + course + ".rkg",
 }

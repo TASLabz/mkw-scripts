@@ -1,5 +1,5 @@
 from dolphin import gui
-import TTK_Lib
+from Modules import TTK_Lib
 
 """
 MKW_SavePlayerToBothCSV
