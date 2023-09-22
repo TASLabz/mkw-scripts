@@ -315,78 +315,86 @@ def getInputSequenceFromCSV(playerType: PlayerType) -> FrameSequence:
     # Get the frame sequence
     return FrameSequence(absolutePath)
 
-def getDBS():
-    address = {"RMCE01": 0x8051c8d8, "RMCP01": 0x80520d4c,
-               "RMCJ01": 0x805206cc, "RMCK01": 0x8050ed70}
+def getControllerCalc():
+    address = {"RMCE01": 0x8051a8a0, "RMCP01": 0x8051ed14,
+               "RMCJ01": 0x8051e694, "RMCK01": 0x8050cd38}
     return address[utils.get_game_id()]
-def getFBS():
-    address = {"RMCE01": 0x8051eacc, "RMCP01": 0x80522f40,
-               "RMCJ01": 0x805228c0, "RMCK01": 0x80510f64}
-    return address[utils.get_game_id()]
-def getTBS():
-    address = {"RMCE01": 0x8051e7e8, "RMCP01": 0x80522c5c,
-               "RMCJ01": 0x805225dc, "RMCK01": 0x80510c80}
-    return address[utils.get_game_id()]
+
+def getMemcpyBranch():
+    instr = {"RMCE01": 0x4bcb6c91, "RMCP01": 0x4bcb28bd,
+             "RMCJ01": 0x4bcb2e5d, "RMCK01": 0x4bcc4bf5}
+    return instr[utils.get_game_id()]
+
+controller_calc = getControllerCalc()
+memcpy_branch = getMemcpyBranch()
+
+def controller_patch() -> None:
+    # lbz r15, 0x18 (r31)
     
-dbs = getDBS()
-fbs = getFBS()
-tbs = getTBS()
+    # lbz r14, 0x4d (r31) #buttons
+    # addic. r14, r14, -0x80
+    # blt donotttk
+    # stb r14, 0x4d (r31)
+    # sth r14, 0x8 (r31)
+    
+    # addi r3, r31, 0x4
+    # lbz r4, 0x4e (r31)
+    # bl InputState_setStickXMirrored
+    # addi r3, r31, 0x4
+    # lbz r4, 0x4f (r31)
+    # bl InputState_setStickY
+    # addi r3, r31, 0x4
+    # lbz r4, 0x52 (r31)
+    # bl RaceInputState_setTrick
+    # donotttk:
+    # rlwinm. r15, r15, 0x19, 0x1f, 0x1f
+    # bne dontignoreeverything
+    
+    # addi r3, r31, 0x8
+    # addi r4, r1, 0xc
+    # li r5, 0x10
+    # bl NETMemCpy
+    
+    patch_ptr = controller_calc + 0x1d8
+    if (memory.read_u32(patch_ptr) == 0x881f0018):
+        memory.write_u32(patch_ptr, 0x89ff0018)
+        memory.write_u32(patch_ptr + 0x4, 0x89df004d)
+        memory.write_u32(patch_ptr + 0x8, 0x35ceff80)
+        memory.write_u32(patch_ptr + 0xc, 0x41800030)
+        memory.write_u32(patch_ptr + 0x10, 0x99df004d)
+        memory.write_u32(patch_ptr + 0x14, 0xb1df0008)
+        memory.write_u32(patch_ptr + 0x18, 0x387f0004)
+        memory.write_u32(patch_ptr + 0x1c, 0x889f004e)
+        memory.write_u32(patch_ptr + 0x20, 0x4bfffa55)
+        memory.write_u32(patch_ptr + 0x24, 0x387f0004)
+        memory.write_u32(patch_ptr + 0x28, 0x889f004f)
+        memory.write_u32(patch_ptr + 0x2c, 0x4bfffb49)
+        memory.write_u32(patch_ptr + 0x30, 0x387f0004)
+        memory.write_u32(patch_ptr + 0x34, 0x889f0052)
+        memory.write_u32(patch_ptr + 0x38, 0x4bfffc45)
+        memory.write_u32(patch_ptr + 0x3c, 0x55efcfff)
+        memory.write_u32(patch_ptr + 0x40, 0x40820014)
+        memory.write_u32(patch_ptr + 0x44, 0x387f0008)
+        memory.write_u32(patch_ptr + 0x48, 0x3881000c)
+        memory.write_u32(patch_ptr + 0x4c, 0x38a00010)
+        memory.write_u32(patch_ptr + 0x50, memcpy_branch)
+        memory.invalidate_icache(patch_ptr, 0x54)
 
 def writeGhostInputs(inputs: FrameSequence) -> None:
-    # DirectionButtonsStream_readFrame
-    # lbz r3, 0x12 (r3)
-    # blr
-    memory.write_u32(dbs, 0x88630012)
-    memory.write_u32(dbs + 0x4, 0x4e800020)
-    memory.invalidate_icache(dbs, 0x8)
-    # FaceButtonsStream_readFrame
-    # lbz r3, 0x12 (r3)
-    # blr
-    memory.write_u32(fbs, 0x88630012)
-    memory.write_u32(fbs + 0x4, 0x4e800020)
-    memory.invalidate_icache(fbs, 0x8)
-    # TricksButtonStream_readFrame
-    # lbz r3, 0x12 (r3)
-    # blr
-    memory.write_u32(tbs, 0x88630012)
-    memory.write_u32(tbs + 0x4, 0x4e800020)
-    memory.invalidate_icache(tbs, 0x8)
+    controller_patch()
+    set_buttons(inputs, memory.read_u32(classes.InputMgr.chain()) + 0x3f08)
+
+def writePlayerInputs(inputs: FrameSequence) -> None:
+    controller_patch()
+    player_controller = memory.read_u32(
+            memory.read_u32(classes.InputMgr.chain()) + 0x8)
+    set_buttons(inputs, player_controller)
+
+def set_buttons(inputs, controller):
+    memory.write_u8(controller + 0x4d, inputs.accel + (inputs.brake << 1) +
+                    (inputs.item << 2) | ((inputs.accel & inputs.brake) << 3) + 0x80)
     
-    set_ghost_buttons(inputs)
-
-# Restore instructions if no inputs
-def stopWriteGhostInputs() -> None:
-    # DirectionButtonsStream_readFrame
-    # stwu sp, -0x20 (sp)
-    # mflr r0
-    memory.write_u32(dbs, 0x9421ffe0)
-    memory.write_u32(dbs + 0x4, 0x7c0802a6)
-    memory.invalidate_icache(dbs, 0x8)
-    # FaceButtonsStream_readFrame
-    # stwu sp, -0x20 (sp)
-    # mflr r0
-    memory.write_u32(fbs, 0x9421ffe0)
-    memory.write_u32(fbs + 0x4, 0x7c0802a6)
-    memory.invalidate_icache(fbs, 0x8)
-    # TricksButtonStream_readFrame
-    # stwu sp, -0x20 (sp)
-    # mflr r0
-    memory.write_u32(tbs, 0x9421ffe0)
-    memory.write_u32(tbs + 0x4, 0x7c0802a6)
-    memory.invalidate_icache(tbs, 0x8)
+    memory.write_u8(controller + 0x4e, inputs.stick_x + 7)
+    memory.write_u8(controller + 0x4f, inputs.stick_y + 7)
     
-def set_ghost_buttons(inputs):
-    # NOTE: Ghost controller index 1 is consistent in the base game
-    ghost_controller = memory.read_u32(classes.InputMgr.chain()) + 0x3f08
-
-    buttons = memory.read_u32(ghost_controller + 0x94)
-    memory.write_u8(buttons + 0x12, inputs.accel + (inputs.brake << 1) +
-                    (inputs.item << 2) | ((inputs.accel & inputs.brake) << 3))
-
-    stick = memory.read_u32(ghost_controller + 0x98)
-    memory.write_u8(stick + 0x12, (inputs.stick_y + 7)
-                    | ((inputs.stick_x + 7) << 4))
-
-    trickbuttons = memory.read_u32(ghost_controller + 0x9C)
-    memory.write_u8(trickbuttons + 0x12, inputs.dpad_raw())
-
+    memory.write_u8(controller + 0x52, inputs.dpad_raw())
