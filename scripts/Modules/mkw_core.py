@@ -1,7 +1,7 @@
 from dolphin import memory, utils
 from dataclasses import dataclass
 import math
-from Modules import mkw_classes as classes, mkw_translations as translate
+from Modules import mkw_classes as classes
 
 # NOTE (xi): wait for get_game_id() to be put in dolphin.memory before clearing
 #  these commented-out lines:

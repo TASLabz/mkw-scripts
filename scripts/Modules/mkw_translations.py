@@ -1,7 +1,7 @@
 # NOTE (xi): unfinished, currently only for the use of testing other scripts
 #            that rely on this module
 
-from Modules import mkw_core as core, mkw_classes as classes
+from Modules import mkw_classes as classes
 
 
 def vehicle_id():
