@@ -1,6 +1,5 @@
 from typing import List, Optional
 import csv
-from Modules import TTK_config as config
 
 
 class Frame:
@@ -142,40 +141,6 @@ class Frame:
         if self.dpad_right:
             return 4
         return 0
-        
-    def get_controller_inputs(self) -> Optional[dict]:
-        """
-        Gets the controller inputs. Compatible with Dolphin's "set_gc_buttons" method.
-
-        Args:
-            idx (int): The index for the sequence.
-
-        Returns:
-            The controller input dict for this frame
-        """
-        inputs = dict()
-
-        inputs['A'] = self.accel
-        if (config.useRbutton):
-            inputs['R'] = self.brake
-        else:
-            inputs['B'] = self.brake
-        inputs['L'] = self.item
-
-        raw_stick_inputs = [59, 68, 77, 86, 95, 104, 112, 128,
-                                152, 161, 170, 179, 188, 197, 205]
-        if (config.useKeyboardRanges):
-            raw_stick_inputs = [input - 4 for input in raw_stick_inputs]
-        
-        inputs['StickX'] = raw_stick_inputs[self.stick_x + 7]
-        inputs['StickY'] = raw_stick_inputs[self.stick_y + 7]
-
-        inputs['Up'] = self.dpad_up
-        inputs['Down'] = self.dpad_down
-        inputs['Left'] = self.dpad_left
-        inputs['Right'] = self.dpad_right
-
-        return inputs
 
 
 class FrameSequence:

@@ -1,4 +1,4 @@
-from dolphin import controller, event, gui
+from dolphin import event, gui
 from Modules import TTK_Lib, mkw_classes as classes, mkw_core as core
 from Modules.framesequence import FrameSequence
 
@@ -22,7 +22,7 @@ def onFrameAdvance():
     
     playerInput = playerInputs[frame]
     if (playerInput and classes.RaceInfo.stage() >= 1):
-        controller.set_gc_buttons(0, playerInput.get_controller_inputs())
+        TTK_Lib.writePlayerInputs(playerInput)
 
 def main() -> None:
     # Load both the player and ghost input sequences

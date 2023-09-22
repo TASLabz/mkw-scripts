@@ -23,8 +23,6 @@ def onFrameAdvance():
     ghostInput = ghostInputs[frame]
     if (ghostInput and classes.RaceInfo.stage() >= 1):
         TTK_Lib.writeGhostInputs(ghostInput)
-    else:
-        TTK_Lib.stopWriteGhostInputs()
 
 def main() -> None:
     # Load both the player and ghost input sequences
