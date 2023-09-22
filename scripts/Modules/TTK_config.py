@@ -27,4 +27,5 @@ def textFilePath(pathName: str) -> str:
 course = trans.course_slot_abbreviation()
 rkgFilePath = {
     "Player": "MKW_Inputs/MKW_Player_Inputs_" + course + ".rkg",
+    "Ghost": "MKW_Inputs/MKW_Ghost_Inputs_" + course + ".rkg"
 }
