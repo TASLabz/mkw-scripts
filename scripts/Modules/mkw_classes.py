@@ -4,7 +4,7 @@
 from dolphin import memory, utils
 from dataclasses import dataclass
 # will be removed soon
-import mkw_core as core
+from Modules import mkw_core as core
   
 # general structure / pointer reading
 def chase_pointer(base_address, offsets, data_type):

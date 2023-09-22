@@ -1,6 +1,6 @@
 from typing import List, Optional
 import csv
-import TTK_config as config
+from Modules import TTK_config as config
 
 
 class Frame:

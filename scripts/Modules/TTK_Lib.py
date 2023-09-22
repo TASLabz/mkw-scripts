@@ -2,12 +2,11 @@ from dolphin import gui, memory, utils
 from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple, List, Optional
-from framesequence import FrameSequence
-import TTK_config as config
-import mkw_classes as classes
 import math
 import os
 import zlib
+from Modules.framesequence import FrameSequence
+from Modules import mkw_classes as classes, TTK_config as config
 
 class ControllerInputType(Enum):
     FACE = 0
@@ -390,3 +389,4 @@ def set_ghost_buttons(inputs):
 
     trickbuttons = memory.read_u32(ghost_controller + 0x9C)
     memory.write_u8(trickbuttons + 0x12, inputs.dpad_raw())
+
