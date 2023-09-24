@@ -1539,7 +1539,6 @@ class RaceDataSettings:
     @staticmethod
     def course_id(scenarioIdx=0):
         offset = RaceDataSettings.apply_offset(scenarioIdx, 0x0)
-        print(chase_pointer(getRaceDataHolder(), [offset], 'u32'))
         return chase_pointer(getRaceDataHolder(), [offset], 'u32')
     
     @staticmethod
