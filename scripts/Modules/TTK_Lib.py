@@ -260,7 +260,7 @@ def writeToCSV(inputs: FrameSequence, playerType: PlayerType) -> None:
     # Get csv file path
     playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
     relativePath = config.textFilePath(playerStr)
-    absolutePath = os.path.join(os.getcwd(), "User/Load/Scripts/", relativePath)
+    absolutePath = os.path.join(utils.get_script_dir(), relativePath)
     
     # Write to csv, error if cannot write
     if inputs.writeToFile(absolutePath):
@@ -273,7 +273,7 @@ def writeToCSV(inputs: FrameSequence, playerType: PlayerType) -> None:
 def writeToBackupCSV(inputs: FrameSequence, backupNumber: int) -> None:
     relativePath = config.textFilePath("Backup")
     relativePath = relativePath.replace("##", "{:02d}".format(backupNumber))
-    inputs.writeToFile(os.path.join(os.getcwd(), "User/Load/Scripts/", relativePath))
+    inputs.writeToFile(os.path.join(utils.get_script_dir(), relativePath))
         
 def getMetadataAndWriteToRKG(inputs: FrameSequence, playerType: PlayerType) -> None:
     # Get metadata
@@ -295,7 +295,7 @@ def writeToRKG(fileBytes: bytearray, playerType: PlayerType) -> None:
     # Get csv file path
     playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
     relativePath = config.rkgFilePath[playerStr]
-    absolutePath = os.path.join(os.getcwd(), "User/Load/Scripts/", relativePath)
+    absolutePath = os.path.join(utils.get_script_dir(), relativePath)
     
     try:
         with open(absolutePath, "wb") as f:
@@ -310,7 +310,7 @@ def getInputSequenceFromCSV(playerType: PlayerType) -> FrameSequence:
     # Get csv file path
     playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
     relativePath = config.textFilePath(playerStr)
-    absolutePath = os.path.join(os.getcwd(), "User/Load/Scripts/", relativePath)
+    absolutePath = os.path.join(utils.get_script_dir(), relativePath)
     
     # Get the frame sequence
     return FrameSequence(absolutePath)
