@@ -1,8 +1,10 @@
-from dolphin import controller, event, gui, utils
-import mkw_core as core
-import mkw_classes as classes
-import mkw_translations as translate
-from framesequence import FrameSequence
+from dolphin import event, gui, utils
+from Modules import TTK_Lib
+from Modules import mkw_classes as classes
+from Modules import mkw_core as core
+from Modules import mkw_translations as translate
+from Modules.framesequence import FrameSequence
+import os
 
 flame_slide_bikes = ("Flame Runner", "Mach Bike", "Sugarscoot", "Zip Zip")
 spear_slide_bikes = ("Jet Bubble", "Phantom", "Spear", "Sneakster", "Wario Bike")
@@ -16,37 +18,35 @@ def onStateLoad(is_slot, slot):
 
 @event.on_frameadvance
 def onFrameAdvance():
-    global playerInputs
     frame = core.get_frame_of_input()
     
     playerInput = playerInputs[frame]
     if (playerInput and classes.RaceInfo.stage() == 1):
-        controller.set_gc_buttons(0, playerInput.get_controller_inputs())
+        TTK_Lib.writePlayerInputs(playerInput)
 
 def main() -> None:
     global playerInputs
-    playerInputs = FrameSequence(check_vehicle())
+    playerInputs = FrameSequence(check_vehicle(translate.vehicle_id()))
     
     gui.add_osd_message("Startslide: {} ".format(len(playerInputs) > 0))
     
 # Ensures the right slide for the currently selected bike is being loaded,
 # even through savestates and vehicle swaps.
-def check_vehicle():
+def check_vehicle(vehicle):
 
     # Returns True if the player is using a bike.
     if bool(classes.KartParam.is_bike()):
-        path = utils.get_script_dir() + r'\MKW_Inputs\Startslides'
-        
-        if translate.vehicle_id() in flame_slide_bikes:
-            path += r'\flame_left.csv'
 
-        elif translate.vehicle_id() in spear_slide_bikes:
-            path += r'\spear_left.csv'
+        path = utils.get_script_dir()
 
-        elif translate.vehicle_id() in star_slide_bikes:
-            path += r'\star_left.csv'
-        
-        return path
+        if vehicle in flame_slide_bikes:
+            return os.path.join(path, "MKW_Inputs", "Startslides", "flame_left.csv")
+
+        elif vehicle in spear_slide_bikes:
+            return os.path.join(path, "MKW_Inputs", "Startslides", "spear_left.csv")
+
+        elif vehicle in star_slide_bikes:
+            return os.path.join(path, "MKW_Inputs", "Startslides", "star_left.csv")
 
 if __name__ == '__main__':
     main()
