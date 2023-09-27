@@ -88,3 +88,53 @@ def get_speed(playerIdx=0):
     xyz = math.sqrt(x ** 2 + y ** 2 + z ** 2)
 
     return speed(x, y, z, xz, xyz)
+
+# Next 3 functions are used for exact finish display
+def getIGT(lap, player):
+    totalTime = [0, 0]
+    totalTime[0] = chase_pointer(
+        classes.getRaceInfoHolder(), [0xC, (player)*0x4, 0x3C, (lap-1)*0xC + 0x5], 'u8')
+    totalTime[1] = chase_pointer(
+        classes.getRaceInfoHolder(), [0xC, (player)*0x4, 0x3C, (lap-1)*0xC + 0x6], 'u8')
+
+    return totalTime
+
+
+def updateExactFinish(lap, player):
+    finish = [0, 0]
+
+    if player == 0:
+        address = 0x800001B0
+    elif player == 1:
+        address = 0x800001F8
+
+    currentMin = getIGT(lap, player)[0]
+    currentSec = getIGT(lap, player)[1] + \
+        memory.read_f32(address + (lap-1)*0x4) / 1000 % 1
+
+    pastMin = getIGT(lap-1, player)[0]
+    pastSec = getIGT(lap-1, player)[1] + \
+        memory.read_f32(address + (lap-2)*0x4) / 1000 % 1
+
+    splitMin = math.floor(
+        ((currentMin * 60 + currentSec) - (pastMin * 60 + pastSec)) / 60)
+    splitSec = ((currentMin * 60 + currentSec) - (pastMin * 60 + pastSec)) % 60
+
+    finish[0] = splitMin
+    finish[1] = splitSec
+
+    return finish
+
+
+def getUnroundedTime(lap, player):
+    t = 0
+    totalTime = [0, 0]
+
+    for i in range(lap):
+        t += updateExactFinish(i + 1, player)[0] * \
+            60 + updateExactFinish(i + 1, player)[1]
+
+    totalTime[0] = int(math.floor(t / 60))
+    totalTime[1] = t % 60
+
+    return totalTime
