@@ -4,70 +4,89 @@ import configparser
 import math
 import os
 
-config = configparser.ConfigParser()
+def populate_default_config(file_path):
+    config = configparser.ConfigParser()
+    
+    config['DEBUG'] = {}
+    config['DEBUG']['Debug'] = "False"
+    
+    config['INFO DISPLAY'] = {}
+    config['INFO DISPLAY']["Frame Count"] = "True"
+    config['INFO DISPLAY']["Lap Splits"] = "False"
+    config['INFO DISPLAY']["Speed"] = "True"
+    config['INFO DISPLAY']["Internal Velocity (X, Y, Z)"] = "False"
+    config['INFO DISPLAY']["Internal Velocity (XYZ)"] = "False"
+    config['INFO DISPLAY']["External Velocity (X, Y, Z)"] = "False"
+    config['INFO DISPLAY']["External Velocity (XYZ)"] = "True"
+    config['INFO DISPLAY']["Moving Road Velocity (X, Y, Z)"] = "False"
+    config['INFO DISPLAY']["Moving Road Velocity (XYZ)"] = "False"
+    config['INFO DISPLAY']["Moving Water Velocity (X, Y, Z)"] = "False"
+    config['INFO DISPLAY']["Moving Water Velocity (XYZ)"] = "False"
+    config['INFO DISPLAY']["Charges and Boosts"] = "True"
+    config['INFO DISPLAY']["Checkpoints and Completion"] = "True"
+    config['INFO DISPLAY']["Miscellaneous"] = "True"
+    config['INFO DISPLAY']["Surface Properties"] = "True"
+    config['INFO DISPLAY']["Position"] = "True"
+    config['INFO DISPLAY']["Stick"] = "True"
+    config['INFO DISPLAY']["Text Color (ARGB)"] = "0xFFFFFFFF"
+    config['INFO DISPLAY']["Digits (to round to)"] = "6"
+    
+    with open(file_path, 'w') as f:
+        config.write(f)
+        
+    return config
 
-config.read(os.path.join(utils.get_script_dir(), 'Modules', 'infodisplay.ini'))
+class ConfigInstance():
+    def __init__(self, config : configparser.ConfigParser):
+        self.debug = config['DEBUG'].getboolean('Debug')
+        self.frame_count = config['INFO DISPLAY'].getboolean('Frame Count')
+        self.lap_splits = config['INFO DISPLAY'].getboolean('Lap Splits')
+        self.speed = config['INFO DISPLAY'].getboolean('Speed')
+        self.iv = config['INFO DISPLAY'].getboolean('Internal Velocity (X, Y, Z)')
+        self.iv_xyz = config['INFO DISPLAY'].getboolean('Internal Velocity (XYZ)')
+        self.ev = config['INFO DISPLAY'].getboolean('External Velocity (X, Y, Z)')
+        self.ev_xyz = config['INFO DISPLAY'].getboolean('External Velocity (XYZ)')
+        self.mrv = config['INFO DISPLAY'].getboolean('Moving Road Velocity (X, Y, Z)')
+        self.mrv_xyz = config['INFO DISPLAY'].getboolean('Moving Road Velocity (XYZ)')
+        self.mwv = config['INFO DISPLAY'].getboolean('Moving Water Velocity (X, Y, Z)')
+        self.mwv_xyz = config['INFO DISPLAY'].getboolean('Moving Water Velocity (XYZ)')
+        self.charges = config['INFO DISPLAY'].getboolean('Charges and Boosts')
+        self.cps = config['INFO DISPLAY'].getboolean('Checkpoints and Completion')
+        self.misc = config['INFO DISPLAY'].getboolean('Miscellaneous')
+        self.surfaces = config['INFO DISPLAY'].getboolean('Surface Properties')
+        self.position = config['INFO DISPLAY'].getboolean('Position')
+        self.stick = config['INFO DISPLAY'].getboolean('Stick')
+        self.color = int(config['INFO DISPLAY']['Text Color (ARGB)'], 16)
+        self.digits = min(7, config['INFO DISPLAY'].getint('Digits (to round to)'))
+    
+def main():
+    config = configparser.ConfigParser()
 
-debug = config['DEBUG'].getboolean('Debug')
+    file_path = os.path.join(utils.get_script_dir(), 'Modules', 'infodisplay.ini')
+    config.read(file_path)
 
-frame_count = config['INFO DISPLAY'].getboolean('Frame Count')
+    if not config.sections():
+        config = populate_default_config(file_path)
+    
+    global c
+    c = ConfigInstance(config)
 
-lap_splits = config['INFO DISPLAY'].getboolean('Lap Splits')
-
-speed = config['INFO DISPLAY'].getboolean('Speed')
-
-internal_velocity = config['INFO DISPLAY'
-                    ].getboolean('Internal Velocity (X, Y, Z)')
-internal_velocity_xyz = config['INFO DISPLAY'
-                        ].getboolean('Internal Velocity (XYZ)')
-
-external_velocity = config['INFO DISPLAY'
-                    ].getboolean('External Velocity (X, Y, Z)')
-external_velocity_xyz = config['INFO DISPLAY'
-                        ].getboolean('External Velocity (XYZ)')
-
-moving_road_velocity = config['INFO DISPLAY'
-                       ].getboolean('Moving Road Velocity (X, Y, Z)')
-moving_road_velocity_xyz = config['INFO DISPLAY'
-                           ].getboolean('Moving Road Velocity (XYZ)')
-
-moving_water_velocity = config['INFO DISPLAY'
-                        ].getboolean('Moving Water Velocity (X, Y, Z)')
-moving_water_velocity_xyz = config['INFO DISPLAY'
-                            ].getboolean('Moving Water Velocity (XYZ)')
-
-charges_and_boosts = config['INFO DISPLAY'
-                     ].getboolean('Charges and Boosts')
-checkpoints_and_completion = config['INFO DISPLAY'
-                             ].getboolean('Checkpoints and Completion')
-miscellaneous = config['INFO DISPLAY'
-                ].getboolean('Miscellaneous')
-
-surface_properties = config['INFO DISPLAY'
-                     ].getboolean('Surface Properties')
-
-position = config['INFO DISPLAY'].getboolean('Position')
-
-stick = config['INFO DISPLAY'].getboolean('Stick')
-
-color = int(config['INFO DISPLAY']['Text Color'], 16)
-
-digits = config['INFO DISPLAY'].getint('Digits (to round to)')
+if __name__ == '__main__':
+    main()
 
 # draw information to the screen
-
 
 def create_infodisplay():
     text = ""
 
-    if debug:
+    if c.debug:
         # test values here
         text += f"{utils.get_game_id()}\n\n"
     
-    if frame_count:
+    if c.frame_count:
         text += f"Frame: {core.get_frame_of_input()}\n\n"
 
-    if lap_splits:
+    if c.lap_splits:
         # The actual max lap address does not update when crossing the finish line
         # for the final time to finish the race. However, for whatever reason,
         # race completion does. We use the "max" version to prevent lap times
@@ -78,107 +97,87 @@ def create_infodisplay():
 
         if player_max_lap >= 2 and lap_count > 1:
             for lap in range(1, player_max_lap):
-                text += "Lap {:d}: {:02d}:{:012.9f}\n".format(
-                    lap, core.updateExactFinish(lap, 0)[0],
-                    core.updateExactFinish(lap, 0)[1])
+                text += "Lap {}: {}\n".format(lap, core.updateExactFinish(lap, 0))
 
         if player_max_lap > lap_count:
-            text += "Final: {:02d}:{:012.9f}\n".format(
-                core.getUnroundedTime(lap_count, 0)[0],
-                core.getUnroundedTime(lap_count, 0)[1])
+            text += "Final: {}\n".format(core.getUnroundedTime(lap_count, 0))
         text += "\n"
 
-    if speed:
-        xz = core.get_speed().xz
-        y = core.get_speed().y
-        xyz = core.get_speed().xyz
+    if c.speed:
+        speed = core.get_speed()
         engine_speed = classes.KartMove.speed()
         cap = classes.KartMove.soft_speed_limit()
-        text += f"        XZ: {round(xz, digits)}\n"
-        text += f"       XYZ: {round(xyz, digits)}\n"
-        text += f"         Y: {round(y, digits)}\n"
-        text += f"    Engine: {round(engine_speed, digits)} / {round(cap, digits)}\n\n"
+        text += f"        XZ: {round(speed.xz, c.digits)}\n"
+        text += f"       XYZ: {round(speed.xyz, c.digits)}\n"
+        text += f"         Y: {round(speed.y, c.digits)}\n"
+        text += f"    Engine: {round(engine_speed, c.digits)} / {round(cap, c.digits)}"
+        text += "\n\n"
 
-    if internal_velocity:
-        iv_x = classes.VehiclePhysics.internal_velocity().x
-        iv_y = classes.VehiclePhysics.internal_velocity().y
-        iv_z = classes.VehiclePhysics.internal_velocity().z
-        text += f"      IV X: {round(iv_x, digits)}\n"
-        text += f"      IV Y: {round(iv_y, digits)}\n"
-        text += f"      IV Z: {round(iv_z, digits)}\n\n"
+    if c.iv:
+        iv = classes.VehiclePhysics.internal_velocity()
+        text += f"      IV X: {round(iv.x,c.digits)}\n"
+        text += f"      IV Y: {round(iv.y,c.digits)}\n"
+        text += f"      IV Z: {round(iv.z,c.digits)}\n\n"
 
-    if internal_velocity_xyz:
-        iv_xyz = math.sqrt(classes.VehiclePhysics.internal_velocity().x ** 2
-               + classes.VehiclePhysics.internal_velocity().y ** 2 
-               + classes.VehiclePhysics.internal_velocity().z ** 2)
-        text += f"    IV XYZ: {round(iv_xyz, digits)}\n\n"
+    if c.iv_xyz:
+        iv = classes.VehiclePhysics.internal_velocity()
+        text += f"    IV XYZ: {round(iv.norm(),c.digits)}\n\n"
 
-    if external_velocity:
-        ev_x = classes.VehiclePhysics.external_velocity().x
-        ev_y = classes.VehiclePhysics.external_velocity().y
-        ev_z = classes.VehiclePhysics.external_velocity().z
-        text += f"      EV X: {round(ev_x, digits)}\n"
-        text += f"      EV Y: {round(ev_y, digits)}\n"
-        text += f"      EV Z: {round(ev_z, digits)}\n\n"
+    if c.ev:
+        ev = classes.VehiclePhysics.external_velocity()
+        text += f"      EV X: {round(ev.x,c.digits)}\n"
+        text += f"      EV Y: {round(ev.y,c.digits)}\n"
+        text += f"      EV Z: {round(ev.z,c.digits)}\n\n"
 
-    if external_velocity_xyz:
-        ev_xyz = math.sqrt(classes.VehiclePhysics.external_velocity().x ** 2
-               + classes.VehiclePhysics.external_velocity().y ** 2
-               + classes.VehiclePhysics.external_velocity().z ** 2)
-        text += f"    EV XYZ: {round(ev_xyz, digits)}\n\n"
+    if c.ev_xyz:
+        ev = classes.VehiclePhysics.external_velocity()
+        text += f"    EV XYZ: {round(ev.norm(),c.digits)}\n\n"
 
-    if moving_road_velocity:
-        mrv_x = classes.VehiclePhysics.moving_road_velocity().x
-        mrv_y = classes.VehiclePhysics.moving_road_velocity().y
-        mrv_z = classes.VehiclePhysics.moving_road_velocity().z
-        text += f"     MRV X: {round(mrv_x, digits)}\n"
-        text += f"     MRV Y: {round(mrv_y, digits)}\n"
-        text += f"     MRV Z: {round(mrv_z, digits)}\n\n"
+    if c.mrv:
+        mrv = classes.VehiclePhysics.moving_road_velocity()
+        text += f"     MRV X: {round(mrv.x,c.digits)}\n"
+        text += f"     MRV Y: {round(mrv.y,c.digits)}\n"
+        text += f"     MRV Z: {round(mrv.z,c.digits)}\n\n"
     
-    if moving_road_velocity_xyz:
-        mrv_xyz = math.sqrt(classes.VehiclePhysics.moving_road_velocity().x ** 2
-                + classes.VehiclePhysics.moving_road_velocity().y ** 2
-                + classes.VehiclePhysics.moving_road_velocity().z ** 2)
-        text += f"   MRV XYZ: {round(mrv_xyz, digits)}\n\n"
+    if c.mrv_xyz:
+        mrv = classes.VehiclePhysics.moving_road_velocity()
+        text += f"   MRV XYZ: {round(mrv.norm(),c.digits)}\n\n"
 
-    if moving_water_velocity:
-        mwv_x = classes.VehiclePhysics.moving_water_velocity().x
-        mwv_y = classes.VehiclePhysics.moving_water_velocity().y
-        mwv_z = classes.VehiclePhysics.moving_water_velocity().z
-        text += f"     MWV X: {round(mwv_x, digits)}\n"
-        text += f"     MWV Y: {round(mwv_y, digits)}\n"
-        text += f"     MWV Z: {round(mwv_z, digits)}\n\n"
+    if c.mwv:
+        mwv = classes.VehiclePhysics.moving_water_velocity()
+        text += f"     MWV X: {round(mwv.x,c.digits)}\n"
+        text += f"     MWV Y: {round(mwv.y,c.digits)}\n"
+        text += f"     MWV Z: {round(mwv.z,c.digits)}\n\n"
 
-    if moving_water_velocity_xyz:
-        mwv_xyz = math.sqrt(classes.VehiclePhysics.moving_water_velocity().x ** 2
-                + classes.VehiclePhysics.moving_water_velocity().y ** 2
-                + classes.VehiclePhysics.moving_water_velocity().z ** 2)
-        text += f"   MWV XYZ: {round(mwv_xyz, digits)}\n\n"
+    if c.mwv_xyz:
+        mwv = classes.VehiclePhysics.moving_water_velocity()
+        text += f"   MWV XYZ: {round(mwv.norm(),c.digits)}\n\n"
 
-    if charges_and_boosts:
+    if c.charges:
         mt = classes.KartMove.mt_charge()
         smt = classes.KartMove.smt_charge()
         ssmt = classes.KartMove.ssmt_charge()
         mt_boost = classes.KartMove.mt_boost_timer()
         trick_boost = classes.KartMove.trick_timer()
         shroom_boost = classes.KartMove.mushroom_timer()
-        if classes.KartParam.is_bike() == 0:
-            text += f"MT Charge: {mt} ({smt}) | SSMT Charge: {ssmt}\n"
+        if bool(classes.KartParam.is_bike()):
+            text += f"MT Charge: {mt} | SSMT Charge: {ssmt}\n"
         else:
-            text += f"MT Charge: {mt} | SSMT Charge: {smt}\n"
+            text += f"MT Charge: {mt} ({smt}) | SSMT Charge: {ssmt}\n"
+            
         text += f"MT: {mt_boost} | Trick: {trick_boost} | Mushroom: {shroom_boost}\n\n"
 
-    if checkpoints_and_completion:
+    if c.cps:
         lap_comp = classes.RaceInfoPlayer.lap_completion()
         race_comp = classes.RaceInfoPlayer.race_completion()
         cp = classes.RaceInfoPlayer.checkpoint_id()
         kcp = classes.RaceInfoPlayer.max_kcp()
         rp = classes.RaceInfoPlayer.respawn_point()
-        text += f" Lap%: {round(lap_comp, digits)}\n"
-        text += f"Race%: {round(race_comp, digits)}\n"
+        text += f" Lap%: {round(lap_comp,c.digits)}\n"
+        text += f"Race%: {round(race_comp,c.digits)}\n"
         text += f"CP: {cp} | KCP: {kcp} | RP: {rp}\n\n"
 
-    if miscellaneous:
+    if c.misc:
         wheelie_frames = classes.KartMove.wheelie_frames()
         wheelie_cd = classes.KartMove.wheelie_cooldown()
         trick_cd = classes.KartJump.cooldown()
@@ -191,26 +190,24 @@ def create_infodisplay():
             text += f"Trick CD: {trick_cd}\n"
         text += f"Airtime: {airtime} | OOB: {oob_timer}\n\n"
 
-    if surface_properties:
+    if c.surfaces:
         is_offroad = classes.KartCollide.surface_properties().offroad > 0
         is_trickable = classes.KartCollide.surface_properties().trickable > 0
         kcl_speed_mod = classes.KartMove.kcl_speed_factor()
         text += f"  Offroad: {is_offroad}\n"
         text += f"Trickable: {is_trickable}\n"
-        text += f"KCL Speed Modifier: {round(kcl_speed_mod * 100, digits)}%\n\n"
+        text += f"KCL Speed Modifier: {round(kcl_speed_mod * 100, c.digits)}%\n\n"
 
-    if position:
-        pos_x = classes.VehiclePhysics.pos().x
-        pos_y = classes.VehiclePhysics.pos().y
-        pos_z = classes.VehiclePhysics.pos().z
-        text += f"X Pos: {pos_x}\n"
-        text += f"Y Pos: {pos_y}\n"
-        text += f"Z Pos: {pos_z}\n\n"
+    if c.position:
+        pos = classes.VehiclePhysics.pos()
+        text += f"X Pos: {pos.x}\n"
+        text += f"Y Pos: {pos.y}\n"
+        text += f"Z Pos: {pos.z}\n\n"
 
     # TODO: figure out why classes.RaceInfoPlayer.stick_x() and 
     #       classes.RaceInfoPlayer.stick_y() do not update
     #       (using these as placeholders until further notice)
-    if stick:
+    if c.stick:
         stick_x = core.chase_pointer(
                   classes.getRaceInfoHolder(), [0xC, 0x0, 0x48, 0x38], 'u8') - 7
         stick_y = core.chase_pointer(
@@ -223,4 +220,4 @@ def create_infodisplay():
 @event.on_frameadvance
 def on_frame_advance():
     if classes.RaceInfo.stage() >= 1:
-        gui.draw_text((10, 10), color, create_infodisplay())
+        gui.draw_text((10, 10), c.color, create_infodisplay())

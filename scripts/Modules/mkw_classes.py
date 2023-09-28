@@ -5,6 +5,7 @@ from dolphin import memory, utils
 from dataclasses import dataclass
 # will be removed soon
 from Modules import mkw_core as core
+import math
   
 # general structure / pointer reading
 def chase_pointer(base_address, offsets, data_type):
@@ -40,6 +41,40 @@ class vec3:
   y: float = 0.0
   z: float = 0.0
   
+  def norm(self):
+    return math.sqrt(self.x**2 + self.y**2 + self.z**2)
+
+@dataclass
+class timer:
+  min: int
+  sec: int
+  mil: float
+  
+  def __add__(self, rhs):
+    ret = timer(self.min, self.sec, self.mil)
+    ret.min += rhs.min
+    ret.sec += rhs.sec
+    ret.mil += rhs.mil
+    carry, ret.mil = divmod(ret.mil, 1000)
+    ret.sec += carry
+    carry, ret.sec = divmod(ret.sec, 60)
+    ret.min += int(carry)
+    return ret
+    
+  def __sub__(self, rhs):
+    ret = timer(self.min, self.sec, self.mil)
+    ret.min -= rhs.min
+    ret.sec -= rhs.sec
+    ret.mil -= rhs.mil
+    carry, ret.mil = divmod(ret.mil, 1000)
+    ret.sec += carry
+    carry, ret.sec = divmod(ret.sec, 60)
+    ret.min += int(carry)
+    return ret
+    
+  def __str__(self):
+    return "{:02d}:{:012.9f}".format(self.min, self.sec + self.mil / 1000)
+
 def read_vec3(ptr):
   x = memory.read_f32(ptr + 0x0)
   y = memory.read_f32(ptr + 0x4)
