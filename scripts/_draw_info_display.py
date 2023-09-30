@@ -217,6 +217,11 @@ def create_infodisplay():
     return text
 
 
+@event.on_savestateload
+def on_state_load(fromSlot: bool, slot: int):
+    if classes.RaceInfo.stage() >= 1:
+        gui.draw_text((10, 10), c.color, create_infodisplay())
+
 @event.on_frameadvance
 def on_frame_advance():
     if classes.RaceInfo.stage() >= 1:
