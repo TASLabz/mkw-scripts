@@ -583,7 +583,7 @@ class KartState:
         
     @staticmethod
     def instance(playerIdx=0):
-        offsets = [0x20, playerIdx * 0x4, 0x10, 0x10, 0x1C]
+        offsets = [0x20, playerIdx * 0x4, 0x20]
         return chase_pointer(getKartObjectHolder(), offsets, 'u32')
         
     @staticmethod
