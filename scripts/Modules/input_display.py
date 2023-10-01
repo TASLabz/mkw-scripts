@@ -25,12 +25,13 @@ def fill_pressed_button(center: tuple, radius: int, color: int):
     gui.draw_circle_filled(center, radius, color, 32)
 
 
-def create_unpressed_bumper(bottom_left_pos: tuple, width: int, height: int, color: int):
+def create_unpressed_bumper(bottom_left_pos: tuple, width: int,
+                            height: int, color: int):
     """
     Creates an empty rectangle shape similar to a bumper.
 
     Args:
-        bottom_left_pos (tuple): The bottom left position of the bumper in the form of [x, y].
+        bottom_left_pos (tuple): The position of the bumper in the form of [x, y].
         width (int): The width of the bumper.
         height (int): The height of the bumper.
         color (int): The color of the bumper outline in the form of 0xAARRGGBB.
@@ -44,27 +45,30 @@ def fill_pressed_bumper(bottom_left_pos: tuple, width: int, height: int, color: 
     Creates a filled rectangle shape similar to a bumper.
 
     Args:
-        bottom_left_pos (tuple): The bottom left position of the bumper in the form of [x, y].
+        bottom_left_pos (tuple): The position of the bumper in the form of [x, y].
         width (int): The width of the bumper.
         height (int): The height of the bumper.
         color (int): The color of the bumper in the form of 0xAARRGGBB.
     """
     gui.draw_rect_filled(bottom_left_pos,
-                         [bottom_left_pos[0] + width, bottom_left_pos[1] + height], color, 10)
+                        [bottom_left_pos[0] + width, bottom_left_pos[1] + height],
+                        color, 10)
 
 
-def create_dpad(bottom_left_pos: tuple, button_width: int, button_height: int, color: int):
+def create_dpad(bottom_left_pos: tuple, button_width: int,
+                button_height: int, color: int):
     """
     Creates a shape similar to a directional pad.
 
     Args:
-        bottom_left_pos (tuple): The bottom left position of the D-Pad in the form of [x, y].
+        bottom_left_pos (tuple): The position of the D-Pad in the form of [x, y].
         width (int): The width of an individual direction on the pad.
         height (int): The height of an individual direction on the pad.
         color (int): The color of the D-Pad outline in the form of 0xAARRGGBB.
 
     TODO: fix this and remove the warning
-    **IF USING GET_DISPLAY_SIZE IN THE POSITION, USE THE NEGATIVE VALUE FOR IT TO APPEAR CORRECTLY**
+    **IF USING GET_DISPLAY_SIZE IN THE POSITION,
+    **USE THE NEGATIVE VALUE FOR IT TO APPEAR CORRECTLY**
     """
     x, y = bottom_left_pos
 
@@ -101,21 +105,24 @@ def create_dpad(bottom_left_pos: tuple, button_width: int, button_height: int, c
                   [x + button_width * 3, y + button_height * 2], color)
 
 
-def fill_dpad(bottom_left_pos: tuple, button_width: int, button_height: int, color: int, directions: tuple):
+def fill_dpad(bottom_left_pos: tuple, button_width: int, button_height: int,
+              color: int, directions: tuple):
     """
-    Fills out direction(s) on a directional pad, used in conjunction with the create_dpad function. If using the create_dpad function, paste those arguments here,
+    Fills out direction(s) on a directional pad, used in conjunction with create_dpad.
+    If using the create_dpad function, paste those arguments here,
     and fill out the "directions" argument appropriately.
 
     Args:
-        bottom_left_pos (tuple): The bottom left position of the D-Pad in the form of [x, y].
+        bottom_left_pos (tuple): The position of the D-Pad in the form of [x, y].
         width (int): The width of an individual direction on the pad.
         height (int): The height of an individual direction on the pad.
-        color (int): The color of the D-Pad button being pressed in the form of 0xAARRGGBB.
-        directions (tuple): Enter "Up", "Down", "Left", and/or "Right" to display the corresponding value as being pressed.
+        color (int): The color of the pressed D-Pad button in the form 0xAARRGGBB.
+        directions (tuple): The button(s) pressed ("Up", "Down", "Left", and/or "Right")
         Can accept multiple values.
 
     TODO: fix this and remove the warning
-    **IF USING GET_DISPLAY_SIZE IN THE POSITION, USE THE NEGATIVE VALUE FOR IT TO APPEAR CORRECTLY**
+    **IF USING GET_DISPLAY_SIZE IN THE POSITION,
+    **USE THE NEGATIVE VALUE FOR IT TO APPEAR CORRECTLY**
     """
     x, y = bottom_left_pos
 
@@ -140,18 +147,19 @@ def fill_dpad(bottom_left_pos: tuple, button_width: int, button_height: int, col
                              [x + button_width * 3, y + button_height * 2], color)
 
 
-def create_control_stick(center: tuple, bounding_radius: int, stick_radius: int, move_radius: int, stick_x: int, stick_y: int, color: int):
+def create_control_stick(center: tuple, bounding_radius: int, stick_radius: int,
+                         move_radius: int, stick_x: int, stick_y: int, color: int):
     """
     Creates a control stick with a bounding circle.
 
     Args:
-        center (tuple): The location of the center of the control stick in the form of [x, y].
+        center (tuple): The [x, y] position of the center of the control stick.
         bounding_radius (int): The radius of the bounding circle.
         stick_radius (int): The radius of the control stick.
-        move_radius (int): The radius in which the control stick can move. Often the same as bounding_circle.
-        stick_x (int): The position of the stick on the X-Axis. Must be adjusted to the 0-255 scale.
-        stick_x (int): The position of the stick on the Y-Axis. Must be adjusted to the 0-255 scale.
-        color (int): The color of the D-Pad button being pressed in the form of 0xAARRGGBB.
+        move_radius (int): The radius the control stick can move in.
+        stick_x (int): The x-axis position of the stick (0-255).
+        stick_x (int): The y-axis position of the stick (0-255).
+        color (int): The color of the pressed D-Pad button in the form of 0xAARRGGBB.
     """
 
     stick_x -= 127
