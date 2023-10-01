@@ -1731,31 +1731,31 @@ class RaceInfoPlayer:
     # TODO: Everything below here should be in a subclass probably
     @staticmethod
     def ablr_buttons(playerIdx=0):
-        offsets = [0x48, 0x38, 0x4, 0x9]
-        return chase_pointer(RaceInfoPlayer.instance(playerIdx), offsets, 'u8')
+        offsets = [0x4, 0x9]
+        return chase_pointer(RaceInfoPlayer.instance(playerIdx) + 0x48, offsets, 'u8')
         
     @staticmethod
     def x_button(playerIdx=0):
-        offsets = [0x48, 0x38, 0x4, 0x14]
-        return chase_pointer(RaceInfoPlayer.instance(playerIdx), offsets, 'u8')
+        offsets = [0x38, 0x4, 0x14]
+        return chase_pointer(RaceInfoPlayer.instance(playerIdx) + 0x48, offsets, 'u8')
         
     @staticmethod
     def y_button(playerIdx=0):
-        offsets = [0x48, 0x38, 0x4, 0x15]
-        return chase_pointer(RaceInfoPlayer.instance(playerIdx), offsets, 'u8')
+        offsets = [0x38, 0x4, 0x15]
+        return chase_pointer(RaceInfoPlayer.instance(playerIdx) + 0x48, offsets, 'u8')
         
     @staticmethod
     def dpad(playerIdx=0):
-        offsets = [0x48, 0x38, 0x4, 0x17]
-        return chase_pointer(RaceInfoPlayer.instance(playerIdx), offsets, 'u8')
+        offsets = [0x4, 0x17]
+        return chase_pointer(RaceInfoPlayer.instance(playerIdx) + 0x48, offsets, 'u8')
         
     @staticmethod
     def stick_x(playerIdx=0):
-        return chase_pointer(RaceInfoPlayer.instance(playerIdx), [0x48, 0x38], 'u8')
+        return chase_pointer(RaceInfoPlayer.instance(playerIdx) + 0x48, [0x38], 'u8')
         
     @staticmethod
     def stick_y(playerIdx=0):
-        return chase_pointer(RaceInfoPlayer.instance(playerIdx), [0x48, 0x39], 'u8')
+        return chase_pointer(RaceInfoPlayer.instance(playerIdx) + 0x48, [0x39], 'u8')
         
 class RaceInfo:
     @staticmethod
