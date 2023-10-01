@@ -1,6 +1,6 @@
 from dolphin import controller, event
 import math
-import mkw_classes as classes
+from Modules import mkw_classes as classes
 
 
 @event.on_frameadvance
