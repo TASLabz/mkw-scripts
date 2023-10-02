@@ -152,7 +152,7 @@ class RKGTuple:
 
 def encodeTuple(input: int, frames: int, inputType: ControllerInputType) -> RKGTuple:
     if (inputType == ControllerInputType.TRICK):
-        return RKGTuple(input + frames >> 8, frames % 0x100)
+        return RKGTuple(input + (frames >> 8), frames % 0x100)
     else:
         return RKGTuple(input, frames)
 
