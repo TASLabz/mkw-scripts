@@ -45,35 +45,35 @@ class vec3:
     return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
 @dataclass
-class timer:
+class ExactTimer:
   min: int
   sec: int
   mil: float
   
   def __add__(self, rhs):
-    ret = timer(self.min, self.sec, self.mil)
+    ret = ExactTimer(self.min, self.sec, self.mil)
     ret.min += rhs.min
     ret.sec += rhs.sec
     ret.mil += rhs.mil
-    carry, ret.mil = divmod(ret.mil, 1000)
-    ret.sec += carry
-    carry, ret.sec = divmod(ret.sec, 60)
-    ret.min += int(carry)
+    ret.normalize()
     return ret
     
   def __sub__(self, rhs):
-    ret = timer(self.min, self.sec, self.mil)
+    ret = ExactTimer(self.min, self.sec, self.mil)
     ret.min -= rhs.min
     ret.sec -= rhs.sec
     ret.mil -= rhs.mil
-    carry, ret.mil = divmod(ret.mil, 1000)
-    ret.sec += carry
-    carry, ret.sec = divmod(ret.sec, 60)
-    ret.min += int(carry)
+    ret.normalize()
     return ret
     
+  def normalize(self):
+    carry, self.mil = divmod(self.mil, 1000)
+    self.sec += carry
+    carry, self.sec = divmod(self.sec, 60)
+    self.min += int(carry)
+    
   def __str__(self):
-    return "{:02d}:{:012.9f}".format(self.min, self.sec + self.mil / 1000)
+    return "{:02d}:{:012.9f}".format(self.min, self.sec + self.mil)
 
 def read_vec3(ptr):
   x = memory.read_f32(ptr + 0x0)

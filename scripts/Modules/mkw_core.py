@@ -89,29 +89,28 @@ def get_speed(playerIdx=0):
 
     return speed(x, y, z, xz, xyz)
 
-# Next 3 functions are used for exact finish display
-def getIGT(lap, player): # lap is 1-indexed
-    offsets = [0xC, (player)*0x4, 0x3C, (lap-1)*0xC + 0x5]
-    value = chase_pointer(classes.getRaceInfoHolder(), offsets, 'u16')
-    return divmod(value, 0x100)
-
-def updateExactFinish(lap, player): # lap is 1-indexed
+"""Next 3 functions are used for exact finish display"""
+def getIGT(lap, player):
     if player == 0:
         address = 0x800001B0
     elif player == 1:
         address = 0x800001F8
+    else:
+        return classes.ExactTimer(0, 0, 0)
         
-    currMin, currSec = getIGT(lap, player)
-    currMil = memory.read_f32(address + (lap-1)*0x4) / 1000 % 1
-    currentLapTime = classes.timer(currMin, currSec, currMil)
+    offsets = [0xC, (player)*0x4, 0x3C, (lap-1)*0xC + 0x5]
+    value = chase_pointer(classes.getRaceInfoHolder(), offsets, 'u16')
+    min, sec = divmod(value, 0x100)
+    mil = memory.read_f32(address + (lap-1)*0x4) / 1000 % 1
+    return classes.ExactTimer(min, sec, mil)
 
-    pastMin, pastSec = getIGT(lap-1, player)
-    pastMil = memory.read_f32(address + (lap-2)*0x4) / 1000 % 1
-    pastLapTime = classes.timer(pastMin, pastSec, pastMil)
+def updateExactFinish(lap, player):
+    currentLapTime = getIGT(lap, player)
+    pastLapTime = getIGT(lap-1, player)
 
     return currentLapTime - pastLapTime
 
-def getUnroundedTime(lap, player): # lap is 0-indexed
+def getUnroundedTime(lap, player):
     t = classes.timer(0, 0, 0)
     for i in range(lap):
         t += updateExactFinish(i + 1, player)
