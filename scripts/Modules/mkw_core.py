@@ -88,3 +88,30 @@ def get_speed(playerIdx=0):
     xyz = math.sqrt(x ** 2 + y ** 2 + z ** 2)
 
     return speed(x, y, z, xz, xyz)
+
+"""Next 3 functions are used for exact finish display"""
+def getIGT(lap, player):
+    if player == 0:
+        address = 0x800001B0
+    elif player == 1:
+        address = 0x800001F8
+    else:
+        return classes.ExactTimer(0, 0, 0)
+        
+    offsets = [0xC, (player)*0x4, 0x3C, (lap-1)*0xC + 0x5]
+    value = chase_pointer(classes.getRaceInfoHolder(), offsets, 'u16')
+    min, sec = divmod(value, 0x100)
+    mil = memory.read_f32(address + (lap-1)*0x4) / 1000 % 1
+    return classes.ExactTimer(min, sec, mil)
+
+def updateExactFinish(lap, player):
+    currentLapTime = getIGT(lap, player)
+    pastLapTime = getIGT(lap-1, player)
+
+    return currentLapTime - pastLapTime
+
+def getUnroundedTime(lap, player):
+    t = classes.timer(0, 0, 0)
+    for i in range(lap):
+        t += updateExactFinish(i + 1, player)
+    return t
