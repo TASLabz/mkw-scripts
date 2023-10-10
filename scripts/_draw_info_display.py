@@ -24,9 +24,10 @@ def populate_default_config(file_path):
     config['INFO DISPLAY']["Moving Water Velocity (XYZ)"] = "False"
     config['INFO DISPLAY']["Charges and Boosts"] = "True"
     config['INFO DISPLAY']["Checkpoints and Completion"] = "True"
-    config['INFO DISPLAY']["Miscellaneous"] = "True"
-    config['INFO DISPLAY']["Surface Properties"] = "True"
-    config['INFO DISPLAY']["Position"] = "True"
+    config['INFO DISPLAY']["Airtime"] = "True"
+    config['INFO DISPLAY']["Miscellaneous"] = "False"
+    config['INFO DISPLAY']["Surface Properties"] = "False"
+    config['INFO DISPLAY']["Position"] = "False"
     config['INFO DISPLAY']["Stick"] = "True"
     config['INFO DISPLAY']["Text Color (ARGB)"] = "0xFFFFFFFF"
     config['INFO DISPLAY']["Digits (to round to)"] = "6"
@@ -52,6 +53,7 @@ class ConfigInstance():
         self.mwv_xyz = config['INFO DISPLAY'].getboolean('Moving Water Velocity (XYZ)')
         self.charges = config['INFO DISPLAY'].getboolean('Charges and Boosts')
         self.cps = config['INFO DISPLAY'].getboolean('Checkpoints and Completion')
+        self.air = config['INFO DISPLAY'].getboolean('Airtime')
         self.misc = config['INFO DISPLAY'].getboolean('Miscellaneous')
         self.surfaces = config['INFO DISPLAY'].getboolean('Surface Properties')
         self.position = config['INFO DISPLAY'].getboolean('Position')
@@ -113,45 +115,53 @@ def create_infodisplay():
         text += f"    Engine: {round(engine_speed, c.digits)} / {round(cap, c.digits)}"
         text += "\n\n"
 
-    if c.iv:
+    if (c.iv or c.iv_xyz):
         iv = classes.VehiclePhysics.internal_velocity()
+
+    if c.iv:
         text += f"      IV X: {round(iv.x,c.digits)}\n"
         text += f"      IV Y: {round(iv.y,c.digits)}\n"
         text += f"      IV Z: {round(iv.z,c.digits)}\n\n"
 
     if c.iv_xyz:
-        iv = classes.VehiclePhysics.internal_velocity()
-        text += f"    IV XYZ: {round(iv.norm(),c.digits)}\n\n"
+        text += f"    IV  XZ: {round(iv.norm_xz(),c.digits)}\n"
+        text += f"    IV XYZ: {round(iv.norm_xyz(),c.digits)}\n\n"
+
+    if (c.ev or c.ev_xyz):
+        ev = classes.VehiclePhysics.external_velocity()
 
     if c.ev:
-        ev = classes.VehiclePhysics.external_velocity()
         text += f"      EV X: {round(ev.x,c.digits)}\n"
         text += f"      EV Y: {round(ev.y,c.digits)}\n"
         text += f"      EV Z: {round(ev.z,c.digits)}\n\n"
 
     if c.ev_xyz:
-        ev = classes.VehiclePhysics.external_velocity()
-        text += f"    EV XYZ: {round(ev.norm(),c.digits)}\n\n"
+        text += f"    EV  XZ: {round(ev.norm_xz(),c.digits)}\n"
+        text += f"    EV XYZ: {round(ev.norm_xyz(),c.digits)}\n\n"
+
+    if (c.mrv or c.mrv_xyz):
+        mrv = classes.VehiclePhysics.moving_road_velocity()
 
     if c.mrv:
-        mrv = classes.VehiclePhysics.moving_road_velocity()
         text += f"     MRV X: {round(mrv.x,c.digits)}\n"
         text += f"     MRV Y: {round(mrv.y,c.digits)}\n"
         text += f"     MRV Z: {round(mrv.z,c.digits)}\n\n"
     
     if c.mrv_xyz:
-        mrv = classes.VehiclePhysics.moving_road_velocity()
-        text += f"   MRV XYZ: {round(mrv.norm(),c.digits)}\n\n"
+        text += f"   MRV  XZ: {round(mrv.norm_xz(),c.digits)}\n"
+        text += f"   MRV XYZ: {round(mrv.norm_xyz(),c.digits)}\n\n"
+
+    if (c.mwv or c.mwv_xyz):
+        mwv = classes.VehiclePhysics.moving_water_velocity()
 
     if c.mwv:
-        mwv = classes.VehiclePhysics.moving_water_velocity()
         text += f"     MWV X: {round(mwv.x,c.digits)}\n"
         text += f"     MWV Y: {round(mwv.y,c.digits)}\n"
         text += f"     MWV Z: {round(mwv.z,c.digits)}\n\n"
 
     if c.mwv_xyz:
-        mwv = classes.VehiclePhysics.moving_water_velocity()
-        text += f"   MWV XYZ: {round(mwv.norm(),c.digits)}\n\n"
+        text += f"   MWV  XZ: {round(mwv.norm_xz(),c.digits)}\n"
+        text += f"   MWV XYZ: {round(mwv.norm_xyz(),c.digits)}\n\n"
 
     if c.charges:
         mt = classes.KartMove.mt_charge()
@@ -177,18 +187,21 @@ def create_infodisplay():
         text += f"Race%: {round(race_comp,c.digits)}\n"
         text += f"CP: {cp} | KCP: {kcp} | RP: {rp}\n\n"
 
+    if c.air:
+        airtime = classes.KartMove.airtime()
+        text += f"Airtime: {airtime}\n\n"
+
     if c.misc:
         wheelie_frames = classes.KartMove.wheelie_frames()
         wheelie_cd = classes.KartMove.wheelie_cooldown()
         trick_cd = classes.KartJump.cooldown()
-        airtime = classes.KartMove.airtime()
         oob_timer = classes.KartCollide.solid_oob_timer()
         if classes.KartParam.is_bike() == 1:
             text += f"Wheelie Length: {wheelie_frames}\n"
             text += f"Wheelie CD: {wheelie_cd} | Trick CD: {trick_cd}\n"
         else:
             text += f"Trick CD: {trick_cd}\n"
-        text += f"Airtime: {airtime} | OOB: {oob_timer}\n\n"
+        text += f"OOB: {oob_timer}\n\n"
 
     if c.surfaces:
         is_offroad = classes.KartCollide.surface_properties().offroad > 0

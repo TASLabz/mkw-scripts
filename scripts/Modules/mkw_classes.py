@@ -41,8 +41,11 @@ class vec3:
   y: float = 0.0
   z: float = 0.0
   
-  def norm(self):
+  def norm_xyz(self):
     return math.sqrt(self.x**2 + self.y**2 + self.z**2)
+  
+  def norm_xz(self):
+    return math.sqrt(self.x**2 + self.z**2)
 
 @dataclass
 class ExactTimer:
