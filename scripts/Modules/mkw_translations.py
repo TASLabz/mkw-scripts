@@ -1,10 +1,13 @@
 # NOTE (xi): unfinished, currently only for the use of testing other scripts
 #            that rely on this module
 
-from Modules import mkw_classes as classes
+from .mkw_classes import RaceConfig, RaceConfigScenario
+from .mkw_classes import RaceConfigPlayer, RaceConfigSettings
 
+def vehicle_id(playerIdx=0):
+    race_config_scenario = RaceConfigScenario(addr=RaceConfig.race_scenario())
+    race_config_player = RaceConfigPlayer(addr=race_config_scenario.player(playerIdx=0))
 
-def vehicle_id():
     vehicles = ["Standard Kart S", "Standard Kart M", "Standard Kart L",
                 "Booster Seat", "Classic Dragster", "Offroader", "Mini Beast",
                 "Wild Wing", "Flame Flyer", "Cheep Charger", "Super Blooper",
@@ -15,10 +18,13 @@ def vehicle_id():
                 "Wario Bike", "Quacker", "Zip Zip", "Shooting Star",
                 "Magikruiser", "Sneakster", "Spear", "Jet Bubble",
                 "Dolphin Dasher", "Phantom"]
-    return vehicles[classes.RaceDataPlayer.vehicle_id()]
+    return vehicles[race_config_player.vehicle_id().value]
 
 
 def character_id():
+    race_config_scenario = RaceConfigScenario(addr=RaceConfig.race_scenario())
+    race_config_player = RaceConfigPlayer(addr=race_config_scenario.player(playerIdx=0))
+
     characters = ["Mario", "Baby Peach", "Waluigi", "Bowser", "Baby Daisy",
                   "Dry Bones", "Baby Mario", "Luigi", "Toad", "Donkey Kong", "Yoshi",
                   "Wario", "Baby Luigi", "Toadette", "Koopa Troopa", "Daisy", "Peach",
@@ -33,12 +39,14 @@ def character_id():
                   "Mii Outfit A (F | Heavy)", "Mii Outfit B (M | Heavy)",
                   "Mii Outfit B (F | Heavy)", "Mii Outfit C (M | Heavy)",
                   "Mii Outfit C (F | Heavy)"]
-    return characters[classes.RaceDataPlayer.character_id()]
+    return characters[race_config_player.character_id().value]
 
 
 def course_slot_abbreviation():
+    race_config_scenario = RaceConfigScenario(addr=RaceConfig.race_scenario())
+    race_config_settings = RaceConfigSettings(addr=race_config_scenario.settings())
     courses = ["MC", "MMM", "MG", "GV", "TF", "CM", "DKS", "WGM", "LC",
                "DC", "MH", "MT", "BC", "RR", "DDR", "KC", "rPB", "rMC", "rWS", "rDKM",
                "rYF", "rDH", "rPG", "rDS", "rMC3", "rGV2", "rMR", "rSL", "rBC", "rDKJP",
                "rBC3", "rSGB"]
-    return courses[classes.RaceDataSettings.course_id()]
+    return courses[race_config_settings.course_id().value]

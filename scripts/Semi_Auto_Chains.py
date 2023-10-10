@@ -1,10 +1,11 @@
 from dolphin import controller, event
-from Modules import mkw_classes as classes
 
+from Modules.mkw_classes import KartMove
 
 @event.on_frameadvance
 def main():
-    if controller.get_gc_buttons(0)["Up"] and classes.KartMove.wheelie_frames() == 180:
+    pressing_up = controller.get_gc_buttons(0)["Up"]
+    if pressing_up and KartMove.wheelie_frames(playerIdx=0) == 180:
         controller.set_gc_buttons(
             0, {"A": True,
                 "Up": False,

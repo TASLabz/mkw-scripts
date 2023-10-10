@@ -1,8 +1,8 @@
 from dolphin import event, gui, utils
 from Modules import TTK_Lib
-from Modules import mkw_classes as classes
-from Modules import mkw_core as core
+from Modules.mkw_utils import frame_of_input
 from Modules import mkw_translations as translate
+from Modules.mkw_classes import RaceManager, RaceState, KartSettings
 from Modules.framesequence import FrameSequence
 import os
 
@@ -18,11 +18,11 @@ def onStateLoad(is_slot, slot):
 
 @event.on_frameadvance
 def onFrameAdvance():
-    global playerInputs
-    frame = core.get_frame_of_input()
+    frame = frame_of_input()
+    stage = RaceManager.state()
     
     playerInput = playerInputs[frame]
-    if (playerInput and classes.RaceInfo.stage() == 1):
+    if (playerInput and stage.value == RaceState.COUNTDOWN.value):
         TTK_Lib.writePlayerInputs(playerInput)
 
 def main() -> None:
@@ -36,7 +36,7 @@ def main() -> None:
 def check_vehicle(vehicle):
 
     # Returns True if the player is using a bike.
-    if bool(classes.KartParam.is_bike()):
+    if KartSettings.is_bike(playerIdx=0):
         
         path = utils.get_script_dir()
 

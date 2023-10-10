@@ -1,8 +1,16 @@
 from dolphin import event, gui, utils
-from Modules import mkw_classes as classes, mkw_core as core
 import configparser
 import math
 import os
+
+from Modules.mkw_classes.common import SurfaceProperties
+
+import Modules.mkw_utils as mkw_utils
+from Modules.mkw_classes import RaceManager, RaceManagerPlayer, RaceState
+from Modules.mkw_classes import RaceConfig, RaceConfigScenario, RaceConfigSettings
+from Modules.mkw_classes import KartObject, KartMove, KartSettings, KartBody
+from Modules.mkw_classes import VehicleDynamics, VehiclePhysics, KartBoost, KartJump
+from Modules.mkw_classes import KartCollide, KartInput, RaceInputState
 
 def populate_default_config(file_path):
     config = configparser.ConfigParser()
@@ -64,7 +72,7 @@ class ConfigInstance():
 def main():
     config = configparser.ConfigParser()
 
-    file_path = os.path.join(utils.get_script_dir(), 'Modules', 'infodisplay.ini')
+    file_path = os.path.join(utils.get_script_dir(), 'modules', 'infodisplay.ini')
     config.read(file_path)
 
     if not config.sections():
@@ -86,37 +94,46 @@ def create_infodisplay():
         text += f"{utils.get_game_id()}\n\n"
     
     if c.frame_count:
-        text += f"Frame: {core.get_frame_of_input()}\n\n"
+        text += f"Frame: {mkw_utils.frame_of_input()}\n\n"
+    
+    race_mgr_player = RaceManagerPlayer(playerIdx=0)
+    race_scenario = RaceConfigScenario(addr=RaceConfig.race_scenario())
+    race_settings = RaceConfigSettings(race_scenario.settings())
+    kart_object = KartObject(playerIdx=0)
+    kart_move = KartMove(addr=kart_object.kart_move())
+    kart_body = KartBody(addr=kart_object.kart_body())
+    vehicle_dynamics = VehicleDynamics(addr=kart_body.vehicle_dynamics())
+    vehicle_physics = VehiclePhysics(addr=vehicle_dynamics.vehicle_physics())
+
 
     if c.lap_splits:
         # The actual max lap address does not update when crossing the finish line
         # for the final time to finish the race. However, for whatever reason,
         # race completion does. We use the "max" version to prevent lap times
         # from disappearing when crossing the line backwards.
-        player_max_lap = math.floor(
-            classes.RaceInfoPlayer.race_completion_max())
-        lap_count = classes.RaceDataSettings.lap_count()
+        player_max_lap = math.floor(race_mgr_player.race_completion_max())
+        lap_count = race_settings.lap_count()
 
         if player_max_lap >= 2 and lap_count > 1:
             for lap in range(1, player_max_lap):
-                text += "Lap {}: {}\n".format(lap, core.updateExactFinish(lap, 0))
+                text += "Lap {}: {}\n".format(lap, mkw_utils.updateExactFinish(lap, 0))
 
         if player_max_lap > lap_count:
-            text += "Final: {}\n".format(core.getUnroundedTime(lap_count, 0))
+            text += "Final: {}\n".format(mkw_utils.getUnroundedTime(lap_count, 0))
         text += "\n"
 
     if c.speed:
-        speed = core.get_speed()
-        engine_speed = classes.KartMove.speed()
-        cap = classes.KartMove.soft_speed_limit()
-        text += f"        XZ: {round(speed.xz, c.digits)}\n"
-        text += f"       XYZ: {round(speed.xyz, c.digits)}\n"
+        speed = mkw_utils.delta_position(playerIdx=0)
+        engine_speed = kart_move.speed()
+        cap = kart_move.soft_speed_limit()
+        text += f"        XZ: {round(speed.norm_xz(), c.digits)}\n"
+        text += f"       XYZ: {round(speed.norm_xyz(), c.digits)}\n"
         text += f"         Y: {round(speed.y, c.digits)}\n"
         text += f"    Engine: {round(engine_speed, c.digits)} / {round(cap, c.digits)}"
         text += "\n\n"
 
     if (c.iv or c.iv_xyz):
-        iv = classes.VehiclePhysics.internal_velocity()
+        iv = vehicle_physics.internal_velocity()
 
     if c.iv:
         text += f"      IV X: {round(iv.x,c.digits)}\n"
@@ -128,7 +145,7 @@ def create_infodisplay():
         text += f"    IV XYZ: {round(iv.norm_xyz(),c.digits)}\n\n"
 
     if (c.ev or c.ev_xyz):
-        ev = classes.VehiclePhysics.external_velocity()
+        ev = vehicle_physics.external_velocity()
 
     if c.ev:
         text += f"      EV X: {round(ev.x,c.digits)}\n"
@@ -140,7 +157,7 @@ def create_infodisplay():
         text += f"    EV XYZ: {round(ev.norm_xyz(),c.digits)}\n\n"
 
     if (c.mrv or c.mrv_xyz):
-        mrv = classes.VehiclePhysics.moving_road_velocity()
+        mrv = vehicle_physics.moving_road_velocity()
 
     if c.mrv:
         text += f"     MRV X: {round(mrv.x,c.digits)}\n"
@@ -152,7 +169,7 @@ def create_infodisplay():
         text += f"   MRV XYZ: {round(mrv.norm_xyz(),c.digits)}\n\n"
 
     if (c.mwv or c.mwv_xyz):
-        mwv = classes.VehiclePhysics.moving_water_velocity()
+        mwv = vehicle_physics.moving_water_velocity()
 
     if c.mwv:
         text += f"     MWV X: {round(mwv.x,c.digits)}\n"
@@ -163,14 +180,19 @@ def create_infodisplay():
         text += f"   MWV  XZ: {round(mwv.norm_xz(),c.digits)}\n"
         text += f"   MWV XYZ: {round(mwv.norm_xyz(),c.digits)}\n\n"
 
+    if c.charges or c.misc:
+        kart_settings = KartSettings(addr=kart_object.kart_settings())
+
     if c.charges:
-        mt = classes.KartMove.mt_charge()
-        smt = classes.KartMove.smt_charge()
-        ssmt = classes.KartMove.ssmt_charge()
-        mt_boost = classes.KartMove.mt_boost_timer()
-        trick_boost = classes.KartMove.trick_timer()
-        shroom_boost = classes.KartMove.mushroom_timer()
-        if bool(classes.KartParam.is_bike()):
+        kart_boost = KartBoost(addr=kart_move.kart_boost())
+        
+        mt = kart_move.mt_charge()
+        smt = kart_move.smt_charge()
+        ssmt = kart_move.ssmt_charge()
+        mt_boost = kart_move.mt_boost_timer()
+        trick_boost = kart_boost.trick_and_zipper_timer()
+        shroom_boost = kart_move.mushroom_timer()
+        if kart_settings.is_bike():
             text += f"MT Charge: {mt} | SSMT Charge: {ssmt}\n"
         else:
             text += f"MT Charge: {mt} ({smt}) | SSMT Charge: {ssmt}\n"
@@ -178,25 +200,29 @@ def create_infodisplay():
         text += f"MT: {mt_boost} | Trick: {trick_boost} | Mushroom: {shroom_boost}\n\n"
 
     if c.cps:
-        lap_comp = classes.RaceInfoPlayer.lap_completion()
-        race_comp = classes.RaceInfoPlayer.race_completion()
-        cp = classes.RaceInfoPlayer.checkpoint_id()
-        kcp = classes.RaceInfoPlayer.max_kcp()
-        rp = classes.RaceInfoPlayer.respawn_point()
+        lap_comp = race_mgr_player.lap_completion()
+        race_comp = race_mgr_player.race_completion()
+        cp = race_mgr_player.checkpoint_id()
+        kcp = race_mgr_player.max_kcp()
+        rp = race_mgr_player.respawn()
         text += f" Lap%: {round(lap_comp,c.digits)}\n"
         text += f"Race%: {round(race_comp,c.digits)}\n"
         text += f"CP: {cp} | KCP: {kcp} | RP: {rp}\n\n"
 
     if c.air:
-        airtime = classes.KartMove.airtime()
+        airtime = kart_move.airtime()
         text += f"Airtime: {airtime}\n\n"
 
+    if c.misc or c.surfaces:
+        kart_collide = KartCollide(addr=kart_object.kart_collide())
+
     if c.misc:
-        wheelie_frames = classes.KartMove.wheelie_frames()
-        wheelie_cd = classes.KartMove.wheelie_cooldown()
-        trick_cd = classes.KartJump.cooldown()
-        oob_timer = classes.KartCollide.solid_oob_timer()
-        if classes.KartParam.is_bike() == 1:
+        kart_jump = KartJump(addr=kart_move.kart_jump())  
+        wheelie_frames = kart_move.wheelie_frames()
+        wheelie_cd = kart_move.wheelie_cooldown()
+        trick_cd = kart_jump.cooldown()
+        oob_timer = kart_collide.solid_oob_timer()
+        if kart_settings.is_bike():
             text += f"Wheelie Length: {wheelie_frames}\n"
             text += f"Wheelie CD: {wheelie_cd} | Trick CD: {trick_cd}\n"
         else:
@@ -204,15 +230,16 @@ def create_infodisplay():
         text += f"OOB: {oob_timer}\n\n"
 
     if c.surfaces:
-        is_offroad = classes.KartCollide.surface_properties().offroad > 0
-        is_trickable = classes.KartCollide.surface_properties().trickable > 0
-        kcl_speed_mod = classes.KartMove.kcl_speed_factor()
+        surface_properties = kart_collide.surface_properties()
+        is_offroad = (surface_properties.value & SurfaceProperties.OFFROAD) > 0
+        is_trickable = (surface_properties.value & SurfaceProperties.TRICKABLE) > 0
+        kcl_speed_mod = kart_move.kcl_speed_factor()
         text += f"  Offroad: {is_offroad}\n"
         text += f"Trickable: {is_trickable}\n"
         text += f"KCL Speed Modifier: {round(kcl_speed_mod * 100, c.digits)}%\n\n"
 
     if c.position:
-        pos = classes.VehiclePhysics.pos()
+        pos = vehicle_physics.position()
         text += f"X Pos: {pos.x}\n"
         text += f"Y Pos: {pos.y}\n"
         text += f"Z Pos: {pos.z}\n\n"
@@ -221,10 +248,11 @@ def create_infodisplay():
     #       classes.RaceInfoPlayer.stick_y() do not update
     #       (using these as placeholders until further notice)
     if c.stick:
-        stick_x = core.chase_pointer(
-                  classes.getRaceInfoHolder(), [0xC, 0x0, 0x48, 0x38], 'u8') - 7
-        stick_y = core.chase_pointer(
-                  classes.getRaceInfoHolder(), [0xC, 0x0, 0x48, 0x39], 'u8') - 7
+        kart_input = KartInput(addr=race_mgr_player.kart_input())
+        current_input_state = RaceInputState(addr=kart_input.current_input_state())
+
+        stick_x = current_input_state.raw_stick_x() - 7
+        stick_y = current_input_state.raw_stick_y() - 7
         text += f"X: {stick_x} | Y: {stick_y}\n\n"  
 
     return text
@@ -232,10 +260,12 @@ def create_infodisplay():
 
 @event.on_savestateload
 def on_state_load(fromSlot: bool, slot: int):
-    if classes.RaceInfo.stage() >= 1:
+    race_mgr = RaceManager()
+    if race_mgr.state().value >= RaceState.COUNTDOWN.value:
         gui.draw_text((10, 10), c.color, create_infodisplay())
 
 @event.on_frameadvance
 def on_frame_advance():
-    if classes.RaceInfo.stage() >= 1:
+    race_mgr = RaceManager()
+    if race_mgr.state().value >= RaceState.COUNTDOWN.value:
         gui.draw_text((10, 10), c.color, create_infodisplay())

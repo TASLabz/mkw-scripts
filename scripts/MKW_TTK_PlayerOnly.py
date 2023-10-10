@@ -1,6 +1,8 @@
 from dolphin import event, gui
-from Modules import TTK_Lib, mkw_classes as classes, mkw_core as core
+from Modules import TTK_Lib
+from Modules.mkw_utils import frame_of_input
 from Modules.framesequence import FrameSequence
+from Modules.mkw_classes import RaceManager, RaceState
 
 playerInputs = FrameSequence()
 
@@ -18,10 +20,11 @@ def onStateLoad(is_slot, slot):
 @event.on_frameadvance
 def onFrameAdvance():
     global playerInputs
-    frame = core.get_frame_of_input()
+    frame = frame_of_input()
+    in_race = RaceManager.state().value >= RaceState.COUNTDOWN.value
     
     playerInput = playerInputs[frame]
-    if (playerInput and classes.RaceInfo.stage() >= 1):
+    if (playerInput and in_race):
         TTK_Lib.writePlayerInputs(playerInput)
 
 def main() -> None:
