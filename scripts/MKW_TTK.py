@@ -23,14 +23,15 @@ def onStateLoad(is_slot, slot):
 def onFrameAdvance():
     global playerInputs, ghostInputs
     frame = frame_of_input()
-    in_race = RaceManager.state().value >= RaceState.COUNTDOWN.value
+    state = RaceManager.state().value
+    inputs_ready = state in (RaceState.COUNTDOWN.value, RaceState.RACE.value)
 
     ghostInput = ghostInputs[frame]
-    if (ghostInput and in_race):
+    if (ghostInput and inputs_ready):
         TTK_Lib.writeGhostInputs(ghostInput)
     
     playerInput = playerInputs[frame]
-    if (playerInput and in_race):
+    if (playerInput and inputs_ready):
         TTK_Lib.writePlayerInputs(playerInput)
 
 def main() -> None:

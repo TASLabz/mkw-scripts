@@ -38,10 +38,10 @@ class vec3:
     def __sub__(self, other):
         return vec3(self.x - other.x, self.y - other.y, self.z - other.z)
 
-    def norm_xyz(self) -> float:
+    def length(self) -> float:
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
-    def norm_xz(self) -> float:
+    def length_xz(self) -> float:
         return math.sqrt(self.x**2 + self.z**2)
 
     @staticmethod

@@ -126,8 +126,8 @@ def create_infodisplay():
         speed = mkw_utils.delta_position(playerIdx=0)
         engine_speed = kart_move.speed()
         cap = kart_move.soft_speed_limit()
-        text += f"        XZ: {round(speed.norm_xz(), c.digits)}\n"
-        text += f"       XYZ: {round(speed.norm_xyz(), c.digits)}\n"
+        text += f"        XZ: {round(speed.length_xz(), c.digits)}\n"
+        text += f"       XYZ: {round(speed.length(), c.digits)}\n"
         text += f"         Y: {round(speed.y, c.digits)}\n"
         text += f"    Engine: {round(engine_speed, c.digits)} / {round(cap, c.digits)}"
         text += "\n\n"
@@ -141,8 +141,8 @@ def create_infodisplay():
         text += f"      IV Z: {round(iv.z,c.digits)}\n\n"
 
     if c.iv_xyz:
-        text += f"    IV  XZ: {round(iv.norm_xz(),c.digits)}\n"
-        text += f"    IV XYZ: {round(iv.norm_xyz(),c.digits)}\n\n"
+        text += f"    IV  XZ: {round(iv.length_xz(),c.digits)}\n"
+        text += f"    IV XYZ: {round(iv.length(),c.digits)}\n\n"
 
     if (c.ev or c.ev_xyz):
         ev = vehicle_physics.external_velocity()
@@ -153,8 +153,8 @@ def create_infodisplay():
         text += f"      EV Z: {round(ev.z,c.digits)}\n\n"
 
     if c.ev_xyz:
-        text += f"    EV  XZ: {round(ev.norm_xz(),c.digits)}\n"
-        text += f"    EV XYZ: {round(ev.norm_xyz(),c.digits)}\n\n"
+        text += f"    EV  XZ: {round(ev.length_xz(),c.digits)}\n"
+        text += f"    EV XYZ: {round(ev.length(),c.digits)}\n\n"
 
     if (c.mrv or c.mrv_xyz):
         mrv = vehicle_physics.moving_road_velocity()
@@ -165,8 +165,8 @@ def create_infodisplay():
         text += f"     MRV Z: {round(mrv.z,c.digits)}\n\n"
     
     if c.mrv_xyz:
-        text += f"   MRV  XZ: {round(mrv.norm_xz(),c.digits)}\n"
-        text += f"   MRV XYZ: {round(mrv.norm_xyz(),c.digits)}\n\n"
+        text += f"   MRV  XZ: {round(mrv.length_xz(),c.digits)}\n"
+        text += f"   MRV XYZ: {round(mrv.length(),c.digits)}\n\n"
 
     if (c.mwv or c.mwv_xyz):
         mwv = vehicle_physics.moving_water_velocity()
@@ -177,8 +177,8 @@ def create_infodisplay():
         text += f"     MWV Z: {round(mwv.z,c.digits)}\n\n"
 
     if c.mwv_xyz:
-        text += f"   MWV  XZ: {round(mwv.norm_xz(),c.digits)}\n"
-        text += f"   MWV XYZ: {round(mwv.norm_xyz(),c.digits)}\n\n"
+        text += f"   MWV  XZ: {round(mwv.length_xz(),c.digits)}\n"
+        text += f"   MWV XYZ: {round(mwv.length(),c.digits)}\n\n"
 
     if c.charges or c.misc:
         kart_settings = KartSettings(addr=kart_object.kart_settings())
