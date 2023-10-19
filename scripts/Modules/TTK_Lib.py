@@ -418,7 +418,8 @@ def writePlayerInputs(inputs: FrameSequence) -> None:
     set_buttons(inputs, controller)
 
 def set_buttons(inputs, controller : Controller):
-    """This writes button data to addresses with implicit padding in structs"""
+    """This writes button data to addresses with implicit padding in structs.
+       This must be called only after controller_patch()"""
     addr = controller.addr
     memory.write_u8(addr + 0x4d, inputs.accel + (inputs.brake << 1) +
                     (inputs.item << 2) | ((inputs.accel & inputs.brake) << 3) + 0x80)
