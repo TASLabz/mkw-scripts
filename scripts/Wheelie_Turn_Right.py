@@ -1,19 +1,22 @@
 from dolphin import controller, event
 import math
-from Modules import mkw_classes as classes
 
+from Modules.mkw_classes import PlayerStats, KartMove
 
 @event.on_frameadvance
 def onFrameAdvance():
-    speed = classes.PlayerStats.base_speed()
-    currentSpeed = classes.KartMove.speed()
+    player_stats = PlayerStats(playerIdx=0)
+    kart_move = KartMove(playerIdx=0)
+
+    speed = player_stats.base_speed()
+    currentSpeed = kart_move.speed()
     topSpeed = speed * 1.15
 
-    turnSpeed = classes.PlayerStats.turning_speed()
+    turnSpeed = player_stats.handling_speed_multiplier()
     
-    A3 = classes.PlayerStats.accel_standard_a3()
+    A3 = player_stats.standard_accel_as(3)
     
-    wheelie_frames = classes.KartMove.wheelie_frames()
+    wheelie_frames = kart_move.wheelie_frames()
 
     formula = math.ceil(((1 - ((topSpeed - A3) / topSpeed)) / (1 - turnSpeed)) * 7)
 

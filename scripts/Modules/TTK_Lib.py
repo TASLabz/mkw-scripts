@@ -1,12 +1,19 @@
 from dolphin import gui, memory, utils
 from dataclasses import dataclass
 from enum import Enum
-from typing import Tuple, List, Optional
 import math
 import os
+from typing import Tuple, List, Optional
 import zlib
-from Modules.framesequence import FrameSequence
-from Modules import mkw_classes as classes, TTK_config as config
+
+from .framesequence import FrameSequence
+from . import TTK_config
+
+from .mkw_classes import RaceManager, RaceState
+from .mkw_classes import GhostController, GhostButtonsStream
+from .mkw_classes import InputMgr, GhostWriter, PlayerInput, KartInput, Controller
+from .mkw_classes import RaceConfig, RaceConfigScenario, RaceConfigSettings
+from .mkw_classes import RaceConfigPlayer, RaceConfigPlayerType
 
 class ControllerInputType(Enum):
     FACE = 0
@@ -48,31 +55,40 @@ def encodeTrickInput(input):
 # Reads binary data in-memory for the specified section
 def readRawRKGData(playerType: PlayerType, inputType: ControllerInputType) -> list:
     retList = []
-    curAddr = 0x0
-    endAddr = 0x0
-    addresses = []
-    endAddrOffset = 0
     
     # Determine memory region to access
     if (playerType == PlayerType.PLAYER):
-        addresses = classes.getInputStorageAddresses()
-        endAddrOffset = 0x276C
+        # This assumes player is index 0
+        # For now let's assert this is a player
+        race_config = RaceConfig()
+        race_scenario = RaceConfigScenario(addr=race_config.race_scenario())
+        race_config_player = RaceConfigPlayer(addr=race_scenario.player(playerIdx=0))
+        assert(race_config_player.type() == RaceConfigPlayerType.REAL_LOCAL)
+
+        ghost_writer = GhostWriter(addr=PlayerInput.ghost_writer())
+        stream_addr = ghost_writer.button_stream(inputType.value)
+        button_stream = GhostButtonsStream(addr=stream_addr)
+        address = button_stream.buffer()
+        endAddrOffset = button_stream.size()
     else:
-        addresses = classes.getGhostAddresses()
-        endAddrOffset = memory.read_u32(classes.getGhostAddressLengthPointer()[2])
+        # TODO: Ghost is index=1 if you are racing a ghost, but if you watch a replay
+        # for example, the ghost is index 0. We want to support this scenario, so
+        # we'll need to determine how to set controllerIdx appropriately.
+        ghost_addr = InputMgr.ghost_controller(controllerIdx=1)
+        ghost_controller = GhostController(addr=ghost_addr)
+        stream_addr = ghost_controller.buttons_stream(inputType.value)
+        ghost_button_stream = GhostButtonsStream(addr=stream_addr)
+        address = ghost_button_stream.buffer()
+        endAddrOffset = ghost_button_stream.size()
     
     # Define the address range for the given inputType
-    curAddr = addresses[inputType.value]
-    if (inputType.value < 2):
-        endAddr = addresses[inputType.value + 1]
-    else:
-        endAddr = curAddr + endAddrOffset
-    
+    curAddr = address
+    endAddr = curAddr + endAddrOffset
+
     # Begin reading the data
     dataTuple = memory.read_u16(curAddr)
     while True:
-        retList.append(dataTuple >> 8)
-        retList.append(dataTuple % 0x100)
+        retList += divmod(dataTuple, 0x100)
         curAddr += 0x2
         dataTuple = memory.read_u16(curAddr)
         
@@ -116,11 +132,11 @@ def decodeRKGData(data: list, inputType: ControllerInputType) -> List[List[int]]
 # Transform raw RKG data into a FrameSequence
 def readFullDecodedRKGData(playerType: PlayerType) -> Optional[FrameSequence]:
     # First make sure we're actually in a race, otherwise we need to bail out
-    stage = classes.RaceInfo.stage()
-    if (stage == 0):
+    race_state = RaceManager.state()
+    if (race_state.value < RaceState.COUNTDOWN.value):
         gui.add_osd_message("Not in race!")
         return None
-    if (stage == 4):
+    elif (race_state.value == RaceState.FINISHED_RACE.value):
         gui.add_osd_message("Race is over!")
         return None
 
@@ -216,6 +232,8 @@ def createRKGFile(input_data: FrameSequence, trackID: int,
     byteNr9 = (characterID << 4) & 0xFF
     byteNrD = 0x4 + (driftID << 1)
     
+    # TODO: Read from timer classes (referencing has_finished()) in order to set the
+    # lap times in the header. Right now they are hard-coded.
     headerData = \
         [0x54, 0xA8, 0x2A, trackID << 2, byteNr8, byteNr9, 0x02, 0x10, 0x00, byteNrD,
         *divmod(inputLength, 0x100) ,0x03, 0x54, 0x00, 0x00, 0x00, 0xA8, 0x00, 0x00,
@@ -259,7 +277,7 @@ def createRKGFile(input_data: FrameSequence, trackID: int,
 def writeToCSV(inputs: FrameSequence, playerType: PlayerType) -> None:
     # Get csv file path
     playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    relativePath = config.textFilePath(playerStr)
+    relativePath = TTK_config.textFilePath(playerStr)
     absolutePath = os.path.join(utils.get_script_dir(), relativePath)
     
     # Write to csv, error if cannot write
@@ -271,16 +289,23 @@ def writeToCSV(inputs: FrameSequence, playerType: PlayerType) -> None:
         )
         
 def writeToBackupCSV(inputs: FrameSequence, backupNumber: int) -> None:
-    relativePath = config.textFilePath("Backup")
+    relativePath = TTK_config.textFilePath("Backup")
     relativePath = relativePath.replace("##", "{:02d}".format(backupNumber))
     inputs.writeToFile(os.path.join(utils.get_script_dir(), relativePath))
         
 def getMetadataAndWriteToRKG(inputs: FrameSequence, playerType: PlayerType) -> None:
     # Get metadata
-    trackID = classes.RaceDataSettings.course_id()
-    vehicleID = classes.RaceDataPlayer.vehicle_id(playerType.value)
-    characterID = classes.RaceDataPlayer.character_id(playerType.value)
-    driftID = classes.InputMgr.drift_id(playerType.value)
+    race_config_scenario = RaceConfigScenario(addr=RaceConfig.race_scenario())
+    race_config_settings = RaceConfigSettings(addr=race_config_scenario.settings())
+    race_config_player = RaceConfigPlayer(addr=race_config_scenario.player(playerIdx=0))
+    player_input = PlayerInput(playerIdx=0)
+    kart_input = KartInput(player_input.kart_input())
+    controller = Controller(addr=kart_input.race_controller())
+
+    trackID = race_config_settings.course_id().value
+    vehicleID = race_config_player.vehicle_id().value
+    characterID = race_config_player.character_id().value
+    driftID = int(controller.drift_is_auto())
     
     # Get bytes to write
     fileBytes = createRKGFile(inputs, trackID, vehicleID, characterID, driftID)
@@ -294,7 +319,7 @@ def getMetadataAndWriteToRKG(inputs: FrameSequence, playerType: PlayerType) -> N
 def writeToRKG(fileBytes: bytearray, playerType: PlayerType) -> None:
     # Get csv file path
     playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    relativePath = config.rkgFilePath[playerStr]
+    relativePath = TTK_config.rkgFilePath[playerStr]
     absolutePath = os.path.join(utils.get_script_dir(), relativePath)
     
     try:
@@ -309,7 +334,7 @@ def writeToRKG(fileBytes: bytearray, playerType: PlayerType) -> None:
 def getInputSequenceFromCSV(playerType: PlayerType) -> FrameSequence:
     # Get csv file path
     playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    relativePath = config.textFilePath(playerStr)
+    relativePath = TTK_config.textFilePath(playerStr)
     absolutePath = os.path.join(utils.get_script_dir(), relativePath)
     
     # Get the frame sequence
@@ -382,19 +407,22 @@ def controller_patch() -> None:
 
 def writeGhostInputs(inputs: FrameSequence) -> None:
     controller_patch()
-    set_buttons(inputs, memory.read_u32(classes.InputMgr.chain()) + 0x3f08)
+    # TODO: This assumes the ghost is index 1, which is only true when racing a ghost
+    controller = Controller(addr=InputMgr.ghost_controller(controllerIdx=1))
+    set_buttons(inputs, controller)
 
 def writePlayerInputs(inputs: FrameSequence) -> None:
     controller_patch()
-    player_controller = memory.read_u32(
-            memory.read_u32(classes.InputMgr.chain()) + 0x8)
-    set_buttons(inputs, player_controller)
+    kart_input = KartInput(addr=PlayerInput.kart_input(playerIdx=0))
+    controller = Controller(addr=kart_input.race_controller())
+    set_buttons(inputs, controller)
 
-def set_buttons(inputs, controller):
-    memory.write_u8(controller + 0x4d, inputs.accel + (inputs.brake << 1) +
+def set_buttons(inputs, controller : Controller):
+    """This writes button data to addresses with implicit padding in structs.
+       This must be called only after controller_patch()"""
+    addr = controller.addr
+    memory.write_u8(addr + 0x4d, inputs.accel + (inputs.brake << 1) +
                     (inputs.item << 2) | ((inputs.accel & inputs.brake) << 3) + 0x80)
-    
-    memory.write_u8(controller + 0x4e, inputs.stick_x + 7)
-    memory.write_u8(controller + 0x4f, inputs.stick_y + 7)
-    
-    memory.write_u8(controller + 0x52, inputs.dpad_raw())
+    memory.write_u8(addr + 0x4e, inputs.stick_x + 7)
+    memory.write_u8(addr + 0x4f, inputs.stick_y + 7)
+    memory.write_u8(addr + 0x52, inputs.dpad_raw())
