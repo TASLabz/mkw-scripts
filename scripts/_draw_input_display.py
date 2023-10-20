@@ -61,7 +61,7 @@ def on_frame_advance():
         
         if direction:
             display.fill_dpad([30, gui.get_display_size()[1] - 32.5],
-                              30, -35, 0xFFFFFFFF, direction)            
+                              30, -35, 0xFFFFFFFF, direction)
 
         # Control Stick
         display.create_control_stick([210, gui.get_display_size()[1] - 100], 50, 30, 50,
