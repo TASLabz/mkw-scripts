@@ -9,7 +9,7 @@ class KartCollide:
         self.some_timer = self.inst_some_timer
         self.surface_properties = self.inst_surface_properties
         self.movement = self.inst_movement
-        self.time_before_respawn = self.inst_time_before_reaspawn
+        self.time_before_respawn = self.inst_time_before_respawn
         self.solid_oob_timer = self.inst_solid_oob_timer
 
     @staticmethod
@@ -52,7 +52,7 @@ class KartCollide:
         time_before_respawn_ref = kart_collide_ref + 0x48
         return memory.read_u16(time_before_respawn_ref)
     
-    def inst_time_before_reaspawn(self) -> int:
+    def inst_time_before_respawn(self) -> int:
         time_before_respawn_ref = self.addr + 0x48
         return memory.read_u16(time_before_respawn_ref)
     

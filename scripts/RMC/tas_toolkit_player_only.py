@@ -1,5 +1,5 @@
 from dolphin import event, gui
-from Modules import TTK_Lib
+from Modules import ttk_lib
 from Modules.mkw_utils import frame_of_input
 from Modules.framesequence import FrameSequence
 from Modules.mkw_classes import RaceManager, RaceState
@@ -7,7 +7,7 @@ from Modules.mkw_classes import RaceManager, RaceState
 playerInputs = FrameSequence()
 
 """
-MKW_TTK_PlayerOnly
+tas_toolkit_player_only
 
 This script reads inputs from the player csv files, and applies it live in-game
 The inputs are reloaded on every state load
@@ -26,12 +26,12 @@ def onFrameAdvance():
     
     playerInput = playerInputs[frame]
     if (playerInput and inputs_ready):
-        TTK_Lib.writePlayerInputs(playerInput)
+        ttk_lib.writePlayerInputs(playerInput)
 
 def main() -> None:
     # Load both the player and ghost input sequences
     global playerInputs
-    playerInputs = TTK_Lib.getInputSequenceFromCSV(TTK_Lib.PlayerType.PLAYER)
+    playerInputs = ttk_lib.getInputSequenceFromCSV(ttk_lib.PlayerType.PLAYER)
     
     gui.add_osd_message(
         "TTK | Player: {} | Ghost: {}".format(

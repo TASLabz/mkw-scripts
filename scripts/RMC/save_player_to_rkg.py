@@ -1,8 +1,8 @@
 from dolphin import gui
-from Modules import TTK_Lib
+from Modules import ttk_lib
 
 """
-MKW_SavePlayerToRKG
+save_player_to_rkg
 
 This script takes the player's inputs and writes them to a csv file and an rkg file.
 """
@@ -11,14 +11,14 @@ def main() -> None:
     gui.add_osd_message("Script started")
     
     # Convert internal RKG to input list
-    input_sequence = TTK_Lib.readFullDecodedRKGData(TTK_Lib.PlayerType.PLAYER)
+    input_sequence = ttk_lib.readFullDecodedRKGData(ttk_lib.PlayerType.PLAYER)
     
     if (input_sequence is None or len(input_sequence) == 0):
         gui.add_osd_message("No inputs read!")
         return
     
-    TTK_Lib.writeToCSV(input_sequence, TTK_Lib.PlayerType.PLAYER)
-    TTK_Lib.getMetadataAndWriteToRKG(input_sequence, TTK_Lib.PlayerType.PLAYER)
+    ttk_lib.writeToCSV(input_sequence, ttk_lib.PlayerType.PLAYER)
+    ttk_lib.getMetadataAndWriteToRKG(input_sequence, ttk_lib.PlayerType.PLAYER)
 
 if __name__ == '__main__':
     main()

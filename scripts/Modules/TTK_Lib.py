@@ -7,7 +7,7 @@ from typing import Tuple, List, Optional
 import zlib
 
 from .framesequence import FrameSequence
-from . import TTK_config
+from . import ttk_config
 
 from .mkw_classes import RaceManager, RaceState
 from .mkw_classes import GhostController, GhostButtonsStream
@@ -277,7 +277,7 @@ def createRKGFile(input_data: FrameSequence, trackID: int,
 def writeToCSV(inputs: FrameSequence, playerType: PlayerType) -> None:
     # Get csv file path
     playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    relativePath = TTK_config.textFilePath(playerStr)
+    relativePath = ttk_config.textFilePath(playerStr)
     absolutePath = os.path.join(utils.get_script_dir(), relativePath)
     
     # Write to csv, error if cannot write
@@ -289,7 +289,7 @@ def writeToCSV(inputs: FrameSequence, playerType: PlayerType) -> None:
         )
         
 def writeToBackupCSV(inputs: FrameSequence, backupNumber: int) -> None:
-    relativePath = TTK_config.textFilePath("Backup")
+    relativePath = ttk_config.textFilePath("Backup")
     relativePath = relativePath.replace("##", "{:02d}".format(backupNumber))
     inputs.writeToFile(os.path.join(utils.get_script_dir(), relativePath))
         
@@ -319,7 +319,7 @@ def getMetadataAndWriteToRKG(inputs: FrameSequence, playerType: PlayerType) -> N
 def writeToRKG(fileBytes: bytearray, playerType: PlayerType) -> None:
     # Get csv file path
     playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    relativePath = TTK_config.rkgFilePath[playerStr]
+    relativePath = ttk_config.rkgFilePath[playerStr]
     absolutePath = os.path.join(utils.get_script_dir(), relativePath)
     
     try:
@@ -334,7 +334,7 @@ def writeToRKG(fileBytes: bytearray, playerType: PlayerType) -> None:
 def getInputSequenceFromCSV(playerType: PlayerType) -> FrameSequence:
     # Get csv file path
     playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    relativePath = TTK_config.textFilePath(playerStr)
+    relativePath = ttk_config.textFilePath(playerStr)
     absolutePath = os.path.join(utils.get_script_dir(), relativePath)
     
     # Get the frame sequence

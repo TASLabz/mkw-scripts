@@ -1,6 +1,6 @@
 from . import mkw_translations
 
-# when running MKW_UndoStateBackup.py, creates up to backupAmount
+# when running undo_state_backup.py, creates up to backupAmount
 # backup files for your race inputs while you are TASing
 backupAmount = 10
 
