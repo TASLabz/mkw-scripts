@@ -4,8 +4,8 @@ from . import KartMove, TrickType, quatf
 
 class KartJump:
     class TrickProperties:
-        def __init__(self, playerIdx=0, addr=None):
-            self.addr = addr if addr else KartJump.TrickProperties.chain(playerIdx)
+        def __init__(self, player_idx=0, addr=None):
+            self.addr = addr if addr else KartJump.TrickProperties.chain(player_idx)
 
             self.initial_angle_diff = self.inst_initial_angle_diff
             self.angle_delta_min = self.inst_angle_delta_min
@@ -13,12 +13,12 @@ class KartJump:
             self.angle_diff_mul_dec = self.inst_angle_diff_mul_dec
 
         @staticmethod
-        def chain(playerIdx=0) -> int:
-            return KartJump.trick_properties(playerIdx=0)
+        def chain(player_idx=0) -> int:
+            return KartJump.trick_properties(player_idx=0)
         
         @staticmethod
-        def initial_angle_diff(playerIdx=0) -> float:
-            trick_properties_ref = KartJump.TrickProperties.chain(playerIdx)
+        def initial_angle_diff(player_idx=0) -> float:
+            trick_properties_ref = KartJump.TrickProperties.chain(player_idx)
             initial_angle_diff_ref = trick_properties_ref + 0x0
             return memory.read_f32(initial_angle_diff_ref)
         
@@ -27,8 +27,8 @@ class KartJump:
             return memory.read_f32(initial_angle_diff_ref)
         
         @staticmethod
-        def angle_delta_min(playerIdx=0) -> float:
-            trick_properties_ref = KartJump.TrickProperties.chain(playerIdx)
+        def angle_delta_min(player_idx=0) -> float:
+            trick_properties_ref = KartJump.TrickProperties.chain(player_idx)
             angle_delta_min_ref = trick_properties_ref + 0x4
             return memory.read_f32(angle_delta_min_ref)
         
@@ -37,8 +37,8 @@ class KartJump:
             return memory.read_f32(angle_delta_min_ref)
         
         @staticmethod
-        def angle_delta_factor_min(playerIdx=0) -> float:
-            trick_properties_ref = KartJump.TrickProperties.chain(playerIdx)
+        def angle_delta_factor_min(player_idx=0) -> float:
+            trick_properties_ref = KartJump.TrickProperties.chain(player_idx)
             angle_delta_factor_min_ref = trick_properties_ref + 0x8
             return memory.read_f32(angle_delta_factor_min_ref)
         
@@ -47,8 +47,8 @@ class KartJump:
             return memory.read_f32(angle_delta_factor_min_ref)
         
         @staticmethod
-        def angle_diff_mul_dec(playerIdx=0) -> float:
-            trick_properties_ref = KartJump.TrickProperties.chain(playerIdx)
+        def angle_diff_mul_dec(player_idx=0) -> float:
+            trick_properties_ref = KartJump.TrickProperties.chain(player_idx)
             angle_delta_factor_min_ref = trick_properties_ref + 0xC
             return memory.read_f32(angle_delta_factor_min_ref)
         
@@ -56,8 +56,8 @@ class KartJump:
             angle_delta_factor_min_ref = self.addr + 0xC
             return memory.read_f32(angle_delta_factor_min_ref)
 
-    def __init__(self, playerIdx=0, addr=None):
-        self.addr = addr if addr else KartJump.chain(playerIdx)
+    def __init__(self, player_idx=0, addr=None):
+        self.addr = addr if addr else KartJump.chain(player_idx)
 
         self.type = self.inst_type
         self.category = self.inst_category
@@ -75,12 +75,12 @@ class KartJump:
         self.rotation = self.inst_rotation
 
     @staticmethod
-    def chain(playerIdx=0) -> int:
-        return KartMove.kart_jump(playerIdx)
+    def chain(player_idx=0) -> int:
+        return KartMove.kart_jump(player_idx)
 
     @staticmethod
-    def type(playerIdx=0) -> TrickType:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def type(player_idx=0) -> TrickType:
+        kart_jump_ref = KartJump.chain(player_idx)
         type_ref = kart_jump_ref + 0x10
         return TrickType(memory.read_u32(type_ref))
     
@@ -89,8 +89,8 @@ class KartJump:
         return TrickType(memory.read_u32(type_ref))
     
     @staticmethod
-    def category(playerIdx=0) -> int:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def category(player_idx=0) -> int:
+        kart_jump_ref = KartJump.chain(player_idx)
         category_ref = kart_jump_ref + 0x14
         return memory.read_u32(category_ref)
     
@@ -99,9 +99,9 @@ class KartJump:
         return memory.read_u32(category_ref)
     
     @staticmethod
-    def next_trick_direction(playerIdx=0) -> int:
+    def next_trick_direction(player_idx=0) -> int:
         """1=UP,2=DOWN,3=LEFT,4=RIGHT"""
-        kart_jump_ref = KartJump.chain(playerIdx)
+        kart_jump_ref = KartJump.chain(player_idx)
         next_trick_direction_ref = kart_jump_ref + 0x18
         return memory.read_u8(next_trick_direction_ref)
     
@@ -111,8 +111,8 @@ class KartJump:
         return memory.read_u8(next_trick_direction_ref)
     
     @staticmethod
-    def next_allow_timer(playerIdx=0) -> int:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def next_allow_timer(player_idx=0) -> int:
+        kart_jump_ref = KartJump.chain(player_idx)
         next_allow_timer_ref = kart_jump_ref + 0x1A
         return memory.read_u16(next_allow_timer_ref)
     
@@ -121,9 +121,9 @@ class KartJump:
         return memory.read_u16(next_allow_timer_ref)
     
     @staticmethod
-    def rotation_sign(playerIdx=0) -> float:
+    def rotation_sign(player_idx=0) -> float:
         """+1 or -1"""
-        kart_jump_ref = KartJump.chain(playerIdx)
+        kart_jump_ref = KartJump.chain(player_idx)
         rotation_sign_ref = kart_jump_ref + 0x1C
         return memory.read_f32(rotation_sign_ref)
     
@@ -133,8 +133,8 @@ class KartJump:
         return memory.read_f32(rotation_sign_ref)
     
     @staticmethod
-    def trick_properties(playerIdx=0) -> int:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def trick_properties(player_idx=0) -> int:
+        kart_jump_ref = KartJump.chain(player_idx)
         trick_properties_ref = kart_jump_ref + 0x20
         return memory.read_u32(trick_properties_ref)
     
@@ -143,8 +143,8 @@ class KartJump:
         return memory.read_u32(trick_properties_ref)
     
     @staticmethod
-    def angle(playerIdx=0) -> float:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def angle(player_idx=0) -> float:
+        kart_jump_ref = KartJump.chain(player_idx)
         angle_ref = kart_jump_ref + 0x24
         return memory.read_f32(angle_ref)
     
@@ -153,8 +153,8 @@ class KartJump:
         return memory.read_f32(angle_ref)
     
     @staticmethod
-    def angle_delta(playerIdx=0) -> float:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def angle_delta(player_idx=0) -> float:
+        kart_jump_ref = KartJump.chain(player_idx)
         angle_delta_ref = kart_jump_ref + 0x28
         return memory.read_f32(angle_delta_ref)
     
@@ -163,8 +163,8 @@ class KartJump:
         return memory.read_f32(angle_delta_ref)
     
     @staticmethod
-    def angle_delta_factor(playerIdx=0) -> float:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def angle_delta_factor(player_idx=0) -> float:
+        kart_jump_ref = KartJump.chain(player_idx)
         angle_delta_factor_ref = kart_jump_ref + 0x2C
         return memory.read_f32(angle_delta_factor_ref)
     
@@ -173,8 +173,8 @@ class KartJump:
         return memory.read_f32(angle_delta_factor_ref)
     
     @staticmethod
-    def angle_delta_factor_decrease(playerIdx=0) -> float:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def angle_delta_factor_decrease(player_idx=0) -> float:
+        kart_jump_ref = KartJump.chain(player_idx)
         angle_delta_factor_decrease_ref = kart_jump_ref + 0x30
         return memory.read_f32(angle_delta_factor_decrease_ref)
     
@@ -183,8 +183,8 @@ class KartJump:
         return memory.read_f32(angle_delta_factor_decrease_ref)
     
     @staticmethod
-    def final_angle(playerIdx=0) -> float:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def final_angle(player_idx=0) -> float:
+        kart_jump_ref = KartJump.chain(player_idx)
         final_angle_ref = kart_jump_ref + 0x34
         return memory.read_f32(final_angle_ref)
     
@@ -193,8 +193,8 @@ class KartJump:
         return memory.read_f32(final_angle_ref)
     
     @staticmethod
-    def cooldown(playerIdx=0) -> int:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def cooldown(player_idx=0) -> int:
+        kart_jump_ref = KartJump.chain(player_idx)
         cooldown_ref = kart_jump_ref + 0x38
         return memory.read_u16(cooldown_ref)
     
@@ -203,8 +203,8 @@ class KartJump:
         return memory.read_u16(cooldown_ref)
     
     @staticmethod
-    def boost_ramp_enabled(playerIdx=0) -> bool:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def boost_ramp_enabled(player_idx=0) -> bool:
+        kart_jump_ref = KartJump.chain(player_idx)
         boost_ramp_enabled_ref = kart_jump_ref + 0x3A
         return memory.read_u8(boost_ramp_enabled_ref) > 0
     
@@ -213,8 +213,8 @@ class KartJump:
         return memory.read_u8(boost_ramp_enabled_ref) > 0
     
     @staticmethod
-    def rotation(playerIdx=0) -> quatf:
-        kart_jump_ref = KartJump.chain(playerIdx)
+    def rotation(player_idx=0) -> quatf:
+        kart_jump_ref = KartJump.chain(player_idx)
         rotation_ref = kart_jump_ref + 0x3C
         return quatf.read(rotation_ref)
     

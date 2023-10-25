@@ -3,8 +3,8 @@ from dolphin import memory
 from . import KartObject, VehicleId, CharacterId
 
 class KartSettings:
-    def __init__(self, playerIdx=0, addr=None):
-        self.addr = addr if addr else KartSettings.chain(playerIdx)
+    def __init__(self, player_idx=0, addr=None):
+        self.addr = addr if addr else KartSettings.chain(player_idx)
 
         self.is_bike = self.inst_is_bike
         self.vehicle = self.inst_vehicle
@@ -16,12 +16,12 @@ class KartSettings:
         self.race_stats = self.inst_race_stats
 
     @staticmethod
-    def chain(playerIdx=0) -> int:
-        return KartObject.kart_settings(playerIdx)
+    def chain(player_idx=0) -> int:
+        return KartObject.kart_settings(player_idx)
 
     @staticmethod
-    def is_bike(playerIdx=0) -> int:
-        kart_settings_ref = KartSettings.chain(playerIdx)
+    def is_bike(player_idx=0) -> int:
+        kart_settings_ref = KartSettings.chain(player_idx)
         is_bike_ref = kart_settings_ref + 0x0
         return memory.read_u32(is_bike_ref)
 
@@ -30,9 +30,9 @@ class KartSettings:
         return memory.read_u32(is_bike_ref)
 
     @staticmethod
-    def vehicle(playerIdx=0) -> VehicleId:
+    def vehicle(player_idx=0) -> VehicleId:
         """It's fewer computations to use RaceConfig.vehicle() instead"""
-        kart_settings_ref = KartSettings.chain(playerIdx)
+        kart_settings_ref = KartSettings.chain(player_idx)
         vehicle_id_ref = kart_settings_ref + 0x4
         return VehicleId(memory.read_u32(vehicle_id_ref))
 
@@ -42,9 +42,9 @@ class KartSettings:
         return VehicleId(memory.read_u32(vehicle_id_ref))
 
     @staticmethod
-    def character(playerIdx=0) -> CharacterId:
+    def character(player_idx=0) -> CharacterId:
         """It's fewer computations to use RaceConfig.character() instead"""
-        kart_settings_ref = KartSettings.chain(playerIdx)
+        kart_settings_ref = KartSettings.chain(player_idx)
         character_id_ref = kart_settings_ref + 0x8
         return CharacterId(memory.read_u32(character_id_ref))
 
@@ -54,9 +54,9 @@ class KartSettings:
         return CharacterId(memory.read_u32(character_id_ref))
 
     @staticmethod
-    def susp_count(playerIdx=0) -> int:
+    def susp_count(player_idx=0) -> int:
         """Number of kart suspensions (length of KartPointers->suspensions array)"""
-        kart_settings_ref = KartSettings.chain(playerIdx)
+        kart_settings_ref = KartSettings.chain(player_idx)
         susp_count_ref = kart_settings_ref + 0xC
         return memory.read_u16(susp_count_ref)
 
@@ -66,8 +66,8 @@ class KartSettings:
         return memory.read_u16(susp_count_ref)
 
     @staticmethod
-    def tire_count(playerIdx=0) -> int:
-        kart_settings_ref = KartSettings.chain(playerIdx)
+    def tire_count(player_idx=0) -> int:
+        kart_settings_ref = KartSettings.chain(player_idx)
         tire_count_ref = kart_settings_ref + 0xE
         return memory.read_u16(tire_count_ref)
 
@@ -76,8 +76,8 @@ class KartSettings:
         return memory.read_u16(tire_count_ref)
 
     @staticmethod
-    def kart_param(playerIdx=0) -> int:
-        kart_settings_ref = KartSettings.chain(playerIdx)
+    def kart_param(player_idx=0) -> int:
+        kart_settings_ref = KartSettings.chain(player_idx)
         kart_param_ptr = kart_settings_ref + 0x14
         return memory.read_u32(kart_param_ptr)
 
@@ -86,8 +86,8 @@ class KartSettings:
         return memory.read_u32(kart_param_ptr)
 
     @staticmethod
-    def gp_stats(playerIdx=0) -> int:
-        kart_settings_ref = KartSettings.chain(playerIdx)
+    def gp_stats(player_idx=0) -> int:
+        kart_settings_ref = KartSettings.chain(player_idx)
         gp_stats_ptr = kart_settings_ref + 0x34
         return memory.read_u32(gp_stats_ptr)
 
@@ -96,8 +96,8 @@ class KartSettings:
         return memory.read_u32(gp_stats_ptr)
 
     @staticmethod
-    def race_stats(playerIdx=0) -> int:
-        kart_settings_ref = KartSettings.chain(playerIdx)
+    def race_stats(player_idx=0) -> int:
+        kart_settings_ref = KartSettings.chain(player_idx)
         race_stats_ptr = kart_settings_ref + 0x38
         return memory.read_u32(race_stats_ptr)
 

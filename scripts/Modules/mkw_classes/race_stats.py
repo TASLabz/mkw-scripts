@@ -3,8 +3,8 @@ from dolphin import memory
 from . import KartSettings
 
 class RaceStats:
-    def __init__(self, playerIdx=0, addr=None):
-        self.addr = addr if addr else RaceStats.chain(playerIdx)
+    def __init__(self, player_idx=0, addr=None):
+        self.addr = addr if addr else RaceStats.chain(player_idx)
 
         self.duration_in_first = self.inst_duration_in_first
         self.hit_other_count = self.inst_hit_other_count
@@ -12,12 +12,12 @@ class RaceStats:
         self.trick_count = self.inst_trick_count
 
     @staticmethod
-    def chain(playerIdx=0) -> int:
-        return KartSettings.race_stats(playerIdx)
+    def chain(player_idx=0) -> int:
+        return KartSettings.race_stats(player_idx)
     
     @staticmethod
-    def duration_in_first(playerIdx=0) -> float:
-        race_stats_ref = RaceStats.chain(playerIdx)
+    def duration_in_first(player_idx=0) -> float:
+        race_stats_ref = RaceStats.chain(player_idx)
         duration_in_first_ref = race_stats_ref + 0x4
         return memory.read_f32(duration_in_first_ref)
     
@@ -26,8 +26,8 @@ class RaceStats:
         return memory.read_f32(duration_in_first_ref)
     
     @staticmethod
-    def hit_other_count(playerIdx=0) -> int:
-        race_stats_ref = RaceStats.chain(playerIdx)
+    def hit_other_count(player_idx=0) -> int:
+        race_stats_ref = RaceStats.chain(player_idx)
         hit_other_count_ref = race_stats_ref + 0x8
         return memory.read_u32(hit_other_count_ref)
     
@@ -36,8 +36,8 @@ class RaceStats:
         return memory.read_u32(hit_other_count_ref)
     
     @staticmethod
-    def got_hit_count(playerIdx=0) -> int:
-        race_stats_ref = RaceStats.chain(playerIdx)
+    def got_hit_count(player_idx=0) -> int:
+        race_stats_ref = RaceStats.chain(player_idx)
         got_hit_count_ref = race_stats_ref + 0xC
         return memory.read_u32(got_hit_count_ref)
     
@@ -46,8 +46,8 @@ class RaceStats:
         return memory.read_u32(got_hit_count_ref)
     
     @staticmethod
-    def trick_count(playerIdx=0) -> int:
-        race_stats_ref = RaceStats.chain(playerIdx)
+    def trick_count(player_idx=0) -> int:
+        race_stats_ref = RaceStats.chain(player_idx)
         trick_count_ref = race_stats_ref + 0x10
         return memory.read_u32(trick_count_ref)
     

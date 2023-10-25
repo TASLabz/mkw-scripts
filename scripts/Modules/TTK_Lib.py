@@ -24,113 +24,113 @@ class PlayerType(Enum):
     PLAYER = 0
     GHOST = 1
     
-def decodeFaceButton(input):
+def decode_face_button(input):
     A = input % 0x2
     B = (input >> 1) % 0x2
     L = (input >> 2) % 0x2
     
     return [A, B, L]
   
-def decodeDirectionInput(input):
+def decode_direction_input(input):
     X = input >> 4
     Y = input % 0x10
     
     return [X, Y]
     
-def decodeTrickInput(input):
+def decode_trick_input(input):
     return input >> 4
     
-def encodeFaceButton(A, B, L, prevMask):
-    x8Mask = 0x0
-    if A and B and prevMask not in (0x0, 0x2, 0x3, 0x7):
-        x8Mask = 0x8
-    return int(A) + int(B) * 0x2 + int(L) * 0x4 + x8Mask
+def encode_face_button(A, B, L, prev_mask):
+    x8_mask = 0x0
+    if A and B and prev_mask not in (0x0, 0x2, 0x3, 0x7):
+        x8_mask = 0x8
+    return int(A) + int(B) * 0x2 + int(L) * 0x4 + x8_mask
     
-def encodeDirectionInput(X, Y):
+def encode_direction_input(X, Y):
     return (X << 4) + Y
     
-def encodeTrickInput(input):
+def encode_trick_input(input):
     return input * 0x10
     
 # Reads binary data in-memory for the specified section
-def readRawRKGData(playerType: PlayerType, inputType: ControllerInputType) -> list:
-    retList = []
+def read_raw_rkg_data(player_type: PlayerType, input_type: ControllerInputType) -> list:
+    ret_list = []
     
     # Determine memory region to access
-    if (playerType == PlayerType.PLAYER):
+    if (player_type == PlayerType.PLAYER):
         # This assumes player is index 0
         # For now let's assert this is a player
         race_config = RaceConfig()
         race_scenario = RaceConfigScenario(addr=race_config.race_scenario())
-        race_config_player = RaceConfigPlayer(addr=race_scenario.player(playerIdx=0))
+        race_config_player = RaceConfigPlayer(addr=race_scenario.player(player_idx=0))
         assert(race_config_player.type() == RaceConfigPlayerType.REAL_LOCAL)
 
         ghost_writer = GhostWriter(addr=PlayerInput.ghost_writer())
-        stream_addr = ghost_writer.button_stream(inputType.value)
+        stream_addr = ghost_writer.button_stream(input_type.value)
         button_stream = GhostButtonsStream(addr=stream_addr)
         address = button_stream.buffer()
-        endAddrOffset = button_stream.size()
+        end_addr_offset = button_stream.size()
     else:
         # TODO: Ghost is index=1 if you are racing a ghost, but if you watch a replay
         # for example, the ghost is index 0. We want to support this scenario, so
-        # we'll need to determine how to set controllerIdx appropriately.
-        ghost_addr = InputMgr.ghost_controller(controllerIdx=1)
+        # we'll need to determine how to set controller_idx appropriately.
+        ghost_addr = InputMgr.ghost_controller(controller_idx=1)
         ghost_controller = GhostController(addr=ghost_addr)
-        stream_addr = ghost_controller.buttons_stream(inputType.value)
+        stream_addr = ghost_controller.buttons_stream(input_type.value)
         ghost_button_stream = GhostButtonsStream(addr=stream_addr)
         address = ghost_button_stream.buffer()
-        endAddrOffset = ghost_button_stream.size()
+        end_addr_offset = ghost_button_stream.size()
     
-    # Define the address range for the given inputType
-    curAddr = address
-    endAddr = curAddr + endAddrOffset
+    # Define the address range for the given input_type
+    cur_addr = address
+    end_addr = cur_addr + end_addr_offset
 
     # Begin reading the data
-    dataTuple = memory.read_u16(curAddr)
+    data_tuple = memory.read_u16(cur_addr)
     while True:
-        retList += divmod(dataTuple, 0x100)
-        curAddr += 0x2
-        dataTuple = memory.read_u16(curAddr)
+        ret_list += divmod(data_tuple, 0x100)
+        cur_addr += 0x2
+        data_tuple = memory.read_u16(cur_addr)
         
-        if (dataTuple == 0x0000 or curAddr >= endAddr):
+        if (data_tuple == 0x0000 or cur_addr >= end_addr):
             break
     
-    return retList
+    return ret_list
     
 # Expand raw rkg data into a list of frames
-def decodeRKGData(data: list, inputType: ControllerInputType) -> List[List[int]]:
-    retList = []
+def decode_rkg_data(data: list, input_type: ControllerInputType) -> List[List[int]]:
+    ret_list = []
     
-    if (inputType == ControllerInputType.TRICK):
-        trickInput = 0x0
-        x100Length = 0x0
+    if (input_type == ControllerInputType.TRICK):
+        trick_input = 0x0
+        x100_length = 0x0
         
         for i in range(0, len(data)):
-            dataByte = data[i]
+            data_byte = data[i]
             
             if (i %2) == 0:
-                trickInput = decodeTrickInput(dataByte)
-                x100Length = dataByte % 0x10
+                trick_input = decode_trick_input(data_byte)
+                x100_length = data_byte % 0x10
             else:
-                dataLength = x100Length * 0x100 + dataByte
-                retList += [trickInput] * dataLength
+                dataLength = x100_length * 0x100 + data_byte
+                ret_list += [trick_input] * dataLength
     else:
         rawInput = 0x0
         for i in range(0, len(data)):
-            dataByte = data[i]
+            data_byte = data[i]
             
             if (i %2) == 0:
-                rawInput = dataByte
+                rawInput = data_byte
             else:
-                if (inputType == ControllerInputType.FACE):
-                    retList += [decodeFaceButton(rawInput)] * dataByte
+                if (input_type == ControllerInputType.FACE):
+                    ret_list += [decode_face_button(rawInput)] * data_byte
                 else:
-                    inputs = decodeDirectionInput(rawInput)
-                    retList += [list(map(lambda x: x-7, inputs))] * dataByte
-    return retList
+                    inputs = decode_direction_input(rawInput)
+                    ret_list += [list(map(lambda x: x-7, inputs))] * data_byte
+    return ret_list
 
 # Transform raw RKG data into a FrameSequence
-def readFullDecodedRKGData(playerType: PlayerType) -> Optional[FrameSequence]:
+def read_full_decoded_rkg_data(player_type: PlayerType) -> Optional[FrameSequence]:
     # First make sure we're actually in a race, otherwise we need to bail out
     race_state = RaceManager.state()
     if (race_state.value < RaceState.COUNTDOWN.value):
@@ -141,19 +141,19 @@ def readFullDecodedRKGData(playerType: PlayerType) -> Optional[FrameSequence]:
         return None
 
     # Read each of the input types
-    faceData = readRawRKGData(playerType, ControllerInputType.FACE)
-    diData = readRawRKGData(playerType, ControllerInputType.DI)
-    trickData = readRawRKGData(playerType, ControllerInputType.TRICK)
-    if not faceData or not diData or not trickData:
+    face_data = read_raw_rkg_data(player_type, ControllerInputType.FACE)
+    di_data = read_raw_rkg_data(player_type, ControllerInputType.DI)
+    trick_data = read_raw_rkg_data(player_type, ControllerInputType.TRICK)
+    if not face_data or not di_data or not trick_data:
         return None
     
     # Expand into a list where each index is a frame
-    faceData = decodeRKGData(faceData, ControllerInputType.FACE)
-    diData = decodeRKGData(diData, ControllerInputType.DI)
-    trickData = decodeRKGData(trickData, ControllerInputType.TRICK)
+    face_data = decode_rkg_data(face_data, ControllerInputType.FACE)
+    di_data = decode_rkg_data(di_data, ControllerInputType.DI)
+    trick_data = decode_rkg_data(trick_data, ControllerInputType.TRICK)
     
     # Now transform into a framesequence
-    list = [faceData[x] + diData[x] + [trickData[x]] for x in range(len(faceData))]
+    list = [face_data[x] + di_data[x] + [trick_data[x]] for x in range(len(face_data))]
     sequence = FrameSequence()
     sequence.readFromList(list)
     return sequence
@@ -166,77 +166,77 @@ class RKGTuple:
     def __bytes__(self):
         return bytes([self.data, self.frames])
 
-def encodeTuple(input: int, frames: int, inputType: ControllerInputType) -> RKGTuple:
-    if (inputType == ControllerInputType.TRICK):
+def encode_tuple(input: int, frames: int, input_type: ControllerInputType) -> RKGTuple:
+    if (input_type == ControllerInputType.TRICK):
         return RKGTuple(input + (frames >> 8), frames % 0x100)
     else:
         return RKGTuple(input, frames)
 
-def encodeRKGDataType(inputList: FrameSequence,
-                      inputType: ControllerInputType) -> List[RKGTuple]:
-    retData = []
-    prevInput = 0
+def encode_rkg_data_type(input_list: FrameSequence,
+                      input_type: ControllerInputType) -> List[RKGTuple]:
+    ret_data = []
+    prev_input = 0
     bytes = 0
-    currFrames = 0
-    isFace = (inputType == ControllerInputType.FACE)
-    isDI = (inputType == ControllerInputType.DI)
-    isTrick = (inputType == ControllerInputType.TRICK)
+    curr_frames = 0
+    is_face = (input_type == ControllerInputType.FACE)
+    is_di = (input_type == ControllerInputType.DI)
+    is_trick = (input_type == ControllerInputType.TRICK)
     
-    input = inputList[0]
-    if (isFace):
-        prevInput = encodeFaceButton(input.accel, input.brake, input.item, 0x0)
-    elif (isDI):
-        prevInput = encodeDirectionInput(input.stick_x + 7, input.stick_y + 7)
+    input = input_list[0]
+    if (is_face):
+        prev_input = encode_face_button(input.accel, input.brake, input.item, 0x0)
+    elif (is_di):
+        prev_input = encode_direction_input(input.stick_x + 7, input.stick_y + 7)
     else:
-        prevInput = encodeTrickInput(input.dpad_raw())
+        prev_input = encode_trick_input(input.dpad_raw())
     
-    for input in inputList:
-        currInput = 0
-        if (isFace):
-            currInput = encodeFaceButton(input.accel, input.brake,
-                                         input.item, prevInput)
-        elif (isDI):
-            currInput = encodeDirectionInput(input.stick_x + 7, input.stick_y + 7)
+    for input in input_list:
+        curr_input = 0
+        if (is_face):
+            curr_input = encode_face_button(input.accel, input.brake,
+                                         input.item, prev_input)
+        elif (is_di):
+            curr_input = encode_direction_input(input.stick_x + 7, input.stick_y + 7)
         else:
-            currInput = encodeTrickInput(input.dpad_raw())
+            curr_input = encode_trick_input(input.dpad_raw())
         
-        frameLimit = 0xFFF if isTrick else 0xFF
-        if (prevInput != currInput or currFrames >= frameLimit):
-            retData.append(encodeTuple(prevInput, currFrames, inputType))
-            currFrames = 1
+        frameLimit = 0xFFF if is_trick else 0xFF
+        if (prev_input != curr_input or curr_frames >= frameLimit):
+            ret_data.append(encode_tuple(prev_input, curr_frames, input_type))
+            curr_frames = 1
             bytes += 1
-            prevInput = currInput
+            prev_input = curr_input
         else:
-            currFrames += 1
-    retData.append(encodeTuple(prevInput, currFrames, inputType))
+            curr_frames += 1
+    ret_data.append(encode_tuple(prev_input, curr_frames, input_type))
     bytes += 1
     
-    return retData
+    return ret_data
 
-def encodeRKGData(inputList: FrameSequence) -> Tuple[List[int], List[int]]:
-    faceTuples = encodeRKGDataType(inputList, ControllerInputType.FACE)
-    diTuples = encodeRKGDataType(inputList, ControllerInputType.DI)
-    trickTuples = encodeRKGDataType(inputList, ControllerInputType.TRICK)
+def encode_rkg_data(input_list: FrameSequence) -> Tuple[List[int], List[int]]:
+    face_tuples = encode_rkg_data_type(input_list, ControllerInputType.FACE)
+    di_tuples = encode_rkg_data_type(input_list, ControllerInputType.DI)
+    trick_tuples = encode_rkg_data_type(input_list, ControllerInputType.TRICK)
     
-    allTuples = faceTuples+diTuples+trickTuples
-    tupleLengths = [len(x) for x in (faceTuples, diTuples, trickTuples)]
-    return allTuples, tupleLengths
+    all_tuples = face_tuples+di_tuples+trick_tuples
+    tuple_lengths = [len(x) for x in (face_tuples, di_tuples, trick_tuples)]
+    return all_tuples, tuple_lengths
     
-def createRKGFile(input_data: FrameSequence, trackID: int,
-                  vehicleID: int, characterID: int, driftID: int) -> bytearray:
-    tuples, lengths = encodeRKGData(input_data)
-    tuplesFace, tuplesDI, tuplesTrick = lengths
-    dataIndex = sum(lengths) * 2
-    inputLength = dataIndex + 8
-    byteNr8 = (vehicleID << 2) + ((characterID >> 4) & 0x3)
-    byteNr9 = (characterID << 4) & 0xFF
-    byteNrD = 0x4 + (driftID << 1)
+def createRKGFile(input_data: FrameSequence, track_id: int,
+                  vehicle_id: int, character_id: int, drift_id: int) -> bytearray:
+    tuples, lengths = encode_rkg_data(input_data)
+    tuples_face, tuples_di, tuples_trick = lengths
+    data_index = sum(lengths) * 2
+    input_length = data_index + 8
+    byte_nr8 = (vehicle_id << 2) + ((character_id >> 4) & 0x3)
+    byte_nr9 = (character_id << 4) & 0xFF
+    byte_nrd = 0x4 + (drift_id << 1)
     
     # TODO: Read from timer classes (referencing has_finished()) in order to set the
     # lap times in the header. Right now they are hard-coded.
-    headerData = \
-        [0x54, 0xA8, 0x2A, trackID << 2, byteNr8, byteNr9, 0x02, 0x10, 0x00, byteNrD,
-        *divmod(inputLength, 0x100) ,0x03, 0x54, 0x00, 0x00, 0x00, 0xA8, 0x00, 0x00,
+    header_data = \
+        [0x54, 0xA8, 0x2A, track_id << 2, byte_nr8, byte_nr9, 0x02, 0x10, 0x00, byte_nrd,
+        *divmod(input_length, 0x100) ,0x03, 0x54, 0x00, 0x00, 0x00, 0xA8, 0x00, 0x00,
         0x00, 0x2A, 0x00, 0x00 ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0xAA, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x10, 0x00,
@@ -245,113 +245,113 @@ def createRKGFile(input_data: FrameSequence, trackID: int,
         0xC4, 0xED, 0xC3, 0x20, 0x44, 0x3C, 0x40, 0x28, 0x38, 0x0C, 0x84, 0x48, 0xCF,
         0x0E, 0x00, 0x08, 0x00, 0xB9, 0x09, 0x00, 0x8A, 0x81, 0x06, 0xC4, 0x10, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7A, 0x6E, *divmod(tuplesFace, 0x100),
-        *divmod(tuplesDI, 0x100), *divmod(tuplesTrick, 0x100), 0x00, 0x00]
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7A, 0x6E, *divmod(tuples_face, 0x100),
+        *divmod(tuples_di, 0x100), *divmod(tuples_trick, 0x100), 0x00, 0x00]
     
     try:
-        idBytes = bytearray("RKGD", "utf-8")
-        headerBytes = bytearray(headerData)
-        tupleBytes = bytearray()
+        id_bytes = bytearray("RKGD", "utf-8")
+        header_bytes = bytearray(header_data)
+        tuple_bytes = bytearray()
         for tuple in tuples:
-            tupleBytes += bytes(tuple)
+            tuple_bytes += bytes(tuple)
         # Pad the rest of the file
-        padBytes = bytearray(0x276C - dataIndex)
+        pad_bytes = bytearray(0x276C - data_index)
         
-        fileBytes = idBytes + headerBytes + tupleBytes + padBytes
+        file_bytes = id_bytes + header_bytes + tuple_bytes + pad_bytes
         
-        crc = zlib.crc32(fileBytes)
+        crc = zlib.crc32(file_bytes)
         arg1 = math.floor(crc / 0x1000000)
         arg2 = math.floor((crc & 0x00FF0000) / 0x10000)
         arg3 = math.floor((crc & 0x0000FF00) / 0x100)
         arg4 = math.floor(crc % 0x100)
         
         
-        fileBytes += bytearray([arg1, arg2, arg3, arg4])
+        file_bytes += bytearray([arg1, arg2, arg3, arg4])
     
-        return fileBytes
+        return file_bytes
     except ValueError:
         gui.add_osd_message("Attempted to parse byte > 0xFF! Aborting RKG write.")
         return bytearray()
     
 # This is a tiny helper function that prevents slight repetition in filepath lookups
-def writeToCSV(inputs: FrameSequence, playerType: PlayerType) -> None:
+def write_to_csv(inputs: FrameSequence, player_type: PlayerType) -> None:
     # Get csv file path
-    playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    relativePath = ttk_config.textFilePath(playerStr)
-    absolutePath = os.path.join(utils.get_script_dir(), relativePath)
+    player_str = "Player" if player_type == PlayerType.PLAYER else "Ghost"
+    relative_path = ttk_config.text_file_path(player_str)
+    absolute_path = os.path.join(utils.get_script_dir(), relative_path)
     
     # Write to csv, error if cannot write
-    if inputs.writeToFile(absolutePath):
-        gui.add_osd_message("{} inputs written to {}".format(playerStr, relativePath))
+    if inputs.write_to_file(absolute_path):
+        gui.add_osd_message("{} inputs written to {}".format(player_str, relative_path))
     else:
         gui.add_osd_message(
-            "{} is currently locked by another program.".format(relativePath)
+            "{} is currently locked by another program.".format(relative_path)
         )
         
-def writeToBackupCSV(inputs: FrameSequence, backupNumber: int) -> None:
-    relativePath = ttk_config.textFilePath("Backup")
-    relativePath = relativePath.replace("##", "{:02d}".format(backupNumber))
-    inputs.writeToFile(os.path.join(utils.get_script_dir(), relativePath))
+def write_to_backup_csv(inputs: FrameSequence, backup_number: int) -> None:
+    relative_path = ttk_config.text_file_path("Backup")
+    relative_path = relative_path.replace("##", "{:02d}".format(backup_number))
+    inputs.write_to_file(os.path.join(utils.get_script_dir(), relative_path))
         
-def getMetadataAndWriteToRKG(inputs: FrameSequence, playerType: PlayerType) -> None:
+def get_metadata_and_write_to_rkg(inputs: FrameSequence, player_type: PlayerType) -> None:
     # Get metadata
     race_config_scenario = RaceConfigScenario(addr=RaceConfig.race_scenario())
     race_config_settings = RaceConfigSettings(addr=race_config_scenario.settings())
-    race_config_player = RaceConfigPlayer(addr=race_config_scenario.player(playerIdx=0))
-    player_input = PlayerInput(playerIdx=0)
+    race_config_player = RaceConfigPlayer(addr=race_config_scenario.player(player_idx=0))
+    player_input = PlayerInput(player_idx=0)
     kart_input = KartInput(player_input.kart_input())
     controller = Controller(addr=kart_input.race_controller())
 
-    trackID = race_config_settings.course_id().value
-    vehicleID = race_config_player.vehicle_id().value
-    characterID = race_config_player.character_id().value
-    driftID = int(controller.drift_is_auto())
+    track_id = race_config_settings.course_id().value
+    vehicle_id = race_config_player.vehicle_id().value
+    character_id = race_config_player.character_id().value
+    drift_id = int(controller.drift_is_auto())
     
     # Get bytes to write
-    fileBytes = createRKGFile(inputs, trackID, vehicleID, characterID, driftID)
+    file_bytes = createRKGFile(inputs, track_id, vehicle_id, character_id, drift_id)
     
-    if (len(fileBytes)):
+    if (len(file_bytes)):
         # Write bytes to appropriate file
-        writeToRKG(fileBytes, playerType)
+        write_to_rkg(file_bytes, player_type)
     else:
         gui.add_osd_message("No bytes to write to RKG file.")
         
-def writeToRKG(fileBytes: bytearray, playerType: PlayerType) -> None:
+def write_to_rkg(file_bytes: bytearray, player_type: PlayerType) -> None:
     # Get csv file path
-    playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    relativePath = ttk_config.rkgFilePath[playerStr]
-    absolutePath = os.path.join(utils.get_script_dir(), relativePath)
+    player_str = "Player" if player_type == PlayerType.PLAYER else "Ghost"
+    relative_path = ttk_config.rkgFilePath[player_str]
+    absolute_path = os.path.join(utils.get_script_dir(), relative_path)
     
     try:
-        with open(absolutePath, "wb") as f:
-            f.write(fileBytes)
-        gui.add_osd_message("{} inputs written to {}".format(playerStr, relativePath))
+        with open(absolute_path, "wb") as f:
+            f.write(file_bytes)
+        gui.add_osd_message("{} inputs written to {}".format(player_str, relative_path))
     except IOError:
         gui.add_osd_message(
-            "{} is currently locked by another program.".format(relativePath)
+            "{} is currently locked by another program.".format(relative_path)
         )
         
-def getInputSequenceFromCSV(playerType: PlayerType) -> FrameSequence:
+def get_input_sequence_from_csv(player_type: PlayerType) -> FrameSequence:
     # Get csv file path
-    playerStr = "Player" if playerType == PlayerType.PLAYER else "Ghost"
-    relativePath = ttk_config.textFilePath(playerStr)
-    absolutePath = os.path.join(utils.get_script_dir(), relativePath)
+    player_str = "Player" if player_type == PlayerType.PLAYER else "Ghost"
+    relative_path = ttk_config.text_file_path(player_str)
+    absolute_path = os.path.join(utils.get_script_dir(), relative_path)
     
     # Get the frame sequence
-    return FrameSequence(absolutePath)
+    return FrameSequence(absolute_path)
 
-def getControllerCalc():
+def get_controller_calc():
     address = {"RMCE01": 0x8051a8a0, "RMCP01": 0x8051ed14,
                "RMCJ01": 0x8051e694, "RMCK01": 0x8050cd38}
     return address[utils.get_game_id()]
 
-def getMemcpyBranch():
+def get_memcpy_branch():
     instr = {"RMCE01": 0x4bcb6c91, "RMCP01": 0x4bcb28bd,
              "RMCJ01": 0x4bcb2e5d, "RMCK01": 0x4bcc4bf5}
     return instr[utils.get_game_id()]
 
-controller_calc = getControllerCalc()
-memcpy_branch = getMemcpyBranch()
+controller_calc = get_controller_calc()
+memcpy_branch = get_memcpy_branch()
 
 def controller_patch() -> None:
     # lbz r15, 0x18 (r31)
@@ -405,15 +405,15 @@ def controller_patch() -> None:
         memory.write_u32(patch_ptr + 0x50, memcpy_branch)
         memory.invalidate_icache(patch_ptr, 0x54)
 
-def writeGhostInputs(inputs: FrameSequence) -> None:
+def write_ghost_inputs(inputs: FrameSequence) -> None:
     controller_patch()
     # TODO: This assumes the ghost is index 1, which is only true when racing a ghost
-    controller = Controller(addr=InputMgr.ghost_controller(controllerIdx=1))
+    controller = Controller(addr=InputMgr.ghost_controller(controller_idx=1))
     set_buttons(inputs, controller)
 
-def writePlayerInputs(inputs: FrameSequence) -> None:
+def write_player_inputs(inputs: FrameSequence) -> None:
     controller_patch()
-    kart_input = KartInput(addr=PlayerInput.kart_input(playerIdx=0))
+    kart_input = KartInput(addr=PlayerInput.kart_input(player_idx=0))
     controller = Controller(addr=kart_input.race_controller())
     set_buttons(inputs, controller)
 

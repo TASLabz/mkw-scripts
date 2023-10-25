@@ -18,16 +18,16 @@ class TimerManager:
         return RaceManager.timer_manager()
     
     @staticmethod
-    def timer(timerIdx=0) -> int:
-        assert(0 <= timerIdx < 3)
-        offset = 0x4 + (timerIdx * 0xC)
+    def timer(timer_idx=0) -> int:
+        assert(0 <= timer_idx < 3)
+        offset = 0x4 + (timer_idx * 0xC)
         timer_manager_ref = TimerManager.chain()
         timer_ref = timer_manager_ref + offset
         return timer_ref
     
-    def inst_timer(self, timerIdx=0) -> int:
-        assert(0 <= timerIdx < 3)
-        offset = 0x4 + (timerIdx * 0xC)
+    def inst_timer(self, timer_idx=0) -> int:
+        assert(0 <= timer_idx < 3)
+        offset = 0x4 + (timer_idx * 0xC)
         timer_ref = self.addr + offset
         return timer_ref
     

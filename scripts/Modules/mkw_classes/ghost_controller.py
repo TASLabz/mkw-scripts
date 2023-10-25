@@ -15,8 +15,8 @@ class GhostController(Controller):
         assert(addr in controller_list)
         self.addr = addr
 
-    def buttons_stream(self, streamIdx=0):
-        """streamIdx: 0 -> Face buttons, 1 -> DI, 2 -> Trick"""
-        assert(0 <= streamIdx < 3)
-        buttons_stream_ptr = self.addr + 0x94 + (streamIdx * 0x4)
+    def buttons_stream(self, stream_idx=0):
+        """stream_idx: 0 -> Face buttons, 1 -> DI, 2 -> Trick"""
+        assert(0 <= stream_idx < 3)
+        buttons_stream_ptr = self.addr + 0x94 + (stream_idx * 0x4)
         return memory.read_u32(buttons_stream_ptr)

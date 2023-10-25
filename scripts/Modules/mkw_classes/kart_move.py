@@ -7,20 +7,20 @@ from . import KartSettings, KartObject, vec3, SpecialFloor
 
 class KartMove:
     class JumpPadProperties:
-        def __init__(self, playerIdx=0, addr=None):
-            self.addr = addr if addr else KartMove.JumpPadProperties.chain(playerIdx)
+        def __init__(self, player_idx=0, addr=None):
+            self.addr = addr if addr else KartMove.JumpPadProperties.chain(player_idx)
 
             self.min_speed = self.inst_min_speed
             self.max_speed = self.inst_max_speed
             self.velocity_y = self.inst_velocity_y
 
         @staticmethod
-        def chain(playerIdx=0) -> int:
-            return KartMove.jump_pad_properties(playerIdx)
+        def chain(player_idx=0) -> int:
+            return KartMove.jump_pad_properties(player_idx)
         
         @staticmethod
-        def min_speed(playerIdx=0) -> float:
-            jump_pad_properties_ref = KartMove.JumpPadProperties.chain(playerIdx)
+        def min_speed(player_idx=0) -> float:
+            jump_pad_properties_ref = KartMove.JumpPadProperties.chain(player_idx)
             min_speed_ref = jump_pad_properties_ref + 0x0
             return memory.read_f32(min_speed_ref)
         
@@ -29,8 +29,8 @@ class KartMove:
             return memory.read_f32(min_speed_ref)
         
         @staticmethod
-        def max_speed(playerIdx=0) -> float:
-            jump_pad_properties_ref = KartMove.JumpPadProperties.chain(playerIdx)
+        def max_speed(player_idx=0) -> float:
+            jump_pad_properties_ref = KartMove.JumpPadProperties.chain(player_idx)
             max_speed_ref = jump_pad_properties_ref + 0x4
             return memory.read_f32(max_speed_ref)
         
@@ -39,8 +39,8 @@ class KartMove:
             return memory.read_f32(max_speed_ref)
         
         @staticmethod
-        def velocity_y(playerIdx=0) -> float:
-            jump_pad_properties_ref = KartMove.JumpPadProperties.chain(playerIdx)
+        def velocity_y(player_idx=0) -> float:
+            jump_pad_properties_ref = KartMove.JumpPadProperties.chain(player_idx)
             velocity_y_ref = jump_pad_properties_ref + 0x8
             return memory.read_f32(velocity_y_ref)
         
@@ -54,11 +54,11 @@ class KartMove:
         WAITING_FOR_BACKWARDS = 2
         BACKWARDS = 3
 
-    def __init__(self, playerIdx=0, addr=None):
-        self.addr = addr if addr else KartMove.chain(playerIdx)
+    def __init__(self, player_idx=0, addr=None):
+        self.addr = addr if addr else KartMove.chain(player_idx)
 
         #Used to enforce the varying sizes of KartMove
-        self.is_bike = KartSettings.is_bike(playerIdx)
+        self.is_bike = KartSettings.is_bike(player_idx)
 
         self.speed_multiplier = self.inst_speed_multiplier
         self.base_speed = self.inst_base_speed
@@ -108,7 +108,7 @@ class KartMove:
         self.shock_speed_modifier = self.inst_shock_speed_modifier
         self.mega_scale = self.inst_mega_scale
         self.mushroom_timer = self.inst_mushroom_timer
-        self.start_timer = self.inst_star_timer
+        self.star_timer = self.inst_star_timer
         self.shock_timer = self.inst_shock_timer
         self.ink_timer = self.inst_ink_timer
         self.ink_applied = self.inst_ink_applied
@@ -148,12 +148,12 @@ class KartMove:
         self.wheelie_rotation_decrease = self.inst_wheelie_rotation_decrease
     
     @staticmethod
-    def chain(playerIdx=0) -> int:
-        return KartObject.kart_move(playerIdx)
+    def chain(player_idx=0) -> int:
+        return KartObject.kart_move(player_idx)
 
     @staticmethod
-    def speed_multiplier(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def speed_multiplier(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         speed_multiplier_ref = kart_move_ref + 0x10
         return memory.read_f32(speed_multiplier_ref)
 
@@ -162,8 +162,8 @@ class KartMove:
         return memory.read_f32(speed_multiplier_ref)
 
     @staticmethod
-    def base_speed(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def base_speed(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         position_ref = kart_move_ref + 0x14
         return memory.read_f32(position_ref)
 
@@ -172,8 +172,8 @@ class KartMove:
         return memory.read_f32(position_ref)
 
     @staticmethod
-    def soft_speed_limit(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def soft_speed_limit(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         soft_speed_limit_ref = kart_move_ref + 0x18
         return memory.read_f32(soft_speed_limit_ref)
 
@@ -182,8 +182,8 @@ class KartMove:
         return memory.read_f32(soft_speed_limit_ref)
 
     @staticmethod
-    def speed(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def speed(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         speed_ref = kart_move_ref + 0x20
         return memory.read_f32(speed_ref)
 
@@ -192,8 +192,8 @@ class KartMove:
         return memory.read_f32(speed_ref)
 
     @staticmethod
-    def last_speed(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def last_speed(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         last_speed_ref = kart_move_ref + 0x24
         return memory.read_f32(last_speed_ref)
 
@@ -202,8 +202,8 @@ class KartMove:
         return memory.read_f32(last_speed_ref)
 
     @staticmethod
-    def hard_speed_limit(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def hard_speed_limit(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         hard_speed_limit_ref = kart_move_ref + 0x2C
         return memory.read_f32(hard_speed_limit_ref)
 
@@ -212,8 +212,8 @@ class KartMove:
         return memory.read_f32(hard_speed_limit_ref)
 
     @staticmethod
-    def acceleration(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def acceleration(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         acceleration_ref = kart_move_ref + 0x30
         return memory.read_f32(acceleration_ref)
 
@@ -222,8 +222,8 @@ class KartMove:
         return memory.read_f32(acceleration_ref)
 
     @staticmethod
-    def speed_drag_multiplier(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def speed_drag_multiplier(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         speed_drag_multiplier_ref = kart_move_ref + 0x34
         return memory.read_f32(speed_drag_multiplier_ref)
 
@@ -232,9 +232,9 @@ class KartMove:
         return memory.read_f32(speed_drag_multiplier_ref)
 
     @staticmethod
-    def smoothed_up(playerIdx=0) -> vec3:
+    def smoothed_up(player_idx=0) -> vec3:
         """Smoothed version of up()"""
-        kart_move_ref = KartMove.chain(playerIdx)
+        kart_move_ref = KartMove.chain(player_idx)
         smoothed_up_ref = kart_move_ref + 0x38
         return vec3.read(smoothed_up_ref)
 
@@ -244,9 +244,9 @@ class KartMove:
         return vec3.read(smoothed_up_ref)
 
     @staticmethod
-    def up(playerIdx=0) -> vec3:
+    def up(player_idx=0) -> vec3:
         """Vector perpendicular to the floor, pointing upwards"""
-        kart_move_ref = KartMove.chain(playerIdx)
+        kart_move_ref = KartMove.chain(player_idx)
         up_ref = kart_move_ref + 0x44
         return vec3.read(up_ref)
 
@@ -256,8 +256,8 @@ class KartMove:
         return vec3.read(up_ref)
 
     @staticmethod
-    def landing_dir(playerIdx=0) -> vec3:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def landing_dir(player_idx=0) -> vec3:
+        kart_move_ref = KartMove.chain(player_idx)
         landing_dir_ref = kart_move_ref + 0x50
         return vec3.read(landing_dir_ref)
 
@@ -266,8 +266,8 @@ class KartMove:
         return vec3.read(landing_dir_ref)
 
     @staticmethod
-    def dir(playerIdx=0) -> vec3:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def dir(player_idx=0) -> vec3:
+        kart_move_ref = KartMove.chain(player_idx)
         dir_ref = kart_move_ref + 0x5C
         return vec3.read(dir_ref)
 
@@ -276,8 +276,8 @@ class KartMove:
         return vec3.read(dir_ref)
 
     @staticmethod
-    def last_dir(playerIdx=0) -> vec3:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def last_dir(player_idx=0) -> vec3:
+        kart_move_ref = KartMove.chain(player_idx)
         last_dir_ref = kart_move_ref + 0x68
         return vec3.read(last_dir_ref)
 
@@ -286,8 +286,8 @@ class KartMove:
         return vec3.read(last_dir_ref)
 
     @staticmethod
-    def vel1_dir(playerIdx=0) -> vec3:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def vel1_dir(player_idx=0) -> vec3:
+        kart_move_ref = KartMove.chain(player_idx)
         vel1_dir_ref = kart_move_ref + 0x74
         return vec3.read(vel1_dir_ref)
 
@@ -296,8 +296,8 @@ class KartMove:
         return vec3.read(vel1_dir_ref)
 
     @staticmethod
-    def dir_diff(playerIdx=0) -> vec3:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def dir_diff(player_idx=0) -> vec3:
+        kart_move_ref = KartMove.chain(player_idx)
         dir_diff_ref = kart_move_ref + 0x8C
         return vec3.read(dir_diff_ref)
 
@@ -306,8 +306,8 @@ class KartMove:
         return vec3.read(dir_diff_ref)
 
     @staticmethod
-    def has_landing_dir(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def has_landing_dir(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         has_landing_dir_ref = kart_move_ref + 0x98
         return memory.read_u8(has_landing_dir_ref)
 
@@ -316,8 +316,8 @@ class KartMove:
         return memory.read_u8(has_landing_dir_ref)
 
     @staticmethod
-    def outside_drift_angle(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def outside_drift_angle(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         outside_drift_angle_ref = kart_move_ref + 0x9C
         return memory.read_f32(outside_drift_angle_ref)
 
@@ -326,8 +326,8 @@ class KartMove:
         return memory.read_f32(outside_drift_angle_ref)
 
     @staticmethod
-    def landing_angle(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def landing_angle(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         landing_angle_ref = kart_move_ref + 0xA0
         return memory.read_f32(landing_angle_ref)
 
@@ -336,8 +336,8 @@ class KartMove:
         return memory.read_f32(landing_angle_ref)
 
     @staticmethod
-    def outside_drift_last_dir(playerIdx=0) -> vec3:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def outside_drift_last_dir(player_idx=0) -> vec3:
+        kart_move_ref = KartMove.chain(player_idx)
         outside_drift_last_dir_ref = kart_move_ref + 0xA4
         return memory.read_f32(outside_drift_last_dir_ref)
 
@@ -346,8 +346,8 @@ class KartMove:
         return vec3.read(outside_drift_last_dir_ref)
 
     @staticmethod
-    def speed_ratio_capped(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def speed_ratio_capped(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         speed_ratio_capped_ref = kart_move_ref + 0xB0
         return memory.read_f32(speed_ratio_capped_ref)
 
@@ -356,8 +356,8 @@ class KartMove:
         return memory.read_f32(speed_ratio_capped_ref)
 
     @staticmethod
-    def speed_ratio(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def speed_ratio(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         speed_ratio_ref = kart_move_ref + 0xB4
         return memory.read_f32(speed_ratio_ref)
 
@@ -366,8 +366,8 @@ class KartMove:
         return memory.read_f32(speed_ratio_ref)
 
     @staticmethod
-    def kcl_speed_factor(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def kcl_speed_factor(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         kcl_speed_factor_ref = kart_move_ref + 0xB8
         return memory.read_f32(kcl_speed_factor_ref)
 
@@ -376,8 +376,8 @@ class KartMove:
         return memory.read_f32(kcl_speed_factor_ref)
 
     @staticmethod
-    def kcl_rot_factor(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def kcl_rot_factor(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         kcl_rot_factor_ref = kart_move_ref + 0xBC
         return memory.read_f32(kcl_rot_factor_ref)
 
@@ -386,8 +386,8 @@ class KartMove:
         return memory.read_f32(kcl_rot_factor_ref)
     
     @staticmethod
-    def kcl_wheel_speed_factor(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def kcl_wheel_speed_factor(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         kcl_wheel_speed_factor_ref = kart_move_ref + 0xC0
         return memory.read_f32(kcl_wheel_speed_factor_ref)
     
@@ -396,8 +396,8 @@ class KartMove:
         return memory.read_f32(kcl_wheel_speed_factor_ref)
     
     @staticmethod
-    def kcl_wheel_rot_factor(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def kcl_wheel_rot_factor(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         kcl_wheel_rot_factor_ref = kart_move_ref + 0xC4
         return memory.read_f32(kcl_wheel_rot_factor_ref)
     
@@ -406,8 +406,8 @@ class KartMove:
         return memory.read_f32(kcl_wheel_rot_factor_ref)
     
     @staticmethod
-    def floor_collision_count(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def floor_collision_count(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         floor_collision_count_ref = kart_move_ref + 0xC8
         return memory.read_f32(floor_collision_count_ref)
 
@@ -416,8 +416,8 @@ class KartMove:
         return memory.read_u16(floor_collision_count_ref)
     
     @staticmethod
-    def hop_stick_x(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def hop_stick_x(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         hop_stick_x_ref = kart_move_ref + 0xCC
         return memory.read_s32(hop_stick_x_ref)
     
@@ -426,8 +426,8 @@ class KartMove:
         return memory.read_s32(hop_stick_x_ref)
     
     @staticmethod
-    def hop_frame(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def hop_frame(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         hop_frame_ref = kart_move_ref + 0xD0
         return memory.read_s32(hop_frame_ref)
     
@@ -436,8 +436,8 @@ class KartMove:
         return memory.read_s32(hop_frame_ref)
     
     @staticmethod
-    def hop_up(playerIdx=0) -> vec3:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def hop_up(player_idx=0) -> vec3:
+        kart_move_ref = KartMove.chain(player_idx)
         hop_up_ref = kart_move_ref + 0xD4
         return vec3.read(hop_up_ref)
     
@@ -446,8 +446,8 @@ class KartMove:
         return vec3.read(hop_up_ref)
     
     @staticmethod
-    def hop_dir(playerIdx=0) -> vec3:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def hop_dir(player_idx=0) -> vec3:
+        kart_move_ref = KartMove.chain(player_idx)
         hop_dir_ref = kart_move_ref + 0xE0
         return vec3.read(hop_dir_ref)
 
@@ -456,8 +456,8 @@ class KartMove:
         return vec3.read(hop_dir_ref)
     
     @staticmethod
-    def slipstream_charge(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def slipstream_charge(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         slipstream_charge_ref = kart_move_ref + 0xEC
         return memory.read_u32(slipstream_charge_ref)
     
@@ -466,8 +466,8 @@ class KartMove:
         return memory.read_u32(slipstream_charge_ref)
     
     @staticmethod
-    def diving_rotation(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def diving_rotation(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         diving_rotation_ref = kart_move_ref + 0xF4
         return memory.read_f32(diving_rotation_ref)
     
@@ -476,8 +476,8 @@ class KartMove:
         return memory.read_f32(diving_rotation_ref)
     
     @staticmethod
-    def standstil_boost_rotation(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def standstil_boost_rotation(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         standstil_boost_rotation_ref = kart_move_ref + 0xF8
         return memory.read_f32(standstil_boost_rotation_ref)
     
@@ -486,10 +486,10 @@ class KartMove:
         return memory.read_f32(standstil_boost_rotation_ref)
     
     @staticmethod
-    def drift_state(playerIdx=0) -> int:
+    def drift_state(player_idx=0) -> int:
         """1: Charging MT
            2: MT Charged"""
-        kart_move_ref = KartMove.chain(playerIdx)
+        kart_move_ref = KartMove.chain(player_idx)
         drift_state_ref = kart_move_ref + 0xFC
         return memory.read_u16(drift_state_ref)
     
@@ -500,8 +500,8 @@ class KartMove:
         return memory.read_u16(drift_state_ref)
     
     @staticmethod
-    def mt_charge(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def mt_charge(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         mt_charge_ref = kart_move_ref + 0xFE
         return memory.read_u16(mt_charge_ref)
     
@@ -510,8 +510,8 @@ class KartMove:
         return memory.read_u16(mt_charge_ref)
     
     @staticmethod
-    def smt_charge(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def smt_charge(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         smt_charge_ref = kart_move_ref + 0x100
         return memory.read_u16(smt_charge_ref)
     
@@ -520,8 +520,8 @@ class KartMove:
         return memory.read_u16(smt_charge_ref)
     
     @staticmethod
-    def mt_boost_timer(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def mt_boost_timer(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         mt_boost_timer_ref = kart_move_ref + 0x102
         return memory.read_u16(mt_boost_timer_ref)
     
@@ -530,8 +530,8 @@ class KartMove:
         return memory.read_u16(mt_boost_timer_ref)
     
     @staticmethod
-    def outside_drift_bonus(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def outside_drift_bonus(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         outside_drift_bonus_ref = kart_move_ref + 0x104
         return memory.read_f32(outside_drift_bonus_ref)
     
@@ -540,8 +540,8 @@ class KartMove:
         return memory.read_f32(outside_drift_bonus_ref)
     
     @staticmethod
-    def kart_boost(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def kart_boost(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         boost_ref = kart_move_ref + 0x108
         return boost_ref
     
@@ -550,8 +550,8 @@ class KartMove:
         return boost_ref
     
     @staticmethod
-    def zipper_boost(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def zipper_boost(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         zipper_boost_ref = kart_move_ref + 0x12C
         return memory.read_u16(zipper_boost_ref)
     
@@ -560,8 +560,8 @@ class KartMove:
         return memory.read_u16(zipper_boost_ref)
     
     @staticmethod
-    def zipper_boost_max(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def zipper_boost_max(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         inst_zipper_boost_max_ref = kart_move_ref + 0x12C
         return memory.read_u16(inst_zipper_boost_max_ref)
     
@@ -570,8 +570,8 @@ class KartMove:
         return memory.read_u16(inst_zipper_boost_max_ref)
     
     @staticmethod
-    def offroad_invincibility(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def offroad_invincibility(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         offroad_invincibility_ref = kart_move_ref + 0x148
         return memory.read_u16(offroad_invincibility_ref)
     
@@ -580,8 +580,8 @@ class KartMove:
         return memory.read_u16(offroad_invincibility_ref)
     
     @staticmethod
-    def ssmt_charge(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def ssmt_charge(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         ssmt_charge_ref = kart_move_ref + 0x14C
         return memory.read_u16(ssmt_charge_ref)
     
@@ -592,8 +592,8 @@ class KartMove:
     # 0x152 pertains to something POW-related
 
     @staticmethod
-    def real_turn(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def real_turn(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         real_turn_ref = kart_move_ref + 0x158
         return memory.read_f32(real_turn_ref)
     
@@ -602,8 +602,8 @@ class KartMove:
         return memory.read_f32(real_turn_ref)
     
     @staticmethod
-    def weighted_turn(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def weighted_turn(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         real_turn_ref = kart_move_ref + 0x15C
         return memory.read_f32(real_turn_ref)
     
@@ -612,8 +612,8 @@ class KartMove:
         return memory.read_f32(real_turn_ref)
     
     @staticmethod
-    def scale(playerIdx=0) -> vec3:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def scale(player_idx=0) -> vec3:
+        kart_move_ref = KartMove.chain(player_idx)
         scale_ref = kart_move_ref + 0x164
         return vec3.read(scale_ref)
     
@@ -622,8 +622,8 @@ class KartMove:
         return vec3.read(scale_ref)
     
     @staticmethod
-    def shock_speed_modifier(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def shock_speed_modifier(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         shock_speed_modifier_ref = kart_move_ref + 0x178
         return memory.read_f32(shock_speed_modifier_ref)
     
@@ -632,8 +632,8 @@ class KartMove:
         return memory.read_f32(shock_speed_modifier_ref)
     
     @staticmethod
-    def mega_scale(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def mega_scale(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         mega_scale_ref = kart_move_ref + 0x17C
         return memory.read_f32(mega_scale_ref)
     
@@ -642,8 +642,8 @@ class KartMove:
         return memory.read_f32(mega_scale_ref)
     
     @staticmethod
-    def mushroom_timer(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def mushroom_timer(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         mushroom_timer_ref = kart_move_ref + 0x188
         return memory.read_u16(mushroom_timer_ref)
     
@@ -652,8 +652,8 @@ class KartMove:
         return memory.read_u16(mushroom_timer_ref)
     
     @staticmethod
-    def star_timer(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def star_timer(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         star_timer_ref = kart_move_ref + 0x18A
         return memory.read_u16(star_timer_ref)
     
@@ -662,8 +662,8 @@ class KartMove:
         return memory.read_u16(star_timer_ref)
     
     @staticmethod
-    def shock_timer(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def shock_timer(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         shock_timer_ref = kart_move_ref + 0x18C
         return memory.read_u16(shock_timer_ref)
     
@@ -672,8 +672,8 @@ class KartMove:
         return memory.read_u16(shock_timer_ref)
     
     @staticmethod
-    def ink_timer(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def ink_timer(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         ink_timer_ref = kart_move_ref + 0x18E
         return memory.read_u16(ink_timer_ref)
     
@@ -682,8 +682,8 @@ class KartMove:
         return memory.read_u16(ink_timer_ref)
     
     @staticmethod
-    def ink_applied(playerIdx=0) -> bool:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def ink_applied(player_idx=0) -> bool:
+        kart_move_ref = KartMove.chain(player_idx)
         ink_applied_ref = kart_move_ref + 0x190
         return memory.read_u8(ink_applied_ref) > 0
     
@@ -692,8 +692,8 @@ class KartMove:
         return memory.read_u8(ink_applied_ref) > 0
     
     @staticmethod
-    def crush_timer(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def crush_timer(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         crush_timer_ref = kart_move_ref + 0x192
         return memory.read_u16(crush_timer_ref)
     
@@ -702,8 +702,8 @@ class KartMove:
         return memory.read_u16(crush_timer_ref)
     
     @staticmethod
-    def mega_timer(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def mega_timer(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         mega_timer_ref = kart_move_ref + 0x194
         return memory.read_u16(mega_timer_ref)
     
@@ -712,8 +712,8 @@ class KartMove:
         return memory.read_u16(mega_timer_ref)
     
     @staticmethod
-    def blink_timer(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def blink_timer(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         blink_timer_ref = kart_move_ref + 0x1A8
         return memory.read_u16(blink_timer_ref)
     
@@ -722,8 +722,8 @@ class KartMove:
         return memory.read_u16(blink_timer_ref)
     
     @staticmethod
-    def jump_pad_min_speed(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def jump_pad_min_speed(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         jump_pad_min_speed_ref = kart_move_ref + 0x1B0
         return memory.read_f32(jump_pad_min_speed_ref)
     
@@ -732,8 +732,8 @@ class KartMove:
         return memory.read_f32(jump_pad_min_speed_ref)
     
     @staticmethod
-    def jump_pad_max_speed(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def jump_pad_max_speed(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         jump_pad_max_speed_ref = kart_move_ref + 0x1B4
         return memory.read_f32(jump_pad_max_speed_ref)
     
@@ -742,8 +742,8 @@ class KartMove:
         return memory.read_f32(jump_pad_max_speed_ref)
     
     @staticmethod
-    def jump_pad_properties(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def jump_pad_properties(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         jump_pad_properties_ref = kart_move_ref + 0x1C0
         return memory.read_u32(jump_pad_properties_ref)
     
@@ -752,8 +752,8 @@ class KartMove:
         return memory.read_u32(jump_pad_properties_ref)
     
     @staticmethod
-    def ramp_boost(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def ramp_boost(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         ramp_boost_ref = kart_move_ref + 0x1C4
         return memory.read_u16(ramp_boost_ref)
     
@@ -762,8 +762,8 @@ class KartMove:
         return memory.read_u16(ramp_boost_ref)
     
     @staticmethod
-    def auto_drift_angle(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def auto_drift_angle(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         auto_drift_angle_ref = kart_move_ref + 0x1C8
         return memory.read_f32(auto_drift_angle_ref)
     
@@ -772,8 +772,8 @@ class KartMove:
         return memory.read_f32(auto_drift_angle_ref)
     
     @staticmethod
-    def auto_drift_start_frame_counter(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def auto_drift_start_frame_counter(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         auto_drift_start_frame_counter_ref = kart_move_ref + 0x1CC
         return memory.read_u16(auto_drift_start_frame_counter_ref)
     
@@ -782,8 +782,8 @@ class KartMove:
         return memory.read_u16(auto_drift_start_frame_counter_ref)
     
     @staticmethod
-    def last_position(playerIdx=0) -> vec3:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def last_position(player_idx=0) -> vec3:
+        kart_move_ref = KartMove.chain(player_idx)
         last_position_ref = kart_move_ref + 0x1E8
         return vec3.read(last_position_ref)
     
@@ -792,8 +792,8 @@ class KartMove:
         return vec3.read(last_position_ref)
     
     @staticmethod
-    def airtime(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def airtime(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         airtime_ref = kart_move_ref + 0x218
         return memory.read_u32(airtime_ref)
     
@@ -802,8 +802,8 @@ class KartMove:
         return memory.read_u32(airtime_ref)
     
     @staticmethod
-    def before_battle_respawn_frames(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def before_battle_respawn_frames(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         before_battle_respawn_frames_ref = kart_move_ref + 0x21C
         return memory.read_u16(before_battle_respawn_frames_ref)
     
@@ -812,8 +812,8 @@ class KartMove:
         return memory.read_u16(before_battle_respawn_frames_ref)
     
     @staticmethod
-    def hop_velocity_y(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def hop_velocity_y(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         hop_velocity_y_ref = kart_move_ref + 0x228
         return memory.read_f32(hop_velocity_y_ref)
     
@@ -822,8 +822,8 @@ class KartMove:
         return memory.read_f32(hop_velocity_y_ref)
     
     @staticmethod
-    def hop_position_y(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def hop_position_y(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         hop_position_y_ref = kart_move_ref + 0x22C
         return memory.read_f32(hop_position_y_ref)
     
@@ -832,8 +832,8 @@ class KartMove:
         return memory.read_f32(hop_position_y_ref)
     
     @staticmethod
-    def hop_gravity(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def hop_gravity(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         hop_gravity_ref = kart_move_ref + 0x230
         return memory.read_f32(hop_gravity_ref)
     
@@ -842,8 +842,8 @@ class KartMove:
         return memory.read_f32(hop_gravity_ref)
     
     @staticmethod
-    def time_in_respawn(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def time_in_respawn(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         time_in_respawn_ref = kart_move_ref + 0x234
         return memory.read_u16(time_in_respawn_ref)
     
@@ -852,8 +852,8 @@ class KartMove:
         return memory.read_u16(time_in_respawn_ref)
     
     @staticmethod
-    def respawn_timer(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def respawn_timer(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         respawn_timer_ref = kart_move_ref + 0x23A
         return memory.read_u16(respawn_timer_ref)
     
@@ -862,8 +862,8 @@ class KartMove:
         return memory.read_u16(respawn_timer_ref)
     
     @staticmethod
-    def wheelie_bump_timer(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def wheelie_bump_timer(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         wheelie_bump_timer_ref = kart_move_ref + 0x23C
         return memory.read_u16(wheelie_bump_timer_ref)
     
@@ -872,8 +872,8 @@ class KartMove:
         return memory.read_u16(wheelie_bump_timer_ref)
     
     @staticmethod
-    def driving_direction(playerIdx=0) -> DrivingDirection:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def driving_direction(player_idx=0) -> DrivingDirection:
+        kart_move_ref = KartMove.chain(player_idx)
         driving_direction_ref = kart_move_ref + 0x23C
         return KartMove.DrivingDirection(memory.read_u32(driving_direction_ref))
     
@@ -882,8 +882,8 @@ class KartMove:
         return KartMove.DrivingDirection(memory.read_u32(driving_direction_ref))
 
     @staticmethod
-    def backwards_allow_counter(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def backwards_allow_counter(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         backwards_allow_counter_ref = kart_move_ref + 0x24C
         return memory.read_u16(backwards_allow_counter_ref)
     
@@ -892,8 +892,8 @@ class KartMove:
         return memory.read_u16(backwards_allow_counter_ref)
     
     @staticmethod
-    def special_floor(playerIdx=0) -> SpecialFloor:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def special_floor(player_idx=0) -> SpecialFloor:
+        kart_move_ref = KartMove.chain(player_idx)
         special_floor_ref = kart_move_ref + 0x250
         return SpecialFloor(memory.read_u32(special_floor_ref))
     
@@ -902,8 +902,8 @@ class KartMove:
         return SpecialFloor(memory.read_u32(special_floor_ref))
     
     @staticmethod
-    def kart_jump(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def kart_jump(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         kart_jump_ptr = kart_move_ref + 0x258
         return memory.read_u32(kart_jump_ptr)
     
@@ -912,8 +912,8 @@ class KartMove:
         return memory.read_u32(kart_jump_ptr)
     
     @staticmethod
-    def kart_half_pipe(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def kart_half_pipe(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         kart_half_pipe_ptr = kart_move_ref + 0x25C
         return memory.read_u32(kart_half_pipe_ptr)
     
@@ -922,8 +922,8 @@ class KartMove:
         return memory.read_u32(kart_half_pipe_ptr)
 
     @staticmethod
-    def kart_scale(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def kart_scale(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         kart_scale_ptr = kart_move_ref + 0x260
         return memory.read_u32(kart_scale_ptr)
     
@@ -932,8 +932,8 @@ class KartMove:
         return memory.read_u32(kart_scale_ptr)
 
     @staticmethod
-    def raw_turn(playerIdx=0) -> float:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def raw_turn(player_idx=0) -> float:
+        kart_move_ref = KartMove.chain(player_idx)
         raw_turn_ref = kart_move_ref + 0x288
         return memory.read_f32(raw_turn_ref)
     
@@ -942,8 +942,8 @@ class KartMove:
         return memory.read_f32(raw_turn_ref)
     
     @staticmethod
-    def ghost_stop_timer(playerIdx=0) -> int:
-        kart_move_ref = KartMove.chain(playerIdx)
+    def ghost_stop_timer(player_idx=0) -> int:
+        kart_move_ref = KartMove.chain(player_idx)
         ghost_stop_timer_ref = kart_move_ref + 0x290
         return memory.read_u16(ghost_stop_timer_ref)
     
@@ -956,9 +956,9 @@ class KartMove:
     # It's 0x294 for karts, and 0x2C4 for bikes. Enforce this!
 
     @staticmethod
-    def lean_rot(playerIdx=0) -> float:
-        assert(KartSettings.is_bike(playerIdx))
-        kart_move_ref = KartMove.chain(playerIdx)
+    def lean_rot(player_idx=0) -> float:
+        assert(KartSettings.is_bike(player_idx))
+        kart_move_ref = KartMove.chain(player_idx)
         lean_rot_ref = kart_move_ref + 0x294
         return memory.read_f32(lean_rot_ref)
     
@@ -968,9 +968,9 @@ class KartMove:
         return memory.read_f32(lean_rot_ref)
     
     @staticmethod
-    def lean_rot_cap(playerIdx=0) -> float:
-        assert(KartSettings.is_bike(playerIdx))
-        kart_move_ref = KartMove.chain(playerIdx)
+    def lean_rot_cap(player_idx=0) -> float:
+        assert(KartSettings.is_bike(player_idx))
+        kart_move_ref = KartMove.chain(player_idx)
         lean_rot_cap_ref = kart_move_ref + 0x298
         return memory.read_f32(lean_rot_cap_ref)
     
@@ -980,9 +980,9 @@ class KartMove:
         return memory.read_f32(lean_rot_cap_ref)
     
     @staticmethod
-    def lean_rot_increase(playerIdx=0) -> float:
-        assert(KartSettings.is_bike(playerIdx))
-        kart_move_ref = KartMove.chain(playerIdx)
+    def lean_rot_increase(player_idx=0) -> float:
+        assert(KartSettings.is_bike(player_idx))
+        kart_move_ref = KartMove.chain(player_idx)
         lean_rot_increase_ref = kart_move_ref + 0x29C
         return memory.read_f32(lean_rot_increase_ref)
     
@@ -992,9 +992,9 @@ class KartMove:
         return memory.read_f32(lean_rot_increase_ref)
     
     @staticmethod
-    def wheelie_rotation(playerIdx=0) -> float:
-        assert(KartSettings.is_bike(playerIdx))
-        kart_move_ref = KartMove.chain(playerIdx)
+    def wheelie_rotation(player_idx=0) -> float:
+        assert(KartSettings.is_bike(player_idx))
+        kart_move_ref = KartMove.chain(player_idx)
         wheelie_rotation_ref = kart_move_ref + 0x2A0
         return memory.read_f32(wheelie_rotation_ref)
     
@@ -1004,9 +1004,9 @@ class KartMove:
         return memory.read_f32(wheelie_rotation_ref)
     
     @staticmethod
-    def max_wheelie_rotation(playerIdx=0) -> float:
-        assert(KartSettings.is_bike(playerIdx))
-        kart_move_ref = KartMove.chain(playerIdx)
+    def max_wheelie_rotation(player_idx=0) -> float:
+        assert(KartSettings.is_bike(player_idx))
+        kart_move_ref = KartMove.chain(player_idx)
         max_wheelie_rotation_ref = kart_move_ref + 0x2A4
         return memory.read_f32(max_wheelie_rotation_ref)
     
@@ -1016,9 +1016,9 @@ class KartMove:
         return memory.read_f32(max_wheelie_rotation_ref)
     
     @staticmethod
-    def wheelie_frames(playerIdx=0) -> int:
-        assert(KartSettings.is_bike(playerIdx))
-        kart_move_ref = KartMove.chain(playerIdx)
+    def wheelie_frames(player_idx=0) -> int:
+        assert(KartSettings.is_bike(player_idx))
+        kart_move_ref = KartMove.chain(player_idx)
         wheelie_frames_ref = kart_move_ref + 0x2A8
         return memory.read_u32(wheelie_frames_ref)
     
@@ -1028,9 +1028,9 @@ class KartMove:
         return memory.read_u32(wheelie_frames_ref)
     
     @staticmethod
-    def wheelie_cooldown(playerIdx=0) -> int:
-        assert(KartSettings.is_bike(playerIdx))
-        kart_move_ref = KartMove.chain(playerIdx)
+    def wheelie_cooldown(player_idx=0) -> int:
+        assert(KartSettings.is_bike(player_idx))
+        kart_move_ref = KartMove.chain(player_idx)
         wheelie_cooldown_ref = kart_move_ref + 0x2B6
         return memory.read_u16(wheelie_cooldown_ref)
     
@@ -1040,9 +1040,9 @@ class KartMove:
         return memory.read_u16(wheelie_cooldown_ref)
     
     @staticmethod
-    def wheelie_rotation_decrease(playerIdx=0) -> float:
-        assert(KartSettings.is_bike(playerIdx))
-        kart_move_ref = KartMove.chain(playerIdx)
+    def wheelie_rotation_decrease(player_idx=0) -> float:
+        assert(KartSettings.is_bike(player_idx))
+        kart_move_ref = KartMove.chain(player_idx)
         wheelie_rotation_decrease_ref = kart_move_ref + 0x2B8
         return memory.read_f32(wheelie_rotation_decrease_ref)
     

@@ -13,8 +13,8 @@ class RaceInfoPlayerFlags(Enum):
     COMING_LAST_ANIMATION = 64
 
 class RaceManagerPlayer:
-    def __init__(self, playerIdx=0, addr=None):
-        self.addr = addr if addr else RaceManagerPlayer.chain(playerIdx)
+    def __init__(self, player_idx=0, addr=None):
+        self.addr = addr if addr else RaceManagerPlayer.chain(player_idx)
 
         self.idx = self.inst_idx
         self.checkpoint_id = self.inst_checkpoint_id
@@ -40,12 +40,12 @@ class RaceManagerPlayer:
         self.finishing_position = self.inst_finishing_position
 
     @staticmethod
-    def chain(playerIdx=0) -> int:
-        return RaceManager.race_manager_player(playerIdx)
+    def chain(player_idx=0) -> int:
+        return RaceManager.race_manager_player(player_idx)
     
     @staticmethod
-    def idx(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def idx(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         idx_ref = race_manager_player_ref + 0x8
         return memory.read_u8(idx_ref)
     
@@ -54,8 +54,8 @@ class RaceManagerPlayer:
         return memory.read_u8(idx_ref)
     
     @staticmethod
-    def checkpoint_id(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def checkpoint_id(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         checkpoint_id_ref = race_manager_player_ref + 0xA
         return memory.read_u16(checkpoint_id_ref)
     
@@ -64,8 +64,8 @@ class RaceManagerPlayer:
         return memory.read_u16(checkpoint_id_ref)
     
     @staticmethod
-    def race_completion(playerIdx=0) -> float:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def race_completion(player_idx=0) -> float:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         race_completion_ref = race_manager_player_ref + 0xC
         return memory.read_f32(race_completion_ref)
     
@@ -74,8 +74,8 @@ class RaceManagerPlayer:
         return memory.read_f32(race_completion_ref)
     
     @staticmethod
-    def race_completion_max(playerIdx=0) -> float:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def race_completion_max(player_idx=0) -> float:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         race_completion_max_ref = race_manager_player_ref + 0x10
         return memory.read_f32(race_completion_max_ref)
     
@@ -84,8 +84,8 @@ class RaceManagerPlayer:
         return memory.read_f32(race_completion_max_ref)
     
     @staticmethod
-    def checkpoint_factor(playerIdx=0) -> float:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def checkpoint_factor(player_idx=0) -> float:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         checkpoint_factor_ref = race_manager_player_ref + 0x14
         return memory.read_f32(checkpoint_factor_ref)
     
@@ -94,8 +94,8 @@ class RaceManagerPlayer:
         return memory.read_f32(checkpoint_factor_ref)
     
     @staticmethod
-    def checkpoint_start_lap_completion(playerIdx=0) -> float:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def checkpoint_start_lap_completion(player_idx=0) -> float:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         checkpoint_start_lap_completion_ref = race_manager_player_ref + 0x18
         return memory.read_f32(checkpoint_start_lap_completion_ref)
     
@@ -104,8 +104,8 @@ class RaceManagerPlayer:
         return memory.read_f32(checkpoint_start_lap_completion_ref)
     
     @staticmethod
-    def lap_completion(playerIdx=0) -> float:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def lap_completion(player_idx=0) -> float:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         lap_completion_ref = race_manager_player_ref + 0x1C
         return memory.read_f32(lap_completion_ref)
     
@@ -114,8 +114,8 @@ class RaceManagerPlayer:
         return memory.read_f32(lap_completion_ref)
     
     @staticmethod
-    def position(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def position(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         position_ref = race_manager_player_ref + 0x20
         return memory.read_u8(position_ref)
     
@@ -124,8 +124,8 @@ class RaceManagerPlayer:
         return memory.read_u8(position_ref)
     
     @staticmethod
-    def respawn(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def respawn(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         respawn_ref = race_manager_player_ref + 0x21
         return memory.read_u8(respawn_ref)
     
@@ -134,8 +134,8 @@ class RaceManagerPlayer:
         return memory.read_u8(respawn_ref)
     
     @staticmethod
-    def battle_score(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def battle_score(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         battle_score_ref = race_manager_player_ref + 0x22
         return memory.read_u16(battle_score_ref)
     
@@ -144,8 +144,8 @@ class RaceManagerPlayer:
         return memory.read_u16(battle_score_ref)
     
     @staticmethod
-    def current_lap(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def current_lap(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         current_lap_ref = race_manager_player_ref + 0x24
         return memory.read_u16(current_lap_ref)
     
@@ -154,8 +154,8 @@ class RaceManagerPlayer:
         return memory.read_u16(current_lap_ref)
     
     @staticmethod
-    def max_lap(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def max_lap(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         max_lap_ref = race_manager_player_ref + 0x26
         return memory.read_u8(max_lap_ref)
     
@@ -164,8 +164,8 @@ class RaceManagerPlayer:
         return memory.read_u8(max_lap_ref)
     
     @staticmethod
-    def current_kcp(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def current_kcp(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         current_kcp_ref = race_manager_player_ref + 0x27
         return memory.read_u8(current_kcp_ref)
     
@@ -174,8 +174,8 @@ class RaceManagerPlayer:
         return memory.read_u8(current_kcp_ref)
     
     @staticmethod
-    def max_kcp(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def max_kcp(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         max_kcp_ref = race_manager_player_ref + 0x28
         return memory.read_u8(max_kcp_ref)
     
@@ -184,8 +184,8 @@ class RaceManagerPlayer:
         return memory.read_u8(max_kcp_ref)
     
     @staticmethod
-    def frame_counter(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def frame_counter(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         frame_counter_ref = race_manager_player_ref + 0x2C
         return memory.read_u32(frame_counter_ref)
     
@@ -194,10 +194,10 @@ class RaceManagerPlayer:
         return memory.read_u32(frame_counter_ref)
     
     @staticmethod
-    def frames_in_first(playerIdx=0) -> int:
+    def frames_in_first(player_idx=0) -> int:
         """Number of frames the player is in first place.
            This is probably only useful for GP Mode?"""
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         frames_in_first_ref = race_manager_player_ref + 0x30
         return memory.read_u32(frames_in_first_ref)
     
@@ -208,8 +208,8 @@ class RaceManagerPlayer:
         return memory.read_u32(frames_in_first_ref)
     
     @staticmethod
-    def flags(playerIdx=0) -> RaceInfoPlayerFlags:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def flags(player_idx=0) -> RaceInfoPlayerFlags:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         frames_in_first_ref = race_manager_player_ref + 0x38
         return RaceInfoPlayerFlags(memory.read_u32(frames_in_first_ref))
     
@@ -218,13 +218,13 @@ class RaceManagerPlayer:
         return RaceInfoPlayerFlags(memory.read_u32(frames_in_first_ref))
     
     @staticmethod
-    def lap_finish_time(playerIdx=0, lap=0) -> Timer:
+    def lap_finish_time(player_idx=0, lap=0) -> Timer:
         """Accesses the array of Timer objects indexed based on lap count.
            It's hard-coded to always be 3 laps.
            NOTE: This is the sum of all previous laps
            (i.e. lap 2 timer = lap 1 + lap 2 time)"""
         assert(0 <= lap < 3)
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         lap_finish_time_ptr = race_manager_player_ref + 0x3C
         lap_finish_time_ref = memory.read_u32(lap_finish_time_ptr) + (lap * 0xC)
         return Timer(lap_finish_time_ref)
@@ -240,8 +240,8 @@ class RaceManagerPlayer:
         return Timer(lap_finish_time_ref)
     
     @staticmethod
-    def race_finish_time(playerIdx=0) -> Timer:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def race_finish_time(player_idx=0) -> Timer:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         race_finish_time_ptr = race_manager_player_ref + 0x40
         race_finish_time_ref = memory.read_u32(race_finish_time_ptr)
         return Timer(race_finish_time_ref)
@@ -252,8 +252,8 @@ class RaceManagerPlayer:
         return Timer(race_finish_time_ref)
     
     @staticmethod
-    def kart_input(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def kart_input(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         kart_input_ptr = race_manager_player_ref + 0x48
         return memory.read_u32(kart_input_ptr)
     
@@ -262,8 +262,8 @@ class RaceManagerPlayer:
         return memory.read_u32(kart_input_ptr)
     
     @staticmethod
-    def players_ahead_flags(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def players_ahead_flags(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         players_ahead_flags_ptr = race_manager_player_ref + 0x50
         return memory.read_u16(players_ahead_flags_ptr)
     
@@ -272,8 +272,8 @@ class RaceManagerPlayer:
         return memory.read_u16(players_ahead_flags_ptr)
     
     @staticmethod
-    def finishing_position(playerIdx=0) -> int:
-        race_manager_player_ref = RaceManagerPlayer.chain(playerIdx)
+    def finishing_position(player_idx=0) -> int:
+        race_manager_player_ref = RaceManagerPlayer.chain(player_idx)
         finishing_position_ptr = race_manager_player_ref + 0x53
         return memory.read_u8(finishing_position_ptr)
     

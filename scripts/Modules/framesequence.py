@@ -160,7 +160,7 @@ class FrameSequence:
         self.filename = filename
 
         if self.filename:
-            self.readFromFile()
+            self.read_from_file()
     
     def __len__(self):
         return len(self.frames)
@@ -180,7 +180,7 @@ class FrameSequence:
             return self.frames[self.iter_idx]
         raise StopIteration
         
-    def readFromList(self, inputs: List) -> None:
+    def read_from_list(self, inputs: List) -> None:
         """
         Constructs the frames list by using a list instead of a csv
         
@@ -194,7 +194,7 @@ class FrameSequence:
                 pass
             self.frames.append(frame)
     
-    def readFromFile(self) -> None:
+    def read_from_file(self) -> None:
         """
         Loads the CSV into a new frame sequence. Ideally called on savestate load.
 
@@ -215,7 +215,7 @@ class FrameSequence:
         except IOError:
             return
                 
-    def writeToFile(self, filename: str) -> bool:
+    def write_to_file(self, filename: str) -> bool:
         """
         Writes the frame sequence to a csv
         
