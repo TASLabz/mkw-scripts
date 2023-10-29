@@ -62,7 +62,7 @@ def read_raw_rkg_data(player_type: PlayerType, input_type: ControllerInputType) 
         # For now let's assert this is a player
         race_config = RaceConfig()
         race_scenario = RaceConfigScenario(addr=race_config.race_scenario())
-        race_config_player = RaceConfigPlayer(addr=race_scenario.player(player_idx=0))
+        race_config_player = RaceConfigPlayer(addr=race_scenario.player())
         assert(race_config_player.type() == RaceConfigPlayerType.REAL_LOCAL)
 
         ghost_writer = GhostWriter(addr=PlayerInput.ghost_writer())
@@ -74,7 +74,7 @@ def read_raw_rkg_data(player_type: PlayerType, input_type: ControllerInputType) 
         # TODO: Ghost is index=1 if you are racing a ghost, but if you watch a replay
         # for example, the ghost is index 0. We want to support this scenario, so
         # we'll need to determine how to set controller_idx appropriately.
-        ghost_addr = InputMgr.ghost_controller(controller_idx=1)
+        ghost_addr = InputMgr.ghost_controller(1)
         ghost_controller = GhostController(addr=ghost_addr)
         stream_addr = ghost_controller.buttons_stream(input_type.value)
         ghost_button_stream = GhostButtonsStream(addr=stream_addr)
@@ -153,9 +153,9 @@ def read_full_decoded_rkg_data(player_type: PlayerType) -> Optional[FrameSequenc
     trick_data = decode_rkg_data(trick_data, ControllerInputType.TRICK)
     
     # Now transform into a framesequence
-    list = [face_data[x] + di_data[x] + [trick_data[x]] for x in range(len(face_data))]
+    sequence_list = [face_data[x] + di_data[x] + [trick_data[x]] for x in range(len(face_data))]
     sequence = FrameSequence()
-    sequence.readFromList(list)
+    sequence.read_from_list(sequence_list)
     return sequence
 
 @dataclass
@@ -297,7 +297,7 @@ def get_metadata_and_write_to_rkg(inputs: FrameSequence, player_type: PlayerType
     # Get metadata
     race_config_scenario = RaceConfigScenario(addr=RaceConfig.race_scenario())
     race_config_settings = RaceConfigSettings(addr=race_config_scenario.settings())
-    race_config_player = RaceConfigPlayer(addr=race_config_scenario.player(player_idx=0))
+    race_config_player = RaceConfigPlayer(addr=race_config_scenario.player())
     player_input = PlayerInput(player_idx=0)
     kart_input = KartInput(player_input.kart_input())
     controller = Controller(addr=kart_input.race_controller())
@@ -408,12 +408,12 @@ def controller_patch() -> None:
 def write_ghost_inputs(inputs: FrameSequence) -> None:
     controller_patch()
     # TODO: This assumes the ghost is index 1, which is only true when racing a ghost
-    controller = Controller(addr=InputMgr.ghost_controller(controller_idx=1))
+    controller = Controller(addr=InputMgr.ghost_controller(1))
     set_buttons(inputs, controller)
 
 def write_player_inputs(inputs: FrameSequence) -> None:
     controller_patch()
-    kart_input = KartInput(addr=PlayerInput.kart_input(player_idx=0))
+    kart_input = KartInput(addr=PlayerInput.kart_input())
     controller = Controller(addr=kart_input.race_controller())
     set_buttons(inputs, controller)
 
