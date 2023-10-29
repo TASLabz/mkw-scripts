@@ -218,19 +218,16 @@ def create_infodisplay():
         kart_collide = KartCollide(addr=kart_object.kart_collide())
 
     if c.misc:
-        kart_jump = KartJump(addr=kart_move.kart_jump())  
-        wheelie_frames = kart_move.wheelie_frames()
-        wheelie_cd = kart_move.wheelie_cooldown()
+        kart_jump = KartJump(addr=kart_move.kart_jump())
         trick_cd = kart_jump.cooldown()
         hwg_timer = kart_state.hwg_timer()
         oob_timer = kart_collide.solid_oob_timer()
         respawn_timer = kart_collide.time_before_respawn()
         offroad_inv = kart_move.offroad_invincibility()
-        if kart_settings.is_bike():
-            text += f"Wheelie Length: {wheelie_frames}\n"
-            text += f"Wheelie CD: {wheelie_cd} | Trick CD: {trick_cd}\n"
-        else:
-            text += f"Trick CD: {trick_cd}\n"
+        if kart_move.is_bike:
+            text += f"Wheelie Length: {kart_move.wheelie_frames()}\n"
+            text += f"Wheelie CD: {kart_move.wheelie_cooldown()} | "
+        text += f"Trick CD: {trick_cd}\n"
         text += f"HWG: {hwg_timer} | OOB: {oob_timer}\n"
         text += f"Respawn: {respawn_timer}\n"
         text += f"Offroad: {offroad_inv}\n\n"
