@@ -3,8 +3,8 @@ from dolphin import memory
 from . import quatf, KartMove
 
 class KartHalfPipe:
-    def __init__(self, playerIdx=0, addr=None):
-        self.addr = addr if addr else KartHalfPipe.chain(playerIdx)
+    def __init__(self, player_idx=0, addr=None):
+        self.addr = addr if addr else KartHalfPipe.chain(player_idx)
 
         self.type = self.inst_type
         self.rot_sign = self.inst_rot_sign
@@ -13,12 +13,12 @@ class KartHalfPipe:
         self.rotation = self.inst_rotation
 
     @staticmethod
-    def chain(playerIdx=0) -> int:
-        return KartMove.kart_half_pipe(playerIdx)
+    def chain(player_idx=0) -> int:
+        return KartMove.kart_half_pipe(player_idx)
     
     @staticmethod
-    def type(playerIdx=0) -> int:
-        half_pipe_ref = KartHalfPipe.chain(playerIdx)
+    def type(player_idx=0) -> int:
+        half_pipe_ref = KartHalfPipe.chain(player_idx)
         type_ref = half_pipe_ref + 0x70
         return memory.read_u32(type_ref)
     
@@ -27,9 +27,9 @@ class KartHalfPipe:
         return memory.read_u32(type_ref)
     
     @staticmethod
-    def rot_sign(playerIdx=0) -> float:
+    def rot_sign(player_idx=0) -> float:
         """+1 or -1?"""
-        half_pipe_ref = KartHalfPipe.chain(playerIdx)
+        half_pipe_ref = KartHalfPipe.chain(player_idx)
         rot_sign_ref = half_pipe_ref + 0x74
         return memory.read_f32(rot_sign_ref)
     
@@ -39,8 +39,8 @@ class KartHalfPipe:
         return memory.read_f32(rot_sign_ref)
     
     @staticmethod
-    def next_timer(playerIdx=0) -> int:
-        half_pipe_ref = KartHalfPipe.chain(playerIdx)
+    def next_timer(player_idx=0) -> int:
+        half_pipe_ref = KartHalfPipe.chain(player_idx)
         next_timer_ref = half_pipe_ref + 0x78
         return memory.read_u16(next_timer_ref)
     
@@ -49,8 +49,8 @@ class KartHalfPipe:
         return memory.read_u16(next_timer_ref)
     
     @staticmethod
-    def trick_direction(playerIdx=0) -> int:
-        half_pipe_ref = KartHalfPipe.chain(playerIdx)
+    def trick_direction(player_idx=0) -> int:
+        half_pipe_ref = KartHalfPipe.chain(player_idx)
         trick_direction_ref = half_pipe_ref + 0x7A
         return memory.read_u8(trick_direction_ref)
     
@@ -59,8 +59,8 @@ class KartHalfPipe:
         return memory.read_u8(trick_direction_ref)
     
     @staticmethod
-    def rotation(playerIdx=0) -> quatf:
-        half_pipe_ref = KartHalfPipe.chain(playerIdx)
+    def rotation(player_idx=0) -> quatf:
+        half_pipe_ref = KartHalfPipe.chain(player_idx)
         rotation_ref = half_pipe_ref + 0x7C
         return quatf.read(rotation_ref)
     

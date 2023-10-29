@@ -96,10 +96,10 @@ def create_infodisplay():
     if c.frame_count:
         text += f"Frame: {mkw_utils.frame_of_input()}\n\n"
     
-    race_mgr_player = RaceManagerPlayer(playerIdx=0)
+    race_mgr_player = RaceManagerPlayer()
     race_scenario = RaceConfigScenario(addr=RaceConfig.race_scenario())
     race_settings = RaceConfigSettings(race_scenario.settings())
-    kart_object = KartObject(playerIdx=0)
+    kart_object = KartObject()
     kart_move = KartMove(addr=kart_object.kart_move())
     kart_body = KartBody(addr=kart_object.kart_body())
     vehicle_dynamics = VehicleDynamics(addr=kart_body.vehicle_dynamics())

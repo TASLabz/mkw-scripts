@@ -3,9 +3,9 @@ from dolphin import memory
 from . import InputMgr
 
 class PlayerInput:
-    def __init__(self, playerIdx=0, addr=None):
-        assert(0 <= playerIdx < 4)
-        self.addr = addr if addr else PlayerInput.chain(playerIdx)
+    def __init__(self, player_idx=0, addr=None):
+        assert(0 <= player_idx < 4)
+        self.addr = addr if addr else PlayerInput.chain(player_idx)
 
         self.kart_input = self.inst_kart_input
         self.ghost_buffer = self.inst_ghost_buffer
@@ -13,12 +13,12 @@ class PlayerInput:
         self.ghost_writer = self.inst_ghost_writer
 
     @staticmethod
-    def chain(playerIdx=0) -> int:
-        return InputMgr.player_input(playerIdx)
+    def chain(player_idx=0) -> int:
+        return InputMgr.player_input(player_idx)
 
     @staticmethod
-    def kart_input(playerIdx=0) -> int:
-        player_input_ref = PlayerInput.chain(playerIdx)
+    def kart_input(player_idx=0) -> int:
+        player_input_ref = PlayerInput.chain(player_idx)
         kart_input_ref = player_input_ref + 0x0
         return kart_input_ref
 
@@ -27,8 +27,8 @@ class PlayerInput:
         return kart_input_ref
     
     @staticmethod
-    def ghost_buffer(playerIdx=0) -> int:
-        player_input_ref = PlayerInput.chain(playerIdx)
+    def ghost_buffer(player_idx=0) -> int:
+        player_input_ref = PlayerInput.chain(player_idx)
         ghost_buffer_ptr = player_input_ref + 0xD8
         return memory.read_u32(ghost_buffer_ptr)
     
@@ -37,8 +37,8 @@ class PlayerInput:
         return memory.read_u32(ghost_buffer_ptr)
     
     @staticmethod
-    def is_locked(playerIdx=0) -> bool:
-        player_input_ref = PlayerInput.chain(playerIdx)
+    def is_locked(player_idx=0) -> bool:
+        player_input_ref = PlayerInput.chain(player_idx)
         is_locked_ref = player_input_ref + 0xE4
         return memory.read_u8(is_locked_ref) > 0
     
@@ -47,8 +47,8 @@ class PlayerInput:
         return memory.read_u8(is_locked_ref) > 0
     
     @staticmethod
-    def ghost_writer(playerIdx=0) -> int:
-        player_input_ref = PlayerInput.chain(playerIdx)
+    def ghost_writer(player_idx=0) -> int:
+        player_input_ref = PlayerInput.chain(player_idx)
         ghost_writer_ptr = player_input_ref + 0xE8
         return memory.read_u32(ghost_writer_ptr)
     

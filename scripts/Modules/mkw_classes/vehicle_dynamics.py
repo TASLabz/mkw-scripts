@@ -3,8 +3,8 @@ from dolphin import memory
 from . import vec3, quatf, mat34, KartBody
 
 class VehicleDynamics:
-    def __init__(self, playerIdx=0, addr=None):
-        self.addr = addr if addr else VehicleDynamics.chain(playerIdx)
+    def __init__(self, player_idx=0, addr=None):
+        self.addr = addr if addr else VehicleDynamics.chain(player_idx)
 
         self.vehicle_physics = self.inst_vehicle_physics
         self.collision_group = self.inst_collision_group
@@ -22,12 +22,12 @@ class VehicleDynamics:
         self.speed = self.inst_speed
 
     @staticmethod
-    def chain(playerIdx=0) -> int:
-        return KartBody.vehicle_dynamics(playerIdx)
+    def chain(player_idx=0) -> int:
+        return KartBody.vehicle_dynamics(player_idx)
     
     @staticmethod
-    def vehicle_physics(playerIdx=0) -> int:
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+    def vehicle_physics(player_idx=0) -> int:
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         vehicle_physics_ptr = vehicle_dynamics_ref + 0x4
         return memory.read_u32(vehicle_physics_ptr)
     
@@ -36,8 +36,8 @@ class VehicleDynamics:
         return memory.read_u32(vehicle_physics_ptr)
     
     @staticmethod
-    def collision_group(playerIdx=0) -> int:
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+    def collision_group(player_idx=0) -> int:
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         collision_group_ptr = vehicle_dynamics_ref + 0x8
         return memory.read_u32(collision_group_ptr)
         #TODO
@@ -47,8 +47,8 @@ class VehicleDynamics:
         return memory.read_u32(collision_group_ptr)
     
     @staticmethod
-    def position(playerIdx=0) -> vec3:
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+    def position(player_idx=0) -> vec3:
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         position_ref = vehicle_dynamics_ref + 0x18
         return vec3.read(position_ref)
     
@@ -57,10 +57,10 @@ class VehicleDynamics:
         return vec3.read(position_ref)
     
     @staticmethod
-    def decaying_trick_rotation(playerIdx=0) -> quatf:
+    def decaying_trick_rotation(player_idx=0) -> quatf:
         """After ending a trick early, this contains the leftover
            trick rotation, which decays to zero."""
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         decaying_trick_rotation_ref = vehicle_dynamics_ref + 0x24
         return quatf.read(decaying_trick_rotation_ref)
     
@@ -71,9 +71,9 @@ class VehicleDynamics:
         return quatf.read(decaying_trick_rotation_ref)
     
     @staticmethod
-    def instantaneous_trick_rotation(playerIdx=0) -> quatf:
+    def instantaneous_trick_rotation(player_idx=0) -> quatf:
         """The extra rotation from a trick during midair."""
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         instantaneous_trick_rotation_ref = vehicle_dynamics_ref + 0x34
         return quatf.read(instantaneous_trick_rotation_ref)
     
@@ -83,10 +83,10 @@ class VehicleDynamics:
         return quatf.read(instantaneous_trick_rotation_ref)
     
     @staticmethod
-    def special_rotation(playerIdx=0) -> quatf:
+    def special_rotation(player_idx=0) -> quatf:
         """Extra rotation caused by ramp/halfpipe tricks.
            Only for display. Does not affect physics."""
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         special_rotation_ref = vehicle_dynamics_ref + 0x44
         return quatf.read(special_rotation_ref)
     
@@ -97,8 +97,8 @@ class VehicleDynamics:
         return quatf.read(special_rotation_ref)
     
     @staticmethod
-    def decaying_extra_rotation(playerIdx=0) -> quatf:
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+    def decaying_extra_rotation(player_idx=0) -> quatf:
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         decaying_extra_rotation_ref = vehicle_dynamics_ref + 0x54
         return quatf.read(decaying_extra_rotation_ref)
     
@@ -107,8 +107,8 @@ class VehicleDynamics:
         return quatf.read(decaying_extra_rotation_ref)
     
     @staticmethod
-    def instantaneous_extra_rotation(playerIdx=0) -> quatf:
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+    def instantaneous_extra_rotation(player_idx=0) -> quatf:
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         instantaneous_extra_rotation_ref = vehicle_dynamics_ref + 0x64
         return quatf.read(instantaneous_extra_rotation_ref)
     
@@ -117,8 +117,8 @@ class VehicleDynamics:
         return quatf.read(instantaneous_extra_rotation_ref)
     
     @staticmethod
-    def extra_rotation(playerIdx=0) -> quatf:
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+    def extra_rotation(player_idx=0) -> quatf:
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         extra_rotation_ref = vehicle_dynamics_ref + 0x74
         return quatf.read(extra_rotation_ref)
     
@@ -127,9 +127,9 @@ class VehicleDynamics:
         return quatf.read(extra_rotation_ref)
     
     @staticmethod
-    def pose(playerIdx=0) -> mat34:
+    def pose(player_idx=0) -> mat34:
         """Does not include wheelie"""
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         pose_ref = vehicle_dynamics_ref + 0x9C
         return mat34.read(pose_ref)
     
@@ -139,8 +139,8 @@ class VehicleDynamics:
         return mat34.read(pose_ref)
     
     @staticmethod
-    def x_axis(playerIdx=0) -> vec3:
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+    def x_axis(player_idx=0) -> vec3:
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         x_axis_ref = vehicle_dynamics_ref + 0xCC
         return vec3.read(x_axis_ref)
     
@@ -149,8 +149,8 @@ class VehicleDynamics:
         return vec3.read(x_axis_ref)
     
     @staticmethod
-    def y_axis(playerIdx=0) -> vec3:
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+    def y_axis(player_idx=0) -> vec3:
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         y_axis_ref = vehicle_dynamics_ref + 0xD8
         return vec3.read(y_axis_ref)
     
@@ -159,8 +159,8 @@ class VehicleDynamics:
         return vec3.read(y_axis_ref)
     
     @staticmethod
-    def z_axis(playerIdx=0) -> vec3:
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+    def z_axis(player_idx=0) -> vec3:
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         z_axis_ref = vehicle_dynamics_ref + 0xE4
         return vec3.read(z_axis_ref)
     
@@ -169,8 +169,8 @@ class VehicleDynamics:
         return vec3.read(z_axis_ref)
     
     @staticmethod
-    def speed(playerIdx=0) -> vec3:
-        vehicle_dynamics_ref = VehicleDynamics.chain(playerIdx)
+    def speed(player_idx=0) -> vec3:
+        vehicle_dynamics_ref = VehicleDynamics.chain(player_idx)
         speed_ref = vehicle_dynamics_ref + 0xF0
         return vec3.read(speed_ref)
     

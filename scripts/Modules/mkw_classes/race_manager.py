@@ -64,23 +64,23 @@ class RaceManager:
         return memory.read_u32(random_2_ptr)
     
     @staticmethod
-    def race_manager_player(playerIdx=0) -> int:
-        # Assert playerIdx is within the number of current players
+    def race_manager_player(player_idx=0) -> int:
+        # Assert player_idx is within the number of current players
         race_scenario_ref = RaceConfigScenario(RaceConfig.race_scenario())
-        assert(0 <= playerIdx < race_scenario_ref.player_count())
+        assert(0 <= player_idx < race_scenario_ref.player_count())
 
         race_manager_ref = RaceManager.chain()
         player_array = race_manager_ref + 0xC
-        player_ptr = memory.read_u32(player_array) + (playerIdx * 0x4)
+        player_ptr = memory.read_u32(player_array) + (player_idx * 0x4)
         return memory.read_u32(player_ptr)
     
-    def inst_race_manager_player(self, playerIdx=0) -> int:
-        # Assert playerIdx is within the number of current players
+    def inst_race_manager_player(self, player_idx=0) -> int:
+        # Assert player_idx is within the number of current players
         race_scenario_ref = RaceConfigScenario(RaceConfig.race_scenario())
-        assert(0 <= playerIdx < race_scenario_ref.player_count())
+        assert(0 <= player_idx < race_scenario_ref.player_count())
 
         player_array = self.addr + 0xC
-        player_ptr = memory.read_u32(player_array) + (playerIdx * 0x4)
+        player_ptr = memory.read_u32(player_array) + (player_idx * 0x4)
         return memory.read_u32(player_ptr)
     
     @staticmethod
@@ -105,7 +105,7 @@ class RaceManager:
     
     @staticmethod
     def player_id_in_position(position=0) -> int:
-        # Assert playerIdx is within the number of current players
+        # Assert player_idx is within the number of current players
         race_scenario_ref = RaceConfigScenario(RaceConfig.race_scenario())
         assert(0 <= position < race_scenario_ref.player_count())
 
@@ -115,7 +115,7 @@ class RaceManager:
         return memory.read_u8(player_id_position_ref)
     
     def inst_player_id_in_position(self, position=0) -> int:
-        # Assert playerIdx is within the number of current players
+        # Assert player_idx is within the number of current players
         race_scenario_ref = RaceConfigScenario(RaceConfig.race_scenario())
         assert(0 <= position < race_scenario_ref.player_count())
 

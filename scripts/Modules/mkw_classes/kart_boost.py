@@ -9,8 +9,8 @@ class BoostType(Enum):
     TRICK_AND_ZIPPER = 0x10
 
 class KartBoost:
-    def __init__(self, playerIdx=0, addr=None):
-        self.addr = addr if addr else KartBoost.chain(playerIdx)
+    def __init__(self, player_idx=0, addr=None):
+        self.addr = addr if addr else KartBoost.chain(player_idx)
 
         self.all_mt_timer = self.inst_all_mt_timer
         self.mushroom_and_boost_panel_timer = self.inst_mushroom_and_boost_panel_timer
@@ -21,14 +21,14 @@ class KartBoost:
         self.boost_speed_limit = self.inst_boost_speed_limit
 
     @staticmethod
-    def chain(playerIdx=0) -> int:
-        return KartMove.kart_boost(playerIdx)
+    def chain(player_idx=0) -> int:
+        return KartMove.kart_boost(player_idx)
     
     @staticmethod
-    def all_mt_timer(playerIdx=0) -> int:
+    def all_mt_timer(player_idx=0) -> int:
         """This is a decrementing frame counter for the remaining
            duration of start boosts, mini-turbos, and stand-still mini-turbos."""
-        kart_boost_ref = KartBoost.chain(playerIdx)
+        kart_boost_ref = KartBoost.chain(player_idx)
         all_mt_timer_ref = kart_boost_ref + 0x4
         return memory.read_u16(all_mt_timer_ref)
     
@@ -39,8 +39,8 @@ class KartBoost:
         return memory.read_u16(all_mt_timer_ref)
     
     @staticmethod
-    def mushroom_and_boost_panel_timer(playerIdx=0) -> int:
-        kart_boost_ref = KartBoost.chain(playerIdx)
+    def mushroom_and_boost_panel_timer(player_idx=0) -> int:
+        kart_boost_ref = KartBoost.chain(player_idx)
         mushroom_and_boost_panel_timer_ref = kart_boost_ref + 0x8
         return memory.read_u16(mushroom_and_boost_panel_timer_ref)
     
@@ -49,8 +49,8 @@ class KartBoost:
         return memory.read_u16(mushroom_and_boost_panel_timer_ref)
     
     @staticmethod
-    def trick_and_zipper_timer(playerIdx=0) -> int:
-        kart_boost_ref = KartBoost.chain(playerIdx)
+    def trick_and_zipper_timer(player_idx=0) -> int:
+        kart_boost_ref = KartBoost.chain(player_idx)
         trick_and_zipper_timer_ref = kart_boost_ref + 0xC
         return memory.read_u16(trick_and_zipper_timer_ref)
     
@@ -59,8 +59,8 @@ class KartBoost:
         return memory.read_u16(trick_and_zipper_timer_ref)
     
     @staticmethod
-    def boost_type(playerIdx=0) -> BoostType:
-        kart_boost_ref = KartBoost.chain(playerIdx)
+    def boost_type(player_idx=0) -> BoostType:
+        kart_boost_ref = KartBoost.chain(player_idx)
         boost_type_ref = kart_boost_ref + 0x10
         return memory.read_u16(boost_type_ref)
     
@@ -69,8 +69,8 @@ class KartBoost:
         return memory.read_u16(boost_type_ref)
     
     @staticmethod
-    def boost_multiplier(playerIdx=0) -> float:
-        kart_boost_ref = KartBoost.chain(playerIdx)
+    def boost_multiplier(player_idx=0) -> float:
+        kart_boost_ref = KartBoost.chain(player_idx)
         boost_multiplier_ref = kart_boost_ref + 0x14
         return memory.read_f32(boost_multiplier_ref)
     
@@ -79,8 +79,8 @@ class KartBoost:
         return memory.read_f32(boost_multiplier_ref)
     
     @staticmethod
-    def boost_acceleration(playerIdx=0) -> float:
-        kart_boost_ref = KartBoost.chain(playerIdx)
+    def boost_acceleration(player_idx=0) -> float:
+        kart_boost_ref = KartBoost.chain(player_idx)
         boost_acceleration_ref = kart_boost_ref + 0x18
         return memory.read_f32(boost_acceleration_ref)
     
@@ -89,8 +89,8 @@ class KartBoost:
         return memory.read_f32(boost_acceleration_ref)
     
     @staticmethod
-    def boost_speed_limit(playerIdx=0) -> float:
-        kart_boost_ref = KartBoost.chain(playerIdx)
+    def boost_speed_limit(player_idx=0) -> float:
+        kart_boost_ref = KartBoost.chain(player_idx)
         boost_speed_limit_ref = kart_boost_ref + 0x20
         return memory.read_f32(boost_speed_limit_ref)
     

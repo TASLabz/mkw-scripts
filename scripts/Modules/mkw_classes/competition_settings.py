@@ -64,19 +64,19 @@ class CompetitionSettings:
         cpu_count_ref = self.addr + 0x58
         return memory.read_u16(cpu_count_ref)
     
-    def cpu_combo(self, cpuIdx=0) -> int:
-        assert(0 <= cpuIdx < 11)
-        cpu_combo_ref = self.addr + 0x5A + (cpuIdx * 0x2)
+    def cpu_combo(self, cpu_idx=0) -> int:
+        assert(0 <= cpu_idx < 11)
+        cpu_combo_ref = self.addr + 0x5A + (cpu_idx * 0x2)
         return cpu_combo_ref
     
-    def cpu_combo_character_id(self, cpuIdx=0) -> int:
-        assert(0 <= cpuIdx < 11)
-        cpu_combo_ref = self.addr + 0x5A + (cpuIdx * 0x2)
+    def cpu_combo_character_id(self, cpu_idx=0) -> int:
+        assert(0 <= cpu_idx < 11)
+        cpu_combo_ref = self.addr + 0x5A + (cpu_idx * 0x2)
         character_id_ref = cpu_combo_ref + 0x0
         return memory.read_u8(character_id_ref)
     
-    def cpu_combo_vehicle_id(self, cpuIdx=0) -> int:
-        assert(0 <= cpuIdx < 11)
-        cpu_combo_ref = self.addr + 0x5A + (cpuIdx * 0x2)
+    def cpu_combo_vehicle_id(self, cpu_idx=0) -> int:
+        assert(0 <= cpu_idx < 11)
+        cpu_combo_ref = self.addr + 0x5A + (cpu_idx * 0x2)
         vehicle_id_ref = cpu_combo_ref + 0x1
         return memory.read_u8(vehicle_id_ref)

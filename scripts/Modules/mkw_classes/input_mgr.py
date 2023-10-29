@@ -29,27 +29,27 @@ class InputMgr:
             raise RegionError
 
     @staticmethod
-    def player_input(playerIdx=0) -> int:
-        assert(0 <= playerIdx < 4)
+    def player_input(player_idx=0) -> int:
+        assert(0 <= player_idx < 4)
         input_mgr_ref = InputMgr.chain()
-        player_input_ref = input_mgr_ref + 0x4 + (playerIdx * 0xEC)
+        player_input_ref = input_mgr_ref + 0x4 + (player_idx * 0xEC)
         return player_input_ref
     
-    def inst_player_input(self, playerIdx=0) -> int:
-        assert(0 <= playerIdx < 4)
-        player_input_ref = self.addr + 0x4 + (playerIdx * 0xEC)
+    def inst_player_input(self, player_idx=0) -> int:
+        assert(0 <= player_idx < 4)
+        player_input_ref = self.addr + 0x4 + (player_idx * 0xEC)
         return player_input_ref
     
     @staticmethod
-    def ai_kart_input(kartIdx=0) -> int:
-        assert(0 <= kartIdx < 12)
+    def ai_kart_input(kart_idx=0) -> int:
+        assert(0 <= kart_idx < 12)
         input_mgr_ref = InputMgr.chain()
-        player_input_ref = input_mgr_ref + 0x3B4 + (kartIdx * 0x180)
+        player_input_ref = input_mgr_ref + 0x3B4 + (kart_idx * 0x180)
         return player_input_ref
     
-    def inst_ai_kart_input(self, kartIdx=0) -> int:
-        assert(0 <= kartIdx < 12)
-        player_input_ref = self.addr + 0x3B4 + (kartIdx * 0x180)
+    def inst_ai_kart_input(self, kart_idx=0) -> int:
+        assert(0 <= kart_idx < 12)
+        player_input_ref = self.addr + 0x3B4 + (kart_idx * 0x180)
         return player_input_ref
     
     @staticmethod
@@ -73,39 +73,39 @@ class InputMgr:
         return dummy_controller_ref
     
     @staticmethod
-    def wii_controller(controllerIdx=0) -> int:
-        assert(0 <= controllerIdx < 4)
+    def wii_controller(controller_idx=0) -> int:
+        assert(0 <= controller_idx < 4)
         input_mgr_ref = InputMgr.chain()
-        wii_controller_ref = input_mgr_ref + 0x1720 + (controllerIdx * 0x920)
+        wii_controller_ref = input_mgr_ref + 0x1720 + (controller_idx * 0x920)
         return wii_controller_ref
     
-    def inst_wii_controller(self, controllerIdx=0) -> int:
-        assert(0 <= controllerIdx < 4)
-        wii_controller_ref = self.addr + 0x1720 + (controllerIdx * 0x920)
+    def inst_wii_controller(self, controller_idx=0) -> int:
+        assert(0 <= controller_idx < 4)
+        wii_controller_ref = self.addr + 0x1720 + (controller_idx * 0x920)
         return wii_controller_ref
     
     @staticmethod
-    def gc_controller(controllerIdx=0) -> int:
-        assert(0 <= controllerIdx < 4)
+    def gc_controller(controller_idx=0) -> int:
+        assert(0 <= controller_idx < 4)
         input_mgr_ref = InputMgr.chain()
-        gc_controller_ref = input_mgr_ref + 0x3BA0 + (controllerIdx * 0xB0)
+        gc_controller_ref = input_mgr_ref + 0x3BA0 + (controller_idx * 0xB0)
         return gc_controller_ref
     
-    def inst_gc_controller(self, controllerIdx=0) -> int:
-        assert(0 <= controllerIdx < 4)
-        gc_controller_ref = self.addr + 0x3BA0 + (controllerIdx * 0xB0)
+    def inst_gc_controller(self, controller_idx=0) -> int:
+        assert(0 <= controller_idx < 4)
+        gc_controller_ref = self.addr + 0x3BA0 + (controller_idx * 0xB0)
         return gc_controller_ref
     
     @staticmethod
-    def ghost_controller(controllerIdx=0) -> int:
-        assert(0 <= controllerIdx < 4)
+    def ghost_controller(controller_idx=0) -> int:
+        assert(0 <= controller_idx < 4)
         input_mgr_ref = InputMgr.chain()
-        ghost_controller_ref = input_mgr_ref + 0x3E60 + (controllerIdx * 0xA8)
+        ghost_controller_ref = input_mgr_ref + 0x3E60 + (controller_idx * 0xA8)
         return ghost_controller_ref
     
-    def inst_ghost_controller(self, controllerIdx=0) -> int:
-        assert(0 <= controllerIdx < 4)
-        ghost_controller_ref = self.addr + 0x3E60 + (controllerIdx * 0xA8)
+    def inst_ghost_controller(self, controller_idx=0) -> int:
+        assert(0 <= controller_idx < 4)
+        ghost_controller_ref = self.addr + 0x3E60 + (controller_idx * 0xA8)
         return ghost_controller_ref
     
     @staticmethod
@@ -119,13 +119,13 @@ class InputMgr:
         return rumble_settings_ref
     
     @staticmethod
-    def pad_status(padIdx=0) -> int:
+    def pad_status(pad_idx=0) -> int:
         input_mgr_ref = InputMgr.chain()
-        pad_status_ref = input_mgr_ref + 0x4120 + (padIdx * 0xC)
+        pad_status_ref = input_mgr_ref + 0x4120 + (pad_idx * 0xC)
         return pad_status_ref
     
-    def inst_pad_status(self, padIdx=0) -> int:
-        pad_status_ref = self.addr + 0x4120 + (padIdx * 0xC)
+    def inst_pad_status(self, pad_idx=0) -> int:
+        pad_status_ref = self.addr + 0x4120 + (pad_idx * 0xC)
         return pad_status_ref
     
     @staticmethod

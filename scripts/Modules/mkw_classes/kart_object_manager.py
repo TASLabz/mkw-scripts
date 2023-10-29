@@ -19,10 +19,10 @@ class KartObjectManager:
         return memory.read_u32(kart_obj_mgr_ref + 0x20)
 
     @staticmethod
-    def kart_object(playerIdx=0) -> int:
-        assert(0 <= playerIdx < KartObjectManager.player_count())
+    def kart_object(player_idx=0) -> int:
+        assert(0 <= player_idx < KartObjectManager.player_count())
         kart_obj_arr_ref = KartObjectManager.kart_object_arr()
-        kart_obj_ptr = kart_obj_arr_ref + (playerIdx * 0x4)
+        kart_obj_ptr = kart_obj_arr_ref + (player_idx * 0x4)
         return memory.read_u32(kart_obj_ptr)
 
     @staticmethod

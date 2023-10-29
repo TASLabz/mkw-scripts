@@ -48,8 +48,9 @@ def delta_position(playerIdx=0):
 
     return physics_ref.position() - dynamics_ref.position()
 
-"""Next 3 functions are used for exact finish display"""
-def getIGT(lap, player):
+# Next 3 functions are used for exact finish display
+
+def get_igt(lap, player):
     if player == 0:
         address = 0x800001B0
     elif player == 1:
@@ -59,22 +60,26 @@ def getIGT(lap, player):
     
     race_manager_player_inst = RaceManagerPlayer(player)
     timer_inst = race_manager_player_inst.lap_finish_time(lap-1)
-    min = timer_inst.minutes()
-    sec = timer_inst.seconds()
-    mil = memory.read_f32(address + (lap-1)*0x4) / 1000 % 1
-    return ExactTimer(min, sec, mil)
+    mins = timer_inst.minutes()
+    secs = timer_inst.seconds()
+    mils = memory.read_f32(address + (lap-1)*0x4) / 1000 % 1
+    return ExactTimer(mins, secs, mils)
 
-def updateExactFinish(lap, player):
-    currentLapTime = getIGT(lap, player)
+def update_exact_finish(lap, player):
+    currentLapTime = get_igt(lap, player)
     if lap > 1:
-        pastLapTime = getIGT(lap-1, player)
+        pastLapTime = get_igt(lap-1, player)
     else:
         pastLapTime = ExactTimer(0, 0, 0.0)
 
     return currentLapTime - pastLapTime
 
-def getUnroundedTime(lap, player):
+def get_unrounded_time(lap, player):
     t = ExactTimer(0, 0, 0)
     for i in range(lap):
-        t += updateExactFinish(i + 1, player)
+        t += update_exact_finish(i + 1, player)
     return t
+
+# TODO: Rotation display helper functions
+
+# TODO: Time difference display helper functions

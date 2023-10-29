@@ -14,7 +14,7 @@ def on_frame_advance():
     if race_mgr.state().value >= RaceState.COUNTDOWN.value:
 
         # TODO: use masks instead of the values for buttons
-        race_mgr_player_addr = race_mgr.race_manager_player(playerIdx=0)
+        race_mgr_player_addr = race_mgr.race_manager_player()
         race_mgr_player = RaceManagerPlayer(addr=race_mgr_player_addr)
         kart_input = KartInput(addr=race_mgr_player.kart_input())
         current_input_state = RaceInputState(addr=kart_input.current_input_state())

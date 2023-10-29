@@ -3,8 +3,8 @@ from dolphin import memory
 from . import KartObjectManager
 
 class KartObject:
-    def __init__(self, playerIdx=0, addr=None):
-        self.addr = addr if addr else KartObject.chain(playerIdx)
+    def __init__(self, player_idx=0, addr=None):
+        self.addr = addr if addr else KartObject.chain(player_idx)
 
         self.kart_sub = self.inst_kart_sub
         self.kart_settings = self.inst_kart_settings
@@ -16,12 +16,12 @@ class KartObject:
         self.kart_collide = self.inst_kart_collide
     
     @staticmethod
-    def chain(playerIdx=0) -> int:
-        return KartObjectManager.kart_object(playerIdx)
+    def chain(player_idx=0) -> int:
+        return KartObjectManager.kart_object(player_idx)
 
     @staticmethod
-    def kart_sub(playerIdx=0) -> int:
-        kart_obj_ref = KartObject.chain(playerIdx)
+    def kart_sub(player_idx=0) -> int:
+        kart_obj_ref = KartObject.chain(player_idx)
         kart_sub_ptr = kart_obj_ref + 0x10
         return memory.read_u32(kart_sub_ptr)
     
@@ -30,8 +30,8 @@ class KartObject:
         return memory.read_u32(kart_sub_ptr)
 
     @staticmethod
-    def kart_settings(playerIdx=0) -> int:
-        kart_obj_ref = KartObject.chain(playerIdx)
+    def kart_settings(player_idx=0) -> int:
+        kart_obj_ref = KartObject.chain(player_idx)
         kart_settings_ptr = kart_obj_ref + 0x14
         return memory.read_u32(kart_settings_ptr)
     
@@ -40,16 +40,16 @@ class KartObject:
         return memory.read_u32(kart_settings_ptr)
 
     @staticmethod
-    def kart_pointers(playerIdx=0) -> int:
-        kart_obj_ref = KartObject.chain(playerIdx)
+    def kart_pointers(player_idx=0) -> int:
+        kart_obj_ref = KartObject.chain(player_idx)
         return kart_obj_ref + 0x1C
     
     def inst_kart_pointers(self) -> int:
         return self.addr + 0x1C
 
     @staticmethod
-    def kart_state(playerIdx=0) -> int:
-        kart_pointers_ref = KartObject.kart_pointers(playerIdx)
+    def kart_state(player_idx=0) -> int:
+        kart_pointers_ref = KartObject.kart_pointers(player_idx)
         kart_state_ptr = kart_pointers_ref + 0x4
         return memory.read_u32(kart_state_ptr)
     
@@ -59,8 +59,8 @@ class KartObject:
         return memory.read_u32(kart_state_ptr)
     
     @staticmethod
-    def kart_body(playerIdx=0) -> int:
-        kart_pointers_ref = KartObject.kart_pointers(playerIdx)
+    def kart_body(player_idx=0) -> int:
+        kart_pointers_ref = KartObject.kart_pointers(player_idx)
         kart_state_ptr = kart_pointers_ref + 0x8
         return memory.read_u32(kart_state_ptr)
     
@@ -70,8 +70,8 @@ class KartObject:
         return memory.read_u32(kart_state_ptr)
 
     @staticmethod
-    def kart_move(playerIdx=0) -> int:
-        kart_pointers_ref = KartObject.kart_pointers(playerIdx)
+    def kart_move(player_idx=0) -> int:
+        kart_pointers_ref = KartObject.kart_pointers(player_idx)
         kart_move_ptr = kart_pointers_ref + 0x28
         return memory.read_u32(kart_move_ptr)
     
@@ -81,8 +81,8 @@ class KartObject:
         return memory.read_u32(kart_move_ptr)
 
     @staticmethod
-    def kart_action(playerIdx=0) -> int:
-        kart_pointers_ref = KartObject.kart_pointers(playerIdx)
+    def kart_action(player_idx=0) -> int:
+        kart_pointers_ref = KartObject.kart_pointers(player_idx)
         kart_action_ptr = kart_pointers_ref + 0x2C
         return memory.read_u32(kart_action_ptr)
     
@@ -92,8 +92,8 @@ class KartObject:
         return memory.read_u32(kart_action_ptr)
     
     @staticmethod
-    def kart_collide(playerIdx=0) -> int:
-        kart_pointers_ref = KartObject.kart_pointers(playerIdx)
+    def kart_collide(player_idx=0) -> int:
+        kart_pointers_ref = KartObject.kart_pointers(player_idx)
         kart_collide_ptr = kart_pointers_ref + 0x30
         return memory.read_u32(kart_collide_ptr)
     

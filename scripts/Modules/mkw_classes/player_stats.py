@@ -3,8 +3,8 @@ from dolphin import memory
 from . import KartParam, WheelCount, VehicleType
 
 class PlayerStats:
-    def __init__(self, playerIdx=0, addr=None):
-        self.addr = addr if addr else PlayerStats.chain(playerIdx)
+    def __init__(self, player_idx=0, addr=None):
+        self.addr = addr if addr else PlayerStats.chain(player_idx)
 
         self.wheel_count_enum = self.inst_wheel_count_enum
         self.vehicle_type_enum = self.inst_vehicle_type_enum
@@ -35,12 +35,12 @@ class PlayerStats:
         self.tire_distance = self.inst_tire_distance
     
     @staticmethod
-    def chain(playerIdx=0) -> int:
-        return KartParam.player_stats(playerIdx)
+    def chain(player_idx=0) -> int:
+        return KartParam.player_stats(player_idx)
 
     @staticmethod
-    def wheel_count_enum(playerIdx=0) -> WheelCount:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def wheel_count_enum(player_idx=0) -> WheelCount:
+        player_stats_ref = PlayerStats.chain(player_idx)
         wheel_count_enum_ref = player_stats_ref + 0x0
         return WheelCount(memory.read_u32(wheel_count_enum_ref))
 
@@ -49,8 +49,8 @@ class PlayerStats:
         return WheelCount(memory.read_u32(wheel_count_enum_ref))
 
     @staticmethod
-    def vehicle_type_enum(playerIdx=0) -> VehicleType:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def vehicle_type_enum(player_idx=0) -> VehicleType:
+        player_stats_ref = PlayerStats.chain(player_idx)
         vehicle_type_enum_ref = player_stats_ref + 0x4
         return VehicleType(memory.read_u32(vehicle_type_enum_ref))
 
@@ -59,8 +59,8 @@ class PlayerStats:
         return VehicleType(memory.read_u32(vehicle_type_enum_ref))
 
     @staticmethod
-    def weight_class(playerIdx=0) -> int:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def weight_class(player_idx=0) -> int:
+        player_stats_ref = PlayerStats.chain(player_idx)
         weight_class_ref = player_stats_ref + 0x8
         return memory.read_u32(weight_class_ref)
 
@@ -69,8 +69,8 @@ class PlayerStats:
         return memory.read_u32(weight_class_ref)
 
     @staticmethod
-    def weight(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def weight(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         weight_ref = player_stats_ref + 0x10
         return memory.read_f32(weight_ref)
 
@@ -79,8 +79,8 @@ class PlayerStats:
         return memory.read_f32(weight_ref)
 
     @staticmethod
-    def bump_deviation_level(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def bump_deviation_level(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         bump_deviation_level_ref = player_stats_ref + 0x14
         return memory.read_f32(bump_deviation_level_ref)
 
@@ -89,8 +89,8 @@ class PlayerStats:
         return memory.read_f32(bump_deviation_level_ref)
 
     @staticmethod
-    def base_speed(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def base_speed(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         base_speed_ref = player_stats_ref + 0x18
         return memory.read_f32(base_speed_ref)
 
@@ -99,8 +99,8 @@ class PlayerStats:
         return memory.read_f32(base_speed_ref)
 
     @staticmethod
-    def handling_speed_multiplier(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def handling_speed_multiplier(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         handling_speed_multiplier_ref = player_stats_ref + 0x1C
         return memory.read_f32(handling_speed_multiplier_ref)
 
@@ -109,8 +109,8 @@ class PlayerStats:
         return memory.read_f32(handling_speed_multiplier_ref)
 
     @staticmethod
-    def tilt(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def tilt(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         tilt_ref = player_stats_ref + 0x20
         return memory.read_f32(tilt_ref)
 
@@ -119,44 +119,44 @@ class PlayerStats:
         return memory.read_f32(tilt_ref)
 
     @staticmethod
-    def standard_accel_as(playerIdx=0, accelIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
-        assert (0 <= accelIdx <= 3)
-        standard_accel_as_ref = player_stats_ref + 0x24 + (accelIdx * 0x4)
+    def standard_accel_as(player_idx=0, accel_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
+        assert (0 <= accel_idx <= 3)
+        standard_accel_as_ref = player_stats_ref + 0x24 + (accel_idx * 0x4)
         return memory.read_f32(standard_accel_as_ref)
 
-    def inst_standard_accel_as(self, accelIdx=0) -> float:
-        assert (0 <= accelIdx <= 3)
-        standard_accel_as_ref = self.addr + 0x24 + (accelIdx * 0x4)
+    def inst_standard_accel_as(self, accel_idx=0) -> float:
+        assert (0 <= accel_idx <= 3)
+        standard_accel_as_ref = self.addr + 0x24 + (accel_idx * 0x4)
         return memory.read_f32(standard_accel_as_ref)
 
     @staticmethod
-    def standard_accel_ts(playerIdx=0, accelIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
-        assert (0 <= accelIdx <= 2)
-        standard_accel_ts_ref = player_stats_ref + 0x34 + (accelIdx * 0x4)
+    def standard_accel_ts(player_idx=0, accel_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
+        assert (0 <= accel_idx <= 2)
+        standard_accel_ts_ref = player_stats_ref + 0x34 + (accel_idx * 0x4)
         return memory.read_f32(standard_accel_ts_ref)
 
-    def inst_standard_accel_ts(self, accelIdx=0) -> float:
-        assert (0 <= accelIdx <= 2)
-        standard_accel_ts_ref = self.addr + 0x34 + (accelIdx * 0x4)
+    def inst_standard_accel_ts(self, accel_idx=0) -> float:
+        assert (0 <= accel_idx <= 2)
+        standard_accel_ts_ref = self.addr + 0x34 + (accel_idx * 0x4)
         return memory.read_f32(standard_accel_ts_ref)
 
     @staticmethod
-    def drift_accel_as(playerIdx=0, accelIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
-        assert (0 <= accelIdx <= 1)
-        drift_accel_as_ref = player_stats_ref + 0x40 + (accelIdx * 0x4)
+    def drift_accel_as(player_idx=0, accel_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
+        assert (0 <= accel_idx <= 1)
+        drift_accel_as_ref = player_stats_ref + 0x40 + (accel_idx * 0x4)
         return memory.read_f32(drift_accel_as_ref)
 
-    def inst_drift_accel_as(self, accelIdx=0) -> float:
-        assert (0 <= accelIdx <= 1)
-        drift_accel_as_ref = self.addr + 0x40 + (accelIdx * 0x4)
+    def inst_drift_accel_as(self, accel_idx=0) -> float:
+        assert (0 <= accel_idx <= 1)
+        drift_accel_as_ref = self.addr + 0x40 + (accel_idx * 0x4)
         return memory.read_f32(drift_accel_as_ref)
 
     @staticmethod
-    def drift_accel_ts(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def drift_accel_ts(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         drift_accel_ts_ref = player_stats_ref + 0x48
         return memory.read_f32(drift_accel_ts_ref)
 
@@ -165,8 +165,8 @@ class PlayerStats:
         return memory.read_f32(drift_accel_ts_ref)
 
     @staticmethod
-    def manual_handling(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def manual_handling(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         manual_handling_ref = player_stats_ref + 0x4C
         return memory.read_f32(manual_handling_ref)
 
@@ -175,8 +175,8 @@ class PlayerStats:
         return memory.read_f32(manual_handling_ref)
 
     @staticmethod
-    def auto_handling(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def auto_handling(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         auto_handling_ref = player_stats_ref + 0x50
         return memory.read_f32(auto_handling_ref)
 
@@ -185,8 +185,8 @@ class PlayerStats:
         return memory.read_f32(auto_handling_ref)
 
     @staticmethod
-    def handling_reactivity(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def handling_reactivity(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         handling_reactivity_ref = player_stats_ref + 0x54
         return memory.read_f32(handling_reactivity_ref)
 
@@ -195,8 +195,8 @@ class PlayerStats:
         return memory.read_f32(handling_reactivity_ref)
 
     @staticmethod
-    def manual_drift(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def manual_drift(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         manual_drift_ref = player_stats_ref + 0x58
         return memory.read_f32(manual_drift_ref)
 
@@ -205,8 +205,8 @@ class PlayerStats:
         return memory.read_f32(manual_drift_ref)
 
     @staticmethod
-    def auto_drift(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def auto_drift(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         auto_drift_ref = player_stats_ref + 0x5C
         return memory.read_f32(auto_drift_ref)
 
@@ -215,8 +215,8 @@ class PlayerStats:
         return memory.read_f32(auto_drift_ref)
 
     @staticmethod
-    def drift_reactivity(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def drift_reactivity(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         drift_reactivity_ref = player_stats_ref + 0x60
         return memory.read_f32(drift_reactivity_ref)
 
@@ -225,9 +225,9 @@ class PlayerStats:
         return memory.read_f32(drift_reactivity_ref)
 
     @staticmethod
-    def target_angle(playerIdx=0) -> float:
+    def target_angle(player_idx=0) -> float:
         """Outside drift target angle"""
-        player_stats_ref = PlayerStats.chain(playerIdx)
+        player_stats_ref = PlayerStats.chain(player_idx)
         target_angle_ref = player_stats_ref + 0x64
         return memory.read_f32(target_angle_ref)
 
@@ -236,8 +236,8 @@ class PlayerStats:
         return memory.read_f32(target_angle_ref)
 
     @staticmethod
-    def outside_drift_decrement(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def outside_drift_decrement(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         outside_drift_decrement_ref = player_stats_ref + 0x68
         return memory.read_f32(outside_drift_decrement_ref)
 
@@ -247,8 +247,8 @@ class PlayerStats:
         return memory.read_f32(outside_drift_decrement_ref)
 
     @staticmethod
-    def mt_duration(playerIdx=0) -> int:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def mt_duration(player_idx=0) -> int:
+        player_stats_ref = PlayerStats.chain(player_idx)
         mt_duration_ref = player_stats_ref + 0x6C
         return memory.read_s32(mt_duration_ref)
 
@@ -257,33 +257,33 @@ class PlayerStats:
         return memory.read_s32(mt_duration_ref)
 
     @staticmethod
-    def speed_factors(playerIdx=0, factorIdx=0) -> float:
-        assert(0 <= factorIdx < 0x20)
-        player_stats_ref = PlayerStats.chain(playerIdx)
-        speed_factor_ref = player_stats_ref + 0x70 + (factorIdx * 0x4)
+    def speed_factors(player_idx=0, factor_idx=0) -> float:
+        assert(0 <= factor_idx < 0x20)
+        player_stats_ref = PlayerStats.chain(player_idx)
+        speed_factor_ref = player_stats_ref + 0x70 + (factor_idx * 0x4)
         return memory.read_f32(speed_factor_ref)
 
-    def inst_speed_factors(self, factorIdx=0) -> float:
-        assert(0 <= factorIdx < 0x20)
-        speed_factor_ref = self.addr + 0x70 + (factorIdx * 0x4)
+    def inst_speed_factors(self, factor_idx=0) -> float:
+        assert(0 <= factor_idx < 0x20)
+        speed_factor_ref = self.addr + 0x70 + (factor_idx * 0x4)
         return memory.read_f32(speed_factor_ref)
 
     @staticmethod
-    def handling_factors(playerIdx=0, factorIdx=0) -> float:
-        assert(0 <= factorIdx < 0x20)
-        player_stats_ref = PlayerStats.chain(playerIdx)
-        handling_factor_ref = player_stats_ref + 0xF0 + (factorIdx * 0x4)
+    def handling_factors(player_idx=0, factor_idx=0) -> float:
+        assert(0 <= factor_idx < 0x20)
+        player_stats_ref = PlayerStats.chain(player_idx)
+        handling_factor_ref = player_stats_ref + 0xF0 + (factor_idx * 0x4)
         return memory.read_f32(handling_factor_ref)
 
-    def inst_handling_factors(self, factorIdx=0) -> float:
-        assert(0 <= factorIdx < 0x20)
-        handling_factor_ref = self.addr + 0xF0 + (factorIdx * 0x4)
+    def inst_handling_factors(self, factor_idx=0) -> float:
+        assert(0 <= factor_idx < 0x20)
+        handling_factor_ref = self.addr + 0xF0 + (factor_idx * 0x4)
         return memory.read_f32(handling_factor_ref)
 
     @staticmethod
-    def rotating_item_obj_param(playerIdx=0, idx=0) -> float:
+    def rotating_item_obj_param(player_idx=0, idx=0) -> float:
         assert(0 <= idx < 4)
-        player_stats_ref = PlayerStats.chain(playerIdx)
+        player_stats_ref = PlayerStats.chain(player_idx)
         rotating_item_obj_param_ref = player_stats_ref + 0x170 + (idx * 0x4)
         return memory.read_f32(rotating_item_obj_param_ref)
 
@@ -293,8 +293,8 @@ class PlayerStats:
         return memory.read_f32(rotating_item_obj_param_ref)
 
     @staticmethod
-    def vertical_tilt(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def vertical_tilt(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         vertical_tilt_ref = player_stats_ref + 0x180
         return memory.read_f32(vertical_tilt_ref)
 
@@ -303,8 +303,8 @@ class PlayerStats:
         return memory.read_f32(vertical_tilt_ref)
 
     @staticmethod
-    def mega_scale(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def mega_scale(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         mega_scale_ref = player_stats_ref + 0x184
         return memory.read_f32(mega_scale_ref)
 
@@ -313,8 +313,8 @@ class PlayerStats:
         return memory.read_f32(mega_scale_ref)
 
     @staticmethod
-    def tire_distance(playerIdx=0) -> float:
-        player_stats_ref = PlayerStats.chain(playerIdx)
+    def tire_distance(player_idx=0) -> float:
+        player_stats_ref = PlayerStats.chain(player_idx)
         tire_distance_ref = player_stats_ref + 0x188
         return memory.read_f32(tire_distance_ref)
 

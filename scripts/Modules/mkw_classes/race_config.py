@@ -52,15 +52,15 @@ class RaceConfig:
         return awards_scenario_ref
     
     @staticmethod
-    def ghost(ghostIdx=0) -> int:
+    def ghost(ghost_idx=0) -> int:
         """The RKG file buffer"""
-        assert(0 <= ghostIdx < 2)
+        assert(0 <= ghost_idx < 2)
         race_config_ref = RaceConfig.chain()
-        ghost_ref = race_config_ref + 0x23F0 + (ghostIdx * 0x5000)
+        ghost_ref = race_config_ref + 0x23F0 + (ghost_idx * 0x5000)
         return ghost_ref
     
-    def inst_ghost(self, ghostIdx=0) -> int:
-        assert(0 <= ghostIdx < 2)
-        ghost_ref = self.addr + 0x23F0 + (ghostIdx * 0x5000)
+    def inst_ghost(self, ghost_idx=0) -> int:
+        assert(0 <= ghost_idx < 2)
+        ghost_ref = self.addr + 0x23F0 + (ghost_idx * 0x5000)
         return ghost_ref
     

@@ -1,5 +1,5 @@
 from dolphin import event, gui, utils
-from Modules import TTK_Lib
+from Modules import ttk_lib
 from Modules.mkw_utils import frame_of_input
 from Modules import mkw_translations as translate
 from Modules.mkw_classes import RaceManager, RaceState, KartSettings
@@ -13,30 +13,30 @@ star_slide_bikes  = ("Bit Bike", "Bullet Bike", "Dolphin Dasher", "Magikruiser",
                      "Standard Bike S")
 
 @event.on_savestateload
-def onStateLoad(is_slot, slot):
-    playerInputs.readFromFile()
+def on_state_load(is_slot, slot):
+    player_inputs.read_from_file()
 
 @event.on_frameadvance
-def onFrameAdvance():
+def on_frame_advance():
     frame = frame_of_input()
     stage = RaceManager.state()
     
-    playerInput = playerInputs[frame]
-    if (playerInput and stage.value == RaceState.COUNTDOWN.value):
-        TTK_Lib.writePlayerInputs(playerInput)
+    player_input = player_inputs[frame]
+    if (player_input and stage.value == RaceState.COUNTDOWN.value):
+        ttk_lib.write_player_inputs(player_input)
 
 def main() -> None:
-    global playerInputs
-    playerInputs = FrameSequence(check_vehicle(translate.vehicle_id()))
+    global player_inputs
+    player_inputs = FrameSequence(check_vehicle(translate.vehicle_id()))
     
-    gui.add_osd_message("Startslide: {} ".format(len(playerInputs) > 0))
+    gui.add_osd_message("Startslide: {} ".format(len(player_inputs) > 0))
     
 # Ensures the right slide for the currently selected bike is being loaded,
 # even through savestates and vehicle swaps.
 def check_vehicle(vehicle):
 
     # Returns True if the player is using a bike.
-    if KartSettings.is_bike(playerIdx=0):
+    if KartSettings.is_bike():
         
         path = utils.get_script_dir()
 
