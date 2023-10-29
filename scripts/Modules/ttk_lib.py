@@ -319,7 +319,7 @@ def get_metadata_and_write_to_rkg(inputs: FrameSequence, player_type: PlayerType
 def write_to_rkg(file_bytes: bytearray, player_type: PlayerType) -> None:
     # Get csv file path
     player_str = "Player" if player_type == PlayerType.PLAYER else "Ghost"
-    relative_path = ttk_config.rkgFilePath[player_str]
+    relative_path = ttk_config.rkg_file_path[player_str]
     absolute_path = os.path.join(utils.get_script_dir(), relative_path)
     
     try:

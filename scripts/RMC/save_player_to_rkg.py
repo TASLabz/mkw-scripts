@@ -18,7 +18,7 @@ def main() -> None:
         return
     
     ttk_lib.write_to_csv(input_sequence, ttk_lib.PlayerType.PLAYER)
-    ttk_lib.getMetadataAndWriteToRKG(input_sequence, ttk_lib.PlayerType.PLAYER)
+    ttk_lib.get_metadata_and_write_to_rkg(input_sequence, ttk_lib.PlayerType.PLAYER)
 
 if __name__ == '__main__':
     main()
