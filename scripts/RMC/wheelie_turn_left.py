@@ -5,8 +5,8 @@ from Modules.mkw_classes import PlayerStats, KartMove
 
 @event.on_frameadvance
 def on_frame_advance():
-    player_stats = PlayerStats(player_idx=0)
-    kart_move = KartMove(player_idx=0)
+    player_stats = PlayerStats()
+    kart_move = KartMove()
 
     speed = player_stats.base_speed()
     current_speed = kart_move.speed()
