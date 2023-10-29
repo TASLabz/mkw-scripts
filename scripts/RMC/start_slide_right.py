@@ -36,7 +36,7 @@ def main() -> None:
 def check_vehicle(vehicle):
 
     # Returns True if the player is using a bike.
-    if KartSettings.is_bike(playerIdx=0):
+    if KartSettings.is_bike():
         
         path = utils.get_script_dir()
 
