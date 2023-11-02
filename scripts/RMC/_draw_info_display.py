@@ -10,7 +10,7 @@ from Modules.mkw_classes import RaceManager, RaceManagerPlayer, RaceState
 from Modules.mkw_classes import RaceConfig, RaceConfigScenario, RaceConfigSettings
 from Modules.mkw_classes import KartObject, KartMove, KartSettings, KartBody
 from Modules.mkw_classes import VehicleDynamics, VehiclePhysics, KartBoost, KartJump
-from Modules.mkw_classes import KartCollide, KartInput, RaceInputState
+from Modules.mkw_classes import KartState, KartCollide, KartInput, RaceInputState
 
 def populate_default_config(file_path):
     config = configparser.ConfigParser()
@@ -100,6 +100,7 @@ def create_infodisplay():
     race_scenario = RaceConfigScenario(addr=RaceConfig.race_scenario())
     race_settings = RaceConfigSettings(race_scenario.settings())
     kart_object = KartObject()
+    kart_state = KartState(addr=kart_object.kart_state())
     kart_move = KartMove(addr=kart_object.kart_move())
     kart_body = KartBody(addr=kart_object.kart_body())
     vehicle_dynamics = VehicleDynamics(addr=kart_body.vehicle_dynamics())
@@ -116,10 +117,10 @@ def create_infodisplay():
 
         if player_max_lap >= 2 and lap_count > 1:
             for lap in range(1, player_max_lap):
-                text += "Lap {}: {}\n".format(lap, mkw_utils.updateExactFinish(lap, 0))
+                text += "Lap {}: {}\n".format(lap, mkw_utils.update_exact_finish(lap, 0))
 
         if player_max_lap > lap_count:
-            text += "Final: {}\n".format(mkw_utils.getUnroundedTime(lap_count, 0))
+            text += "Final: {}\n".format(mkw_utils.get_unrounded_time(lap_count, 0))
         text += "\n"
 
     if c.speed:
@@ -221,13 +222,18 @@ def create_infodisplay():
         wheelie_frames = kart_move.wheelie_frames()
         wheelie_cd = kart_move.wheelie_cooldown()
         trick_cd = kart_jump.cooldown()
+        hwg_timer = kart_state.hwg_timer()
         oob_timer = kart_collide.solid_oob_timer()
+        respawn_timer = kart_collide.time_before_respawn()
+        offroad_inv = kart_move.offroad_invincibility()
         if kart_settings.is_bike():
             text += f"Wheelie Length: {wheelie_frames}\n"
             text += f"Wheelie CD: {wheelie_cd} | Trick CD: {trick_cd}\n"
         else:
             text += f"Trick CD: {trick_cd}\n"
-        text += f"OOB: {oob_timer}\n\n"
+        text += f"HWG: {hwg_timer} | OOB: {oob_timer}\n"
+        text += f"Respawn: {respawn_timer}\n"
+        text += f"Offroad: {offroad_inv}\n\n"
 
     if c.surfaces:
         surface_properties = kart_collide.surface_properties()
