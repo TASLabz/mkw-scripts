@@ -256,7 +256,14 @@ def create_infodisplay():
 
         stick_x = current_input_state.raw_stick_x() - 7
         stick_y = current_input_state.raw_stick_y() - 7
-        text += f"X: {stick_x} | Y: {stick_y}\n\n"  
+        text += f"X: {stick_x} | Y: {stick_y}\n\n"
+
+    if True :
+        fac = mkw_utils.get_facing_angle(0)
+        mov = mkw_utils.get_moving_angle(0)
+        text += f"X Fac: {fac.x:4.4f}  | X Mov: {mov.x:4.4f}\n"
+        text += f"Y Fac: {fac.y:4.4f}  | Y Mov: {mov.y:4.4f}\n"
+        text += f"Z Fac: {fac.z:4.4f}  | Z Mov: {mov.z:4.4f}\n\n"
 
     return text
 
