@@ -1,4 +1,4 @@
-from dolphin import memory, utils
+from dolphin import memory, utils, event
 
 from .mkw_classes import mat34, quatf, vec3, ExactTimer
 from .mkw_classes import VehicleDynamics, VehiclePhysics, RaceManagerPlayer
@@ -89,10 +89,10 @@ def calculate_euler_angle(q):
     x1, x2 = 2*q.x*q.w-2*q.y*q.z, 1-2*q.x*q.x-2*q.z*q.z
     y1, y2 = 2*q.y*q.w-2*q.x*q.z, 1-2*q.y*q.y-2*q.z*q.z
     z = 2*q.x*q.y + 2*q.z*q.w
-    roll = 180/math.pi * math.asin(z)
-    pitch = 180/math.pi * math.atan2(x1, x2)
-    yaw = 180/math.pi * math.atan2(y1, y2)
-    return vec3(pitch%360, yaw%360, roll%360)
+    roll = (180/math.pi * math.asin(z)+180)%360 -180
+    pitch = (-180/math.pi * math.atan2(x1, x2)+180)%360 -180
+    yaw = (-180/math.pi * math.atan2(y1, y2))%360
+    return vec3(pitch, yaw, roll)
 
 def get_facing_angle(player):
     """Param : int player_id
@@ -104,9 +104,11 @@ def get_moving_angle(player):
     """Param : int player_id
         Return : vec3 , correspond to moving angles"""
     s = delta_position(player)
-    roll = 180/math.pi * math.atan2(s.z, s.y)
-    pitch = 180/math.pi * math.atan2(s.x, s.z)
-    yaw = 180/math.pi * math.atan2(s.y, s.x)
+    roll = (180/math.pi * math.atan2(s.z, s.y)+180)%360 -180
+    pitch = (-180/math.pi * math.atan2(s.x, s.z)+180)%360 -180
+    yaw = (-180/math.pi * math.atan2(s.y, s.x))%360
     return vec3(roll%360, pitch%360, yaw%360)
 
 # TODO: Time difference display helper functions
+
+

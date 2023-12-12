@@ -36,6 +36,7 @@ def populate_default_config(file_path):
     config['INFO DISPLAY']["Miscellaneous"] = "False"
     config['INFO DISPLAY']["Surface Properties"] = "False"
     config['INFO DISPLAY']["Position"] = "False"
+    config['INFO DISPLAY']["Rotation"] = "False"
     config['INFO DISPLAY']["Stick"] = "True"
     config['INFO DISPLAY']["Text Color (ARGB)"] = "0xFFFFFFFF"
     config['INFO DISPLAY']["Digits (to round to)"] = "6"
@@ -65,10 +66,11 @@ class ConfigInstance():
         self.misc = config['INFO DISPLAY'].getboolean('Miscellaneous')
         self.surfaces = config['INFO DISPLAY'].getboolean('Surface Properties')
         self.position = config['INFO DISPLAY'].getboolean('Position')
+        self.rotation = config['INFO DISPLAY'].getboolean('Rotation')
         self.stick = config['INFO DISPLAY'].getboolean('Stick')
         self.color = int(config['INFO DISPLAY']['Text Color (ARGB)'], 16)
         self.digits = min(7, config['INFO DISPLAY'].getint('Digits (to round to)'))
-    
+
 def main():
     config = configparser.ConfigParser()
 
@@ -80,6 +82,12 @@ def main():
     
     global c
     c = ConfigInstance(config)
+    #Those 2 variables are used to store some parameters from the previous frame
+    global Prev_frame_data
+    Prev_frame_data = (0,0,0,0)
+
+    global Frame_of_input
+    Frame_of_input = 0
 
 if __name__ == '__main__':
     main()
@@ -247,6 +255,19 @@ def create_infodisplay():
         text += f"Y Pos: {pos.y}\n"
         text += f"Z Pos: {pos.z}\n\n"
 
+    if c.rotation :
+        fac = mkw_utils.get_facing_angle(0)
+        mov = mkw_utils.get_moving_angle(0)
+        prev = Prev_frame_data
+        text += f"Facing X (Pitch): {fac.x:.4f}\n"
+        text += f"Facing Y (Yaw): {fac.y:.4f}\n"
+        text += f"Moving Y (Yaw): {mov.y:.4f}\n"
+        text += f"Facing Z (Roll): {fac.z:4.4f}\n"
+        text += f"Facing X' (Pitch): {fac.x-prev[0]:.4f}\n"
+        text += f"Facing Y' (Yaw): {fac.y-prev[1]:.4f}\n"
+        text += f"Moving Y' (Yaw): {mov.y-prev[3]:.4f}\n"
+        text += f"Facing Z' (Roll): {fac.z-prev[2]:4.4f}\n\n"
+
     # TODO: figure out why classes.RaceInfoPlayer.stick_x() and 
     #       classes.RaceInfoPlayer.stick_y() do not update
     #       (using these as placeholders until further notice)
@@ -258,24 +279,26 @@ def create_infodisplay():
         stick_y = current_input_state.raw_stick_y() - 7
         text += f"X: {stick_x} | Y: {stick_y}\n\n"
 
-    if True :
-        fac = mkw_utils.get_facing_angle(0)
-        mov = mkw_utils.get_moving_angle(0)
-        text += f"X Fac: {fac.x:4.4f}  | X Mov: {mov.x:4.4f}\n"
-        text += f"Y Fac: {fac.y:4.4f}  | Y Mov: {mov.y:4.4f}\n"
-        text += f"Z Fac: {fac.z:4.4f}  | Z Mov: {mov.z:4.4f}\n\n"
-
     return text
 
-
+    
 @event.on_savestateload
 def on_state_load(fromSlot: bool, slot: int):
     race_mgr = RaceManager()
     if race_mgr.state().value >= RaceState.COUNTDOWN.value:
         gui.draw_text((10, 10), c.color, create_infodisplay())
 
+
 @event.on_frameadvance
 def on_frame_advance():
-    race_mgr = RaceManager()
+    global Prev_frame_data
+    global Frame_of_input
+    
+    race_mgr = RaceManager()    
     if race_mgr.state().value >= RaceState.COUNTDOWN.value:
         gui.draw_text((10, 10), c.color, create_infodisplay())
+    if Frame_of_input != mkw_utils.frame_of_input():
+        Frame_of_input = mkw_utils.frame_of_input()
+        fac = mkw_utils.get_facing_angle(0)
+        mov = mkw_utils.get_moving_angle(0)
+        Prev_frame_data = (fac.x, fac.y, fac.z, mov.y)
