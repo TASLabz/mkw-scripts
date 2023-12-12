@@ -297,8 +297,8 @@ def on_frame_advance():
     race_mgr = RaceManager()    
     if race_mgr.state().value >= RaceState.COUNTDOWN.value:
         gui.draw_text((10, 10), c.color, create_infodisplay())
-    if Frame_of_input != mkw_utils.frame_of_input():
-        Frame_of_input = mkw_utils.frame_of_input()
-        fac = mkw_utils.get_facing_angle(0)
-        mov = mkw_utils.get_moving_angle(0)
-        Prev_frame_data = (fac.x, fac.y, fac.z, mov.y)
+        if Frame_of_input != mkw_utils.frame_of_input():
+            Frame_of_input = mkw_utils.frame_of_input()
+            fac = mkw_utils.get_facing_angle(0)
+            mov = mkw_utils.get_moving_angle(0)
+            Prev_frame_data = (fac.x, fac.y, fac.z, mov.y)
