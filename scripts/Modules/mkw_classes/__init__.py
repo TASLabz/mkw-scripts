@@ -8,7 +8,7 @@
 # noqa: F401
 
 from .common import RegionError
-from .common import vec2, vec3, mat34, quatf
+from .common import vec2, vec3, mat34, quatf, eulerAngle
 from .common import ExactTimer
 from .common import CupId, CourseId, VehicleId, CharacterId, WheelCount, VehicleType
 from .common import SpecialFloor, TrickType, SurfaceProperties, RaceConfigPlayerType

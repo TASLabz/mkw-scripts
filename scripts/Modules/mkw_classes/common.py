@@ -38,11 +38,29 @@ class vec3:
     def __sub__(self, other):
         return vec3(self.x - other.x, self.y - other.y, self.z - other.z)
 
+    def __mul__(self, other):
+        """ vec3 * vec3 -> float (dot product)
+            vec3 * float -> vec3 (scalar multiplication)"""
+        if type(other) == vec3:
+            return self.x * other.x + self.y * other.y + self.z * other.z
+        else:
+            return vec3(self.x * other, self.y * other, self.z * other)
+
     def length(self) -> float:
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
     def length_xz(self) -> float:
         return math.sqrt(self.x**2 + self.z**2)
+
+    def forward(self, facing_yaw) -> float:
+        speed_yaw = -180/math.pi * math.atan2(self.x, self.z)
+        diff_angle_rad = (facing_yaw - speed_yaw)*math.pi/180
+        return math.sqrt(self.x**2 + self.z**2)*math.cos(diff_angle_rad)
+
+    def sideway(self, facing_yaw) -> float:
+        speed_yaw = -180/math.pi * math.atan2(self.x, self.z)
+        diff_angle_rad = (facing_yaw - speed_yaw)*math.pi/180
+        return math.sqrt(self.x**2 + self.z**2)*math.sin(diff_angle_rad)
 
     @staticmethod
     def read(ptr) -> "vec3":
@@ -80,6 +98,29 @@ class quatf:
     def read(ptr) -> "quatf":
         bytes = memory.read_bytes(ptr, 0x10)
         return quatf(*struct.unpack('>' + 'f'*4, bytes))
+
+def angle_degree_format(angle):
+    return ((angle+180)%360) - 180
+
+class eulerAngle:
+    """A class for Euler Angles.
+    Angles in degrees, between -180 and 180"""
+    def __init__(self, pitch=0, yaw=0, roll=0):
+        self.pitch = angle_degree_format(pitch)
+        self.yaw = angle_degree_format(yaw)
+        self.roll = angle_degree_format(roll)
+
+    def __add__(self, other):
+        pitch = self.pitch + other.pitch
+        yaw = self.yaw + other.yaw
+        roll = self.roll + other.roll
+        return eulerAngle(pitch, yaw, roll)
+               
+    def __sub__(self, other):
+        pitch = self.pitch - other.pitch
+        yaw = self.yaw - other.yaw
+        roll = self.roll - other.roll
+        return eulerAngle(pitch, yaw, roll)
 
 @dataclass
 class ExactTimer:
