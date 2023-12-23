@@ -1,118 +1,230 @@
-from dolphin import gui
+from dolphin import gui, memory
 from .mkw_classes import quatf, vec3
-import Modules.mkw_utils as mkw_utils
-from .mkw_classes import VehiclePhysics, KartMove
+from .mkw_classes import VehiclePhysics, KartMove, RaceConfig, Timer, RaceManagerPlayer
+import math
 
-def data_to_csv(data, csvfilename):
-    """Parameter :  dictionnary data
-                    string csvfilename
-        data[i] should be another dictionnary with the key :
-        "Pos" (vec3) ; "Qua" (quatf) ; "IV" (vec3) ; "EV" (vec3);
-        "BaseSpd" (float) ; "MaxSpd" (float) ; "Angle" (float) ;
-        "Dire" (vec3) ; "Dive" (float).
-        data["charaID"] and data["vehicleID"] should be intergers."""
+class FrameData:
+    """Class to represent a set of value accessible each frame in the memory"""
+    def __init__(self, addrlist = None, string = None , usedefault=False):
+        self.values = [] #List of bytearray
+        if string is not None:
+            self.read_from_string(string)
+            
+        elif addrlist is not None:
+            if not usedefault:
+                for addr, size in addrlist:
+                    self.values.append(memory.read_bytes(addr, size))          
+            else:
+                for addr, size in addrlist:
+                    self.values.append(bytearray(size))
+
+    def __str__(self):
+        text = ''
+        for array in self.values:
+            for byte in array:
+                text += str(byte)+','
+            if len(array)>0:
+                text = text[:-1]
+            text += ';'
+        if len(self.values)>0:
+            text = text[:-1]
+        return text+'\n'
+
+    def read_from_string(self, string):
+        values = string.split(';')
+        for value in values:
+            self.values.append(bytearray([int(s) for s in value.split(',')]))
+
+    def interpolate(self,other, selfi, otheri):
+        #Call only if self.value[0] represent a vec3
+        v1 = vec3.from_bytes(self.values[0])
+        v2 = vec3.from_bytes(other.values[0])
+        v = (v1*selfi)+(v2*otheri)
+        self.values[0] = v.to_bytes()
+
+    def write(self, addrlist):
+        for index in range(len(self.values)):
+            addr = addrlist[index][0]
+            val = self.values[index]
+            memory.write_bytes(addr, val)
+
+def float_to_str(f):
+    ms = round((f%1)*1000)
+    s = math.floor(f)%60
+    m = math.floor(f)//60
+    return f"{m},{s},{ms}"
+
+def floats_to_str(fs):
+    return f"{float_to_str(fs[0])};{float_to_str(fs[1])};{float_to_str(fs[2])}"
+
+class Split:
+    """Class for a lap split. Contain just a float, representing the split in s"""
+    def __init__(self, f):
+        self.val = f
+    def __str__(self):
+        return f"{self.val:.3f}"
+    def __add__(self,other):
+        return Split(max(0, self.val+other.val)) 
+
+    @staticmethod
+    def from_string(string):
+        return Split(float(string))
+
+    @staticmethod
+    def from_time_format(m,s,ms):
+        return Split(m*60+s+ms/1000)
     
-    file = open(csvfilename, 'w')
+    def time_format(self):
+        #return m,s,ms corresponding
+        f = self.val
+        ms = round((f%1)*1000)
+        s = math.floor(f)%60
+        m = math.floor(f)//60
+        return m,s,ms
+    
+    def bytes_format(self):
+        #return a bytearray of size 3 for rkg format
+        m,s,ms = self.time_format()
+        data_int = ms+s*1024+m*1024*128
+        b3 = data_int%256
+        data_int = data_int//256
+        b2 = data_int%256
+        data_int = data_int//256
+        b1 = data_int%256
+        return bytearray((b1,b2,b3))
+
+
+class TimerData:
+    """Class for the laps splits, both in RKG and Timer format
+        Cumulative convention (lap2 split is stored as lap1+lap2)"""
+    def __init__(self,string =None, readid=0):
+        #Call with a string OR when the race is finished
+        if string is None:
+            self.splits = [] #List of Split (size 3)
+            timerlist = [RaceManagerPlayer.lap_finish_time(readid, lap) for lap in range(3)]
+            for timer in timerlist:
+                self.splits.append(Split.from_time_format(timer.minutes(), timer.seconds(), timer.milliseconds()))
+        else:
+            self.splits = []
+            laps = string.split(';')
+            for lap in laps:
+                self.splits.append(Split.from_string(lap))
+
+    def __str__(self):
+        text = 't'
+        for split in self.splits:
+            text += str(split)+";"
+        text = text[:-1]
+        return text+'\n'
+
+    def add_delay(self, delay):
+        s = -delay/59.94
+        for i in range(len(self.splits)):
+            self.splits[i] = Split(max(self.splits[i].val+s, 0))
+
+
+    def to_bytes(self):
+        #A lap split is 3 bytes, so there is 9 bytes total
+        #Non cumulative format, ready to be written in a rkg
+        r = bytearray()
+        prev = 0
+        for split in self.splits:
+            r = r + Split(split.val - prev).bytes_format()
+            prev = split.val
+        return r
+    
+    def write_rkg(self, ghostid):
+        s = bytearray('RKGD', 'ASCII')
+        rkg_addr = memory.read_u32(RaceConfig.chain() + 0xC0C)
+        if s == memory.read_bytes(rkg_addr, 4):
+            memory.write_bytes(rkg_addr+0x11, self.to_bytes())
+            
+                 
+def metadata_to_file(filename, readid):
+    #Should be called before the countdown
+    metadata = FrameData(get_metadata_addr(readid))
+    file = open(filename, 'w')
     if file is None :
-        gui.add_osd_message("Error : could not create the csv file")
+        gui.add_osd_message("Error : could not create the data file")
     else :
-        #Write the first line with CharaID and VehicleID
-        file.write(f"{data['CharaID']},{data['VehicleID']}\n")
-
-        #Write the other lines with data[i]
-        for i in range(len(data.keys())-2):
-            pos = data[i]["Pos"]
-            qua = data[i]["Qua"]
-            iv = data[i]["IV"]
-            ev = data[i]["EV"]
-            spd1 = data[i]["BaseSpd"]
-            spd2 = data[i]["MaxSpd"]
-            angle = data[i]["Angle"]
-            dire = data[i]["Dire"]
-            dive = data[i]["Dive"]
-
-            writeline = ''
-            writeline += f"{pos.x},{pos.y},{pos.z},"
-            writeline += f"{qua.x},{qua.y},{qua.z},{qua.w},"
-            writeline += f"{iv.x},{iv.y},{iv.z},"
-            writeline += f"{ev.x},{ev.y},{ev.z},"
-            writeline += f"{spd1},"
-            writeline += f"{spd2},"
-            writeline += f"{angle},"
-            writeline += f"{dire.x},{dire.y},{dire.z},"
-            writeline += f"{dive}\n"
-            file.write(writeline)
-
-
+        file.write(str(metadata))
         file.close()
-        gui.add_osd_message(f"Data successfully stored to {csvfilename}")
+        gui.add_osd_message(f"{filename} successfully opened")
 
-def csv_to_data(csvfilename):
-    """Invert data_to_csv"""
-    data = {}
-    file = open(csvfilename, 'r')
+def get_metadata(readid):
+    return FrameData(get_metadata_addr(readid))
+
+def frame_to_file(filename, readid):
+    frame = FrameData(get_addr(readid))
+    file = open(filename, 'a')
     if file is None :
-        gui.add_osd_message("Error : could not load the csv file")
+        gui.add_osd_message("Error : could not create the data file")
+    else :
+        file.write(str(frame))
+        file.close()
+
+def get_framedata(readid):
+    return FrameData(get_addr(readid))
+    
+def timerdata_to_file(filename, rid):
+    timerdata = TimerData(readid = rid)
+    file = open(filename, 'a')
+    if file is None :
+        gui.add_osd_message("Error : could not create the data file")
+    else :
+        file.write(str(timerdata))
+        file.close()
+
+def get_timerdata(rid):
+    return TimerData(readid = rid)
+        
+def file_to_framedatalist(filename):
+    datalist = []
+    file = open(filename, 'r')
+    if file is None :
+        gui.add_osd_message("Error : could not load the data file")
     else:
         listlines = file.readlines()
-        #Read the first line for CharaID and VehicleID
-        values = listlines[0].split(",")
-        data["CharaID"] = values[0]
-        data["VehicleID"] = values[1]
-
-        #Read the other lines for data[i]
+        metadata = FrameData(string = listlines[0])
+        timerdata = None
+        if listlines[-1][0]=='t':
+            timerdata = TimerData(string = listlines.pop()[1:])
         for i in range(1, len(listlines)):
-            data[i-1] = {}
-            values_string = listlines[i].split(",")
-            values = [float(string) for string in values_string]
-            data[i-1]["Pos"] = vec3(values[0], values[1], values[2])
-            data[i-1]["Qua"] = quatf(values[3], values[4], values[5], values[6])
-            data[i-1]["IV"] = vec3(values[7], values[8], values[9])
-            data[i-1]["EV"] = vec3(values[10], values[11], values[12])
-            data[i-1]["BaseSpd"] = values[13]
-            data[i-1]["MaxSpd"] = values[14]
-            data[i-1]["Angle"] = values[15]
-            data[i-1]["Dire"] = vec3(values[16], values[17], values[18])
-            data[i-1]["Dive"] = values[19]
-
+            datalist.append(FrameData(string = listlines[i]))
         file.close()
-        gui.add_osd_message(f"Data successfully loaded from {csvfilename}")
-        return data
+        gui.add_osd_message(f"Data successfully loaded from {filename}")
+        return metadata, datalist, timerdata
+
+
+def framedatalist_to_file(filename, datalist, rid):
+    metadata = get_metadata(rid)
+    timerdata = get_timerdata(rid)
+    file = open(filename, 'w')
+    if file is None :
+        gui.add_osd_message("Error : could not create the data file")
+    else:
+        file.write(str(metadata))
+        for frame in range(max(datalist.keys())+1):
+            if frame in datalist.keys():
+                file.write(str(datalist[frame]))
+            else:
+                file.write(str(FrameData(get_addr(rid), usedefault=True)))
+        file.write(str(timerdata))
+        file.close()
+
+def get_addr(player_id):
+    a = VehiclePhysics.chain(player_id)
+    b = KartMove.chain(player_id)
+    return [(a+0x68, 12), #Position
+            (a+0xF0, 16), #Rotation
+            (a+0x74, 12), #EV
+            (a+0x14C, 12), #IV
+            (b+0x18, 4), #MaxEngineSpd
+            (b+0x20, 4), #EngineSpd
+            (b+0x9C, 4), #OutsideDriftAngle
+            (b+0x5C, 12)]#Dir
+
+def get_metadata_addr(player_id):
+    a = RaceConfig.chain() + player_id*0xF0
+    return [(a+0x30, 8)]#CharacterID and VehicleID
             
-def init_data():
-    """Return a data dic, with default values
-        for each frame before the current frame"""
-    data = {}
-    default_frame_data = {}
-    default_frame_data["Pos"] = vec3(0,0,0)
-    default_frame_data["Qua"] = quatf(0,0,0,0)
-    default_frame_data["IV"] = vec3(0,0,0)
-    default_frame_data["EV"] = vec3(0,0,0)
-    default_frame_data["BaseSpd"] = 0
-    default_frame_data["MaxSpd"] = 0
-    default_frame_data["Angle"] = 0
-    default_frame_data["Dire"] = vec3(0,0,0)
-    default_frame_data["Dive"] = 0
-    frame = mkw_utils.frame_of_input()
-    for i in range(frame):
-        data[i] = default_frame_data
-    return data
-
-
-def update_data(data):
-    """Update data to the currentn frame"""
-    frame = mkw_utils.frame_of_input()
-    currframe_data = {}
-    currframe_data["Pos"] = VehiclePhysics(0).position()
-    currframe_data["Qua"] = VehiclePhysics(0).main_rotation()
-    currframe_data["IV"] = VehiclePhysics(0).internal_velocity()
-    currframe_data["EV"] = VehiclePhysics(0).external_velocity()
-    currframe_data["BaseSpd"] = KartMove(0).speed()
-    currframe_data["MaxSpd"] = KartMove(0).soft_speed_limit()
-    currframe_data["Angle"] = KartMove(0).outside_drift_angle()
-    currframe_data["Dire"] = KartMove(0).dir()
-    currframe_data["Dive"] = KartMove(0).diving_rotation()
-    data[frame] = currframe_data
-    
-
-    

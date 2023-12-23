@@ -154,12 +154,28 @@ def get_moving_angle(player):
     speed = delta_position(player)
     return speed_to_euler_angle(speed)
 
-def get_yaw_from_speed(speed):
-    """Param : vec3 speed
-        Return float yaw"""
-    return (-180/math.pi * math.atan2(speed.y, speed.x))%360
 
 # TODO: Time difference display helper functions
+"""The time difference functions.
+time_difference_[name](P1, S1, P2, S2) is a function that takes as arguments
+P1,S1 : Player1's Position and Speed vec3.
+P2,S2 : Player2's Position and Speed vec3
+Return the time it would take for Player1 to catch Player2 (not always symmetric)
+
+get_time_difference_[name](Player1, Player2) takes as arguments
+Player1 : Player1 ID
+Player2 : Player2 ID
+Return the time it would take for Player1 to catch Player2 (not always symmetric)
+It's the function called in draw_infodisplay.py
+"""
+
+def get_physics(player1, player2):
+    """Take the Player1 and Player2 ID's, return their
+        P1, S1, P2, S2 data"""
+    P1, S1 = VehiclePhysics(player1).position(), delta_position(player1)
+    P2, S2 = VehiclePhysics(player2).position(), delta_position(player2)
+    return P1,S1,P2,S2
+
 
 def get_distance_ghost_vec():
     """Give the distance (vec3) between the player and the ghost
@@ -172,102 +188,72 @@ def get_distance_ghost():
     """Give the distance(float) between the player and the ghost"""
     return get_distance_ghost_vec().length()
 
-def get_time_difference_absolute():
+def time_difference_absolute(P1, P2, S1, S2):
+    s = S1.length()
+    if s != 0:
+        return (P2-P1).length() / s
+    return float('inf')
+    
+def get_time_difference_absolute(player1, player2):
     """Time difference "Absolute" (simple and bad)
-    Simply takes the distance player-ghost, and divide it by raw speed (always positive)
-    Return (float, float) t1, t2 : t1 is the time the player would take to catch the ghost
-                                t2 is the time the ghost would take to catch the player"""
-    player_speed = delta_position(0).length()
-    ghost_speed = delta_position(1).length()
-    distance = get_distance_ghost()
-    t1 = float('inf')
-    t2 = t1
-    if player_speed != 0:
-        t1 = distance/player_speed
-    if ghost_speed != 0:
-        t2 = distance/ghost_speed
-    return t1, t2
+    Simply takes the distance player-ghost, and divide it by raw speed (always positive)"""
+    P1, S1, P2, S2 = get_physics(player1, player2)
+    return time_difference_absolute(P1, P2, S1, S2)
 
-def get_time_difference_relative():
+def time_difference_relative(P1, P2, S1, S2):
+    L = (P2 - P1).length()
+    if L == 0:
+        return 0
+    s = S1*(P2-P1)/L
+    if s == 0:
+        return float('inf')  
+    return (P2-P1).length() / s
+
+def get_time_difference_relative(player1, player2):
     """Time difference "Relative" 
-    Take distance player-ghost. Divide it by the player's speed "toward" the ghost (dot product)
-    Return (float, float) t1, t2 : t1 is the time the player would take to catch the ghost
-                                t2 is the time the ghost would take to catch the player"""
-    player_speed_vec = delta_position(0)
-    ghost_speed_vec = delta_position(1)
-    distance_vec = get_distance_ghost_vec()
-    distance = distance_vec.length()
-    t1 = float('inf')
-    t2 = t1
-    if distance != 0:
-        player_relative_speed = player_speed_vec * distance_vec * (1/distance)
-        if player_relative_speed != 0:
-            t1 = distance/player_relative_speed
-        ghost_relative_speed = ghost_speed_vec * distance_vec * (-1/distance)
-        if ghost_relative_speed != 0:
-            t2 = distance/ghost_relative_speed
-        return t1, t2
-    return 0, 0
+    Take distance player-ghost. Divide it by the player's speed "toward" the ghost (dot product)"""
+    P1, S1, P2, S2 = get_physics(player1, player2)
+    return time_difference_relative(P1, P2, S1, S2)
 
+def time_difference_projected(P1, P2, S1, S2):
+    s = S1.length()
+    if s == 0:
+        return float('inf')
+    return (P2-P1)*S1/(s**2)
 
-def get_time_difference_projected():
+def get_time_difference_projected(player1, player2):
     """ Time difference "Projected"
     Take the distance between the player and the plane oriented by the player speed, covering the ghost.
     Then divide it by the player raw speed
     This is the 2D version because no numpy"""
-    distance_p_g = get_distance_ghost_vec()
-    player_speed = delta_position(0)
-    ghost_speed = delta_position(1)
-    t1 = float('inf')
-    t2 = t1
-    if player_speed.length() != 0:
-        t1 = distance_p_g * player_speed * (1/player_speed.length()**2)
-    if ghost_speed.length() != 0:
-        t2 = distance_p_g * ghost_speed * (-1/ghost_speed.length()**2)
-    return t1, t2
+    P1, S1, P2, S2 = get_physics(player1, player2)
+    return time_difference_projected(P1, P2, S1, S2)
 
 
+def time_to_cross(A, S, B, C):
+    """If A is going at a constant speed S, how many frame will it take
+        to cross the vertical plan containing B and C
+        Param : A, S, B, C : (vec3),(vec3),(vec3),(vec3)
+        Return t (float) """
+    N = (B-C)@vec3(0,1,0) #normal vector to the plan containing B,C
+    ns = N*S
+    if ns != 0:
+        return N*(B-A)/ns
+    return float('inf')
 
-class Line:
-    """2D lines
-        ax + bz + c = 0"""
-    def __init__(self, pointA, pointB):
-        self.a = pointB.z - pointA.z
-        self.b = pointA.x - pointB.x
-        self.c = -(self.b*pointA.z + self.a*pointA.x)
+def time_difference_crosspath(P1, P2, S1, S2):
+    t1 = time_to_cross(P1, S1, P2, P2+S2)
+    t2 = time_to_cross(P2, S2, P1, P1+S1)
+    return t1-t2
 
-    def intersect(self,other):
-        """2 Lines intersecting, return point of intersection, (x,y)"""
-        det = self.a*other.b-other.a*self.b
-        x = float('inf')
-        y = x
-        if det!=0:
-            x = (other.c*self.b - self.c*other.b)/det
-            y = (self.c*other.a - other.c*self.a)/det
-        return x,y
 
-def get_time_difference_crosspath():
+def get_time_difference_crosspath(player1, player2):
     """Time difference "CrossPath"
     Take both XZ trajectories of the player and the ghost
     Calculate how much time it takes them to reach the crosspoint. (2D only)
     Return the difference."""
-    player_pos = VehiclePhysics(0).position()
-    ghost_pos = VehiclePhysics(1).position()
-    player_speed = delta_position(0)
-    player_speed.y = 0
-    ghost_speed = delta_position(1)
-    ghost_speed.y = 0
-    LinePlayer = Line(player_pos, player_pos+player_speed)
-    LineGhost = Line(ghost_pos, ghost_pos+ghost_speed)
-    x,z = LinePlayer.intersect(LineGhost)
-    intersectpoint = vec3(x, 0, z)
-    t_player = float('inf')
-    t_ghost = t_player
-    if player_speed.length_xz() != 0 :
-        t_player = (intersectpoint - player_pos)*player_speed / (player_speed.length_xz()**2)
-    if ghost_speed.length_xz() != 0 :
-        t_ghost = (intersectpoint - ghost_pos)*ghost_speed / (ghost_speed.length_xz()**2)
-    return t_player-t_ghost, t_ghost-t_player
+    P1, S1, P2, S2 = get_physics(player1, player2)
+    return time_difference_crosspath(P1, P2, S1, S2)
 
 
 
@@ -285,30 +271,17 @@ def get_finish_line_coordinate():
     return pointA, pointB
 
 
-def time_to_cross(point, speed, line):
-    """Return how fast a point going at speed cross the line"""
-    velocity_line = Line(point, point+speed)
-    x,z = line.intersect(velocity_line)
-    speedxz = vec3(speed.x, 0, speed.z)
-    crosspoint = vec3(x,0,z)
-    t = float('inf')
-    if speed.length_xz() != 0:
-        t = (crosspoint - point)*speedxz/(speedxz.length() **2)
-    return t
+def time_difference_tofinish(P1, P2, S1, S2):
+    A,B = get_finish_line_coordinate()
+    t1 = time_to_cross(P1, S1, A, B)
+    t2 = time_to_cross(P2, S2, A, B)
+    return t1-t2
 
-def time_to_finish(player):
-    pos = VehiclePhysics(player).position()
-    speed = delta_position(player)
-    pointA, pointB = get_finish_line_coordinate()
-    finish_line = Line(pointA, pointB)
-    return time_to_cross(pos, speed, finish_line)
-    
-def get_time_difference_tofinish():
+def get_time_difference_tofinish(player1, player2):
     """Assume player and ghost are not accelerated.
     Calculate the time to the finish line for both, and takes the difference."""
-    t_player = time_to_finish(0)
-    t_ghost = time_to_finish(1)
-    return t_player-t_ghost, t_ghost-t_player
+    P1, S1, P2, S2 = get_physics(player1, player2)
+    return time_difference_tofinish(P1, P2, S1, S2)
 
 
 def find_index(value, value_list):
@@ -334,12 +307,30 @@ def get_time_difference_racecompletion(history):
             l = [history.get_older_frame(k).prc for k in range(history.size)]
             i = find_index(curframe.grc, l)
             t = i + (curframe.grc - l[i])/ (l[i+1] - l[i])
-            return -t, t
-        return -inf, inf
+            return -t
+        return -inf
     else:
         if curframe.prc>lastframe.grc:
             l =[history.get_older_frame(k).grc for k in range(history.size)]
             i = find_index(curframe.prc, l)
             t = i + (curframe.prc - l[i])/ (l[i+1] - l[i])
-            return t, -t
-        return inf, -inf
+            return t
+        return inf
+
+
+def get_timediff_settings(string):
+    if string == 'player':
+        return 0, 1
+    if string == 'ghost':
+        return 1, 0
+    pp, sp, pg, sg = get_physics(0,1)
+    player_is_ahead = int(sp*(pg-pp)>0)
+    if string == 'ahead':
+        return 1-player_is_ahead, player_is_ahead
+    if string == 'behind':
+        return player_is_ahead, 1-player_is_ahead
+    else:
+        print('TimeDiff setting value not recognized. Default to "player"')
+        return 0, 1
+        
+        

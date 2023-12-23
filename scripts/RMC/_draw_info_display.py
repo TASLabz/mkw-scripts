@@ -7,7 +7,7 @@ from Modules.mkw_classes.common import SurfaceProperties, eulerAngle
 from Modules.mkw_utils import History 
 
 import Modules.mkw_utils as mkw_utils
-from Modules.mkw_classes import RaceManager, RaceManagerPlayer, RaceState
+from Modules.mkw_classes import RaceManager, RaceManagerPlayer, RaceState, TimerManager
 from Modules.mkw_classes import RaceConfig, RaceConfigScenario, RaceConfigSettings
 from Modules.mkw_classes import KartObject, KartMove, KartSettings, KartBody
 from Modules.mkw_classes import VehicleDynamics, VehiclePhysics, KartBoost, KartJump
@@ -46,13 +46,14 @@ def populate_default_config(file_path):
     config['INFO DISPLAY']["Stick"] = "True"
     config['INFO DISPLAY']["Text Color (ARGB)"] = "0xFFFFFFFF"
     config['INFO DISPLAY']["Digits (to round to)"] = "6"
-    config['INFO DISPLAY']["TimeDiff Absolute"] = "True"
-    config['INFO DISPLAY']["TimeDiff Relative"] = "True"
+    config['INFO DISPLAY']["TimeDiff Absolute"] = "False"
+    config['INFO DISPLAY']["TimeDiff Relative"] = "False"
     config['INFO DISPLAY']["TimeDiff Projected"] = "True"
-    config['INFO DISPLAY']["TimeDiff CrossPath"] = "True"
+    config['INFO DISPLAY']["TimeDiff CrossPath"] = "False"
     config['INFO DISPLAY']["TimeDiff ToFinish"] = "True"
     config['INFO DISPLAY']["TimeDiff RaceComp"] = "True"
-    config['INFO DISPLAY']["History Size"] = "50"
+    config['INFO DISPLAY']["TimeDiff Setting"] = "behind"
+    config['INFO DISPLAY']["History Size"] = "200"
     
     
     with open(file_path, 'w') as f:
@@ -92,6 +93,7 @@ class ConfigInstance():
         self.td_crosspath = config['INFO DISPLAY'].getboolean('TimeDiff CrossPath')
         self.td_tofinish = config['INFO DISPLAY'].getboolean('TimeDiff ToFinish')
         self.td_racecomp = config['INFO DISPLAY'].getboolean('TimeDiff RaceComp')
+        self.td_set = config['INFO DISPLAY']['TimeDiff Setting']
         self.td = self.td_absolute or self.td_relative or self.td_projected or self.td_crosspath or self.td_tofinish or self.td_racecomp
         self.stick = config['INFO DISPLAY'].getboolean('Stick')
         self.color = int(config['INFO DISPLAY']['Text Color (ARGB)'], 16)
@@ -143,12 +145,13 @@ def make_text_speed(speed, speedname, player, boolspd, boolspdoriented, boolspdx
 
 
 def make_text_timediff(timediff, prefix_text, prefix_size, timesize):
-    player_text = f"{timediff[0]:.{c.digits}f}"
-    ghost_text = f"{timediff[1]:.{c.digits}f}"
-    player_text += " "*(timesize - len(player_text))
-    player_text = player_text[:timesize]+"f"
-    ghost_text = ghost_text[:timesize]+"f"
-    return prefix_text+":"+" "*(prefix_size - len(prefix_text))+player_text+"| "+ghost_text+"\n"
+    timediffms = timediff/59.94
+    ms = f"{timediffms:.{c.digits}f}"
+    frame = f"{timediff:.{c.digits}f}"
+    ms += " "*(timesize - len(ms))
+    ms = ms[:timesize]
+    frame = frame[:timesize]+"f"
+    return prefix_text+":"+" "*(prefix_size - len(prefix_text))+ms+"| "+frame+"\n"
 
 
 def make_text_rotation(rot, rotspd, prefix_text, prefix_size, rotsize):
@@ -174,8 +177,9 @@ def create_infodisplay():
     vehicle_physics = VehiclePhysics(addr=vehicle_dynamics.vehicle_physics())
 
     if c.debug :
-        value = mkw_utils.time_to_finish(0)
-        #text += f"Debug : {value}\n"
+        t = TimerManager()
+        value = t.race_frame_counter()
+        text += f"Debug : {value}\n"
     
     if c.frame_count:
         text += f"Frame: {mkw_utils.frame_of_input()}\n\n"
@@ -309,21 +313,23 @@ def create_infodisplay():
     if c.td and not mkw_utils.is_single_player():
         size = 10
         timesize = c.digits+4
-        text += "TimeDiff:"+" "*(timesize+size-15)+" Player | Ghost\n"
+        p1, p2 = mkw_utils.get_timediff_settings(c.td_set)
+        s = 1 if 1-p1 else -1
+        text += "TimeDiff:"+" "*(timesize+size-16)+"Seconds | Frames\n"
         if c.td_absolute:
-            absolute = mkw_utils.get_time_difference_absolute()
+            absolute = mkw_utils.get_time_difference_absolute(p1,p2)
             text += make_text_timediff(absolute, "Absolute", size, timesize)
         if c.td_relative:
-            relative = mkw_utils.get_time_difference_relative()
+            relative = s*mkw_utils.get_time_difference_relative(p1,p2)
             text += make_text_timediff(relative, "Relative", size, timesize)
         if c.td_projected:
-            projected = mkw_utils.get_time_difference_projected()
+            projected = s*mkw_utils.get_time_difference_projected(p1,p2)
             text += make_text_timediff(projected, "Projected", size, timesize)
         if c.td_crosspath:
-            crosspath = mkw_utils.get_time_difference_crosspath()
+            crosspath = s*mkw_utils.get_time_difference_crosspath(p1,p2)
             text += make_text_timediff(crosspath, "CrossPath", size, timesize)
         if c.td_tofinish:
-            tofinish = mkw_utils.get_time_difference_tofinish()
+            tofinish = s*mkw_utils.get_time_difference_tofinish(p1,p2)
             text += make_text_timediff(tofinish, "ToFinish", size, timesize)
         if c.td_racecomp:
             racecomp = mkw_utils.get_time_difference_racecompletion(Memory_History)
@@ -363,10 +369,10 @@ def main():
     
     global c
     c = ConfigInstance(config)
+    
     #Those 2 variables are used to store some parameters from previous frames
     global Frame_of_input
     Frame_of_input = 0
-
     global Memory_History
     size = max(c.history_size, int(c.rotation)+1)
     Memory_History = History(size)

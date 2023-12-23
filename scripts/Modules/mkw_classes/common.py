@@ -46,6 +46,17 @@ class vec3:
         else:
             return vec3(self.x * other, self.y * other, self.z * other)
 
+    def __matmul__(self, other):
+        """ vec3 @ vec3 -> vec3 (cross product)
+            vec3 @ float -> vec3 (scalar multiplication)"""        
+        if type(other) == vec3:
+            x = self.y*other.z - self.z*other.y
+            y = self.z*other.x - self.x*other.z
+            z = self.x*other.y - self.y*other.x
+            return vec3(x,y,z)
+        else:
+            return vec3(self.x * other, self.y * other, self.z * other)
+        
     def length(self) -> float:
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
@@ -66,6 +77,15 @@ class vec3:
     def read(ptr) -> "vec3":
         bytes = memory.read_bytes(ptr, 0xC)
         return vec3(*struct.unpack('>' + 'f'*3, bytes))
+
+    @staticmethod
+    def from_bytes(bts) -> "vec3":
+        return vec3(*struct.unpack('>' + 'f'*3, bts))
+
+    def to_bytes(self) -> bytearray:
+        return bytearray(struct.pack('>fff', self.x, self.y, self.z))
+
+
 
 @dataclass
 class mat34:
