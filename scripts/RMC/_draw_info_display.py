@@ -177,9 +177,8 @@ def create_infodisplay():
     vehicle_physics = VehiclePhysics(addr=vehicle_dynamics.vehicle_physics())
 
     if c.debug :
-        t = TimerManager()
-        value = t.race_frame_counter()
-        text += f"Debug : {value}\n"
+        value = mkw_utils.delta_position(0) - VehiclePhysics.speed(0)
+        text += f"Debug : {value.length()}\n"
     
     if c.frame_count:
         text += f"Frame: {mkw_utils.frame_of_input()}\n\n"

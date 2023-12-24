@@ -74,6 +74,16 @@ class Split:
     def from_time_format(m,s,ms):
         return Split(m*60+s+ms/1000)
     
+    @staticmethod
+    def from_bytes(b):
+        data_int = b[0]*256*256+b[1]*256+b[2]
+        ms = data_int%1024
+        data_int = data_int//1024
+        s = data_int%128
+        data_int = data_int//128
+        m = data_int%128
+        return Split(m*60+s+ms/1000)
+    
     def time_format(self):
         #return m,s,ms corresponding
         f = self.val
@@ -97,18 +107,29 @@ class Split:
 class TimerData:
     """Class for the laps splits, both in RKG and Timer format
         Cumulative convention (lap2 split is stored as lap1+lap2)"""
-    def __init__(self,string =None, readid=0):
+    def __init__(self,string =None, readid=0, splits = None):
         #Call with a string OR when the race is finished
         if string is None:
-            self.splits = [] #List of Split (size 3)
-            timerlist = [RaceManagerPlayer.lap_finish_time(readid, lap) for lap in range(3)]
-            for timer in timerlist:
-                self.splits.append(Split.from_time_format(timer.minutes(), timer.seconds(), timer.milliseconds()))
+            if splits is None:
+                self.splits = [] #List of Split (size 3)
+                timerlist = [RaceManagerPlayer.lap_finish_time(readid, lap) for lap in range(3)]
+                for timer in timerlist:
+                    self.splits.append(Split.from_time_format(timer.minutes(), timer.seconds(), timer.milliseconds()))
+            else:
+                self.splits = splits
         else:
             self.splits = []
             laps = string.split(';')
             for lap in laps:
                 self.splits.append(Split.from_string(lap))
+
+    @staticmethod
+    def from_sliced_rkg(rkg_metadata):
+        sliced_bytes = rkg_metadata.values[3]
+        l1 = Split.from_bytes(sliced_bytes[1:4])
+        l2 = Split.from_bytes(sliced_bytes[4:7])+l1
+        l3 = Split.from_bytes(sliced_bytes[7:10])+l2
+        return TimerData(splits = [l1,l2,l3])
 
     def __str__(self):
         text = 't'
@@ -133,11 +154,9 @@ class TimerData:
             prev = split.val
         return r
     
-    def write_rkg(self, ghostid):
-        s = bytearray('RKGD', 'ASCII')
-        rkg_addr = memory.read_u32(RaceConfig.chain() + 0xC0C)
-        if s == memory.read_bytes(rkg_addr, 4):
-            memory.write_bytes(rkg_addr+0x11, self.to_bytes())
+    def write_rkg(self):
+        r = rkg_addr()
+        memory.write_bytes(r+0x11, self.to_bytes())
             
                  
 def metadata_to_file(filename, readid):
@@ -153,6 +172,19 @@ def metadata_to_file(filename, readid):
 
 def get_metadata(readid):
     return FrameData(get_metadata_addr(readid))
+
+def get_rkg_metadata():
+    return FrameData(get_rkg_metadata_addr())
+
+def rkg_metadata_to_file(filename):
+    rkg_metadata = get_rkg_metadata()
+    file = open(filename, 'w')
+    if file is None :
+        gui.add_osd_message("Error : could not create the data file")
+    else :
+        file.write("r"+str(rkg_metadata))
+        file.close()
+        gui.add_osd_message(f"{filename} successfully opened")   
 
 def frame_to_file(filename, readid):
     frame = FrameData(get_addr(readid))
@@ -184,16 +216,22 @@ def file_to_framedatalist(filename):
     if file is None :
         gui.add_osd_message("Error : could not load the data file")
     else:
-        listlines = file.readlines()
-        metadata = FrameData(string = listlines[0])
         timerdata = None
-        if listlines[-1][0]=='t':
-            timerdata = TimerData(string = listlines.pop()[1:])
+        metadata = None
+        rkg_metadata = None
+        listlines = file.readlines()
+        if listlines[0][0] == 'r':           
+            rkg_metadata = FrameData(string = listlines[0][1:])
+            timerdata = TimerData.from_sliced_rkg(rkg_metadata)
+        else:
+            metadata = FrameData(string = listlines[0])
+            if listlines[-1][0]=='t':
+                timerdata = TimerData(string = listlines.pop()[1:])
         for i in range(1, len(listlines)):
             datalist.append(FrameData(string = listlines[i]))
         file.close()
         gui.add_osd_message(f"Data successfully loaded from {filename}")
-        return metadata, datalist, timerdata
+        return metadata, datalist, timerdata, rkg_metadata
 
 
 def framedatalist_to_file(filename, datalist, rid):
@@ -212,6 +250,21 @@ def framedatalist_to_file(filename, datalist, rid):
         file.write(str(timerdata))
         file.close()
 
+def framedatalist_to_file_rkg(filename, datalist):
+    metadata = get_rkg_metadata()
+    file = open(filename, 'w')
+    if file is None :
+        gui.add_osd_message("Error : could not create the data file")
+    else:
+        file.write('r'+str(metadata))
+        for frame in range(max(datalist.keys())+1):
+            if frame in datalist.keys():
+                file.write(str(datalist[frame]))
+            else:
+                file.write(str(FrameData(get_addr(rid), usedefault=True)))
+        file.close()
+
+
 def get_addr(player_id):
     a = VehiclePhysics.chain(player_id)
     b = KartMove.chain(player_id)
@@ -227,4 +280,18 @@ def get_addr(player_id):
 def get_metadata_addr(player_id):
     a = RaceConfig.chain() + player_id*0xF0
     return [(a+0x30, 8)]#CharacterID and VehicleID
-            
+
+def rkg_addr():
+    return memory.read_u32(RaceConfig.chain() + 0xC0C)
+
+def get_rkg_metadata_addr():
+    r = rkg_addr()
+    return [(r+0x4, 3), #Skipping track ID
+            (r+0x8, 4), #Skipping Compression flag
+            (r+0xD, 1), #Skipping Input Data Length
+            (r+0x10, 0x78)]
+
+def is_rkg():
+        s = bytearray('RKGD', 'ASCII')
+        r = rkg_addr()
+        return s == memory.read_bytes(r, 4)    

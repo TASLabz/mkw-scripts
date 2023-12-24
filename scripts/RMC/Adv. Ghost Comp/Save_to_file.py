@@ -35,10 +35,9 @@ def on_frame_advance():
         lib.metadata_to_file(filename, 0)
         metadata_saved = True
     
-    if RaceState.RACE.value >= racestate >= RaceState.COUNTDOWN.value:
+    if (not end) and RaceState.RACE.value >= racestate >= RaceState.COUNTDOWN.value:
         framedatalist[frame] = lib.get_framedata(0)
         lib.frame_to_file(filename, 0)
-        end = False
         
     if (not end) and racestate == RaceState.FINISHED_RACE.value:
         lib.framedatalist_to_file(filename, framedatalist, 0)
