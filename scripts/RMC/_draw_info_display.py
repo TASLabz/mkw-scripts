@@ -4,7 +4,7 @@ import math
 import os
 
 from Modules.mkw_classes.common import SurfaceProperties
-from Modules.mkw_utils import History 
+from Modules.mkw_utils import History
 
 import Modules.mkw_utils as mkw_utils
 from Modules.mkw_classes import RaceManager, RaceManagerPlayer, RaceState
@@ -13,12 +13,13 @@ from Modules.mkw_classes import KartObject, KartMove, KartSettings, KartBody
 from Modules.mkw_classes import VehicleDynamics, VehiclePhysics, KartBoost, KartJump
 from Modules.mkw_classes import KartState, KartCollide, KartInput, RaceInputState
 
+
 def populate_default_config(file_path):
     config = configparser.ConfigParser()
-    
+
     config['DEBUG'] = {}
     config['DEBUG']['Debug'] = "False"
-    
+
     config['INFO DISPLAY'] = {}
     config['INFO DISPLAY']["Frame Count"] = "True"
     config['INFO DISPLAY']["Lap Splits"] = "False"
@@ -48,56 +49,77 @@ def populate_default_config(file_path):
     config['INFO DISPLAY']["Digits (to round to)"] = "6"
     config['INFO DISPLAY']["TimeDiff Absolute"] = "False"
     config['INFO DISPLAY']["TimeDiff Relative"] = "False"
-    config['INFO DISPLAY']["TimeDiff Projected"] = "True"
+    config['INFO DISPLAY']["TimeDiff Projected"] = "False"
     config['INFO DISPLAY']["TimeDiff CrossPath"] = "False"
-    config['INFO DISPLAY']["TimeDiff ToFinish"] = "True"
-    config['INFO DISPLAY']["TimeDiff RaceComp"] = "True"
+    config['INFO DISPLAY']["TimeDiff ToFinish"] = "False"
+    config['INFO DISPLAY']["TimeDiff RaceComp"] = "False"
     config['INFO DISPLAY']["TimeDiff Setting"] = "behind"
     config['INFO DISPLAY']["History Size"] = "200"
-    
-    
+
     with open(file_path, 'w') as f:
         config.write(f)
-        
+
     return config
 
+
 class ConfigInstance():
-    def __init__(self, config : configparser.ConfigParser):
+    def __init__(self, config: configparser.ConfigParser):
         self.debug = config['DEBUG'].getboolean('Debug')
         self.frame_count = config['INFO DISPLAY'].getboolean('Frame Count')
         self.lap_splits = config['INFO DISPLAY'].getboolean('Lap Splits')
         self.speed = config['INFO DISPLAY'].getboolean('Speed')
-        self.speed_oriented = config['INFO DISPLAY'].getboolean('Oriented Speed')
-        self.iv = config['INFO DISPLAY'].getboolean('Internal Velocity (X, Y, Z)')
-        self.iv_oriented = config['INFO DISPLAY'].getboolean('Oriented Internal Velocity')
-        self.iv_xyz = config['INFO DISPLAY'].getboolean('Internal Velocity (XYZ)')
-        self.ev = config['INFO DISPLAY'].getboolean('External Velocity (X, Y, Z)')
-        self.ev_oriented = config['INFO DISPLAY'].getboolean('Oriented External Velocity')
-        self.ev_xyz = config['INFO DISPLAY'].getboolean('External Velocity (XYZ)')
-        self.mrv = config['INFO DISPLAY'].getboolean('Moving Road Velocity (X, Y, Z)')
-        self.mrv_oriented = config['INFO DISPLAY'].getboolean('Oriented Moving Road Velocity')
-        self.mrv_xyz = config['INFO DISPLAY'].getboolean('Moving Road Velocity (XYZ)')
-        self.mwv = config['INFO DISPLAY'].getboolean('Moving Water Velocity (X, Y, Z)')
-        self.mwv_oriented = config['INFO DISPLAY'].getboolean('Oriented Moving Water Velocity')
-        self.mwv_xyz = config['INFO DISPLAY'].getboolean('Moving Water Velocity (XYZ)')
+        self.speed_oriented = config['INFO DISPLAY'].getboolean(
+            'Oriented Speed')
+        self.iv = config['INFO DISPLAY'].getboolean(
+            'Internal Velocity (X, Y, Z)')
+        self.iv_oriented = config['INFO DISPLAY'].getboolean(
+            'Oriented Internal Velocity')
+        self.iv_xyz = config['INFO DISPLAY'].getboolean(
+            'Internal Velocity (XYZ)')
+        self.ev = config['INFO DISPLAY'].getboolean(
+            'External Velocity (X, Y, Z)')
+        self.ev_oriented = config['INFO DISPLAY'].getboolean(
+            'Oriented External Velocity')
+        self.ev_xyz = config['INFO DISPLAY'].getboolean(
+            'External Velocity (XYZ)')
+        self.mrv = config['INFO DISPLAY'].getboolean(
+            'Moving Road Velocity (X, Y, Z)')
+        self.mrv_oriented = config['INFO DISPLAY'].getboolean(
+            'Oriented Moving Road Velocity')
+        self.mrv_xyz = config['INFO DISPLAY'].getboolean(
+            'Moving Road Velocity (XYZ)')
+        self.mwv = config['INFO DISPLAY'].getboolean(
+            'Moving Water Velocity (X, Y, Z)')
+        self.mwv_oriented = config['INFO DISPLAY'].getboolean(
+            'Oriented Moving Water Velocity')
+        self.mwv_xyz = config['INFO DISPLAY'].getboolean(
+            'Moving Water Velocity (XYZ)')
         self.charges = config['INFO DISPLAY'].getboolean('Charges and Boosts')
-        self.cps = config['INFO DISPLAY'].getboolean('Checkpoints and Completion')
+        self.cps = config['INFO DISPLAY'].getboolean(
+            'Checkpoints and Completion')
         self.air = config['INFO DISPLAY'].getboolean('Airtime')
         self.misc = config['INFO DISPLAY'].getboolean('Miscellaneous')
         self.surfaces = config['INFO DISPLAY'].getboolean('Surface Properties')
         self.position = config['INFO DISPLAY'].getboolean('Position')
         self.rotation = config['INFO DISPLAY'].getboolean('Rotation')
-        self.td_absolute = config['INFO DISPLAY'].getboolean('TimeDiff Absolute')
-        self.td_relative = config['INFO DISPLAY'].getboolean('TimeDiff Relative')
-        self.td_projected = config['INFO DISPLAY'].getboolean('TimeDiff Projected')
-        self.td_crosspath = config['INFO DISPLAY'].getboolean('TimeDiff CrossPath')
-        self.td_tofinish = config['INFO DISPLAY'].getboolean('TimeDiff ToFinish')
-        self.td_racecomp = config['INFO DISPLAY'].getboolean('TimeDiff RaceComp')
+        self.td_absolute = config['INFO DISPLAY'].getboolean(
+            'TimeDiff Absolute')
+        self.td_relative = config['INFO DISPLAY'].getboolean(
+            'TimeDiff Relative')
+        self.td_projected = config['INFO DISPLAY'].getboolean(
+            'TimeDiff Projected')
+        self.td_crosspath = config['INFO DISPLAY'].getboolean(
+            'TimeDiff CrossPath')
+        self.td_tofinish = config['INFO DISPLAY'].getboolean(
+            'TimeDiff ToFinish')
+        self.td_racecomp = config['INFO DISPLAY'].getboolean(
+            'TimeDiff RaceComp')
         self.td_set = config['INFO DISPLAY']['TimeDiff Setting']
         self.td = self.td_absolute or self.td_relative or self.td_projected or self.td_crosspath or self.td_tofinish or self.td_racecomp
         self.stick = config['INFO DISPLAY'].getboolean('Stick')
         self.color = int(config['INFO DISPLAY']['Text Color (ARGB)'], 16)
-        self.digits = min(7, config['INFO DISPLAY'].getint('Digits (to round to)'))
+        self.digits = min(
+            7, config['INFO DISPLAY'].getint('Digits (to round to)'))
         self.history_size = config['INFO DISPLAY'].getint('History Size')
 
 
@@ -111,7 +133,8 @@ def make_line_text_speed(left_text_prefix, left_text_suffix, size, speed):
                 float speed
         Return str text"""
     return left_text_prefix+" "*(size - len(left_text_prefix+left_text_suffix))+left_text_suffix + f"{speed:.{c.digits}f}\n"
-        
+
+
 def make_text_speed(speed, speedname, player, boolspd, boolspdoriented, boolspdxyz):
     """Function to generate the text for a certain speed
         Parameters : vec3 speed : the speed to generate the text for.
@@ -124,23 +147,29 @@ def make_text_speed(speed, speedname, player, boolspd, boolspdoriented, boolspdx
     text = ""
     facing_yaw = mkw_utils.get_facing_angle(player).yaw
     offset_size = 13
-    if boolspd and boolspdoriented :
-        text += make_line_text_speed(speedname,"X: ", offset_size, speed.x)
-        text += make_line_text_speed(speedname,"Y: ", offset_size, speed.y)
-        text += make_line_text_speed(speedname,"Z: ", offset_size, speed.z)
-        text += make_line_text_speed(speedname,"Forward: ", offset_size, speed.forward(facing_yaw))
-        text += make_line_text_speed(speedname,"Sideway: ", offset_size, speed.sideway(facing_yaw))
-    elif boolspd :
-        text += make_line_text_speed(speedname,"X: ", offset_size, speed.x)
-        text += make_line_text_speed(speedname,"Y: ", offset_size, speed.y)
-        text += make_line_text_speed(speedname,"Z: ", offset_size, speed.z)
-    elif boolspdoriented :
-        text += make_line_text_speed(speedname,"Forward: ", offset_size, speed.forward(facing_yaw))
-        text += make_line_text_speed(speedname,"Sideway: ", offset_size, speed.sideway(facing_yaw))
-        text += make_line_text_speed(speedname,"Y: ", offset_size, speed.y)
-    if boolspdxyz :
-        text += make_line_text_speed(speedname,"XZ: ", offset_size, speed.length_xz())
-        text += make_line_text_speed(speedname,"XYZ: ", offset_size, speed.length())
+    if boolspd and boolspdoriented:
+        text += make_line_text_speed(speedname, "X: ", offset_size, speed.x)
+        text += make_line_text_speed(speedname, "Y: ", offset_size, speed.y)
+        text += make_line_text_speed(speedname, "Z: ", offset_size, speed.z)
+        text += make_line_text_speed(speedname, "Forward: ",
+                                     offset_size, speed.forward(facing_yaw))
+        text += make_line_text_speed(speedname, "Sideway: ",
+                                     offset_size, speed.sideway(facing_yaw))
+    elif boolspd:
+        text += make_line_text_speed(speedname, "X: ", offset_size, speed.x)
+        text += make_line_text_speed(speedname, "Y: ", offset_size, speed.y)
+        text += make_line_text_speed(speedname, "Z: ", offset_size, speed.z)
+    elif boolspdoriented:
+        text += make_line_text_speed(speedname, "Forward: ",
+                                     offset_size, speed.forward(facing_yaw))
+        text += make_line_text_speed(speedname, "Sideway: ",
+                                     offset_size, speed.sideway(facing_yaw))
+        text += make_line_text_speed(speedname, "Y: ", offset_size, speed.y)
+    if boolspdxyz:
+        text += make_line_text_speed(speedname,
+                                     "XZ: ", offset_size, speed.length_xz())
+        text += make_line_text_speed(speedname,
+                                     "XYZ: ", offset_size, speed.length())
     return text
 
 
@@ -163,9 +192,10 @@ def make_text_rotation(rot, rotspd, prefix_text, prefix_size, rotsize):
     return prefix_text+":"+" "*(prefix_size - len(prefix_text))+rot_text+"| "+rotspd_text+"\n"
 # draw information to the screen
 
+
 def create_infodisplay():
     text = ""
-    
+
     race_mgr_player = RaceManagerPlayer()
     race_scenario = RaceConfigScenario(addr=RaceConfig.race_scenario())
     race_settings = RaceConfigSettings(race_scenario.settings())
@@ -176,13 +206,13 @@ def create_infodisplay():
     vehicle_dynamics = VehicleDynamics(addr=kart_body.vehicle_dynamics())
     vehicle_physics = VehiclePhysics(addr=vehicle_dynamics.vehicle_physics())
 
-    if c.debug :
+    if c.debug:
         value = mkw_utils.delta_position(0) - VehiclePhysics.speed(0)
         text += f"Debug : {value.length()}\n"
-    
+
     if c.frame_count:
         text += f"Frame: {mkw_utils.frame_of_input()}\n\n"
-    
+
     if c.lap_splits:
         # The actual max lap address does not update when crossing the finish line
         # for the final time to finish the race. However, for whatever reason,
@@ -193,10 +223,12 @@ def create_infodisplay():
 
         if player_max_lap >= 2 and lap_count > 1:
             for lap in range(1, player_max_lap):
-                text += "Lap {}: {}\n".format(lap, mkw_utils.update_exact_finish(lap, 0))
+                text += "Lap {}: {}\n".format(lap,
+                                              mkw_utils.update_exact_finish(lap, 0))
 
         if player_max_lap > lap_count:
-            text += "Final: {}\n".format(mkw_utils.get_unrounded_time(lap_count, 0))
+            text += "Final: {}\n".format(
+                mkw_utils.get_unrounded_time(lap_count, 0))
         text += "\n"
 
     if c.speed:
@@ -206,7 +238,7 @@ def create_infodisplay():
         text += make_text_speed(speed, "", 0, False, c.speed_oriented, c.speed)
         text += f"     Engine: {round(engine_speed, c.digits)} / {round(cap, c.digits)}\n"
         text += "\n"
-        
+
     if (c.iv or c.iv_xyz or c.iv_oriented):
         iv = vehicle_physics.internal_velocity()
         text += make_text_speed(iv, "IV ", 0, c.iv, c.iv_oriented, c.iv_xyz)
@@ -219,20 +251,22 @@ def create_infodisplay():
 
     if (c.mrv or c.mrv_xyz or c.mrv_oriented):
         mrv = vehicle_physics.moving_road_velocity()
-        text += make_text_speed(mrv, "MRV ", 0, c.mrv, c.mrv_oriented, c.mrv_xyz)
+        text += make_text_speed(mrv, "MRV ", 0, c.mrv,
+                                c.mrv_oriented, c.mrv_xyz)
         text += "\n"
 
     if (c.mwv or c.mwv_xyz or c.mwv_oriented):
         mwv = vehicle_physics.moving_water_velocity()
-        text += make_text_speed(mwv, "MWV ", 0, c.mwv, c.mwv_oriented, c.mwv_xyz)
+        text += make_text_speed(mwv, "MWV ", 0, c.mwv,
+                                c.mwv_oriented, c.mwv_xyz)
         text += "\n"
-        
+
     if c.charges or c.misc:
         kart_settings = KartSettings(addr=kart_object.kart_settings())
 
     if c.charges:
         kart_boost = KartBoost(addr=kart_move.kart_boost())
-        
+
         mt = kart_move.mt_charge()
         smt = kart_move.smt_charge()
         ssmt = kart_move.ssmt_charge()
@@ -243,7 +277,7 @@ def create_infodisplay():
             text += f"MT Charge: {mt} | SSMT Charge: {ssmt}\n"
         else:
             text += f"MT Charge: {mt} ({smt}) | SSMT Charge: {ssmt}\n"
-            
+
         text += f"MT: {mt_boost} | Trick: {trick_boost} | Mushroom: {shroom_boost}\n\n"
 
     if c.cps:
@@ -281,7 +315,8 @@ def create_infodisplay():
     if c.surfaces:
         surface_properties = kart_collide.surface_properties()
         is_offroad = (surface_properties.value & SurfaceProperties.OFFROAD) > 0
-        is_trickable = (surface_properties.value & SurfaceProperties.TRICKABLE) > 0
+        is_trickable = (surface_properties.value &
+                        SurfaceProperties.TRICKABLE) > 0
         kcl_speed_mod = kart_move.kcl_speed_factor()
         text += f"  Offroad: {is_offroad}\n"
         text += f"Trickable: {is_trickable}\n"
@@ -293,7 +328,7 @@ def create_infodisplay():
         text += f"Y Pos: {pos.y}\n"
         text += f"Z Pos: {pos.z}\n\n"
 
-    if c.rotation :
+    if c.rotation:
         fac = mkw_utils.get_facing_angle(0)
         mov = mkw_utils.get_moving_angle(0)
         prevfac = Memory_History.get_older_frame(1).euler
@@ -303,10 +338,14 @@ def create_infodisplay():
         prefix_size = 10
         rotsize = c.digits+4
         text += " "*(prefix_size+1)+"Rotation"+" "*(rotsize - 8)+"| Speed\n"
-        text += make_text_rotation(fac.pitch, facdiff.pitch, "Pitch", prefix_size, rotsize)
-        text += make_text_rotation(fac.yaw, facdiff.yaw, "Yaw", prefix_size, rotsize)
-        text += make_text_rotation(mov.yaw, movdiff.yaw, "Moving Y", prefix_size, rotsize)
-        text += make_text_rotation(fac.roll, facdiff.roll, "Roll", prefix_size, rotsize)
+        text += make_text_rotation(fac.pitch, facdiff.pitch,
+                                   "Pitch", prefix_size, rotsize)
+        text += make_text_rotation(fac.yaw, facdiff.yaw,
+                                   "Yaw", prefix_size, rotsize)
+        text += make_text_rotation(mov.yaw, movdiff.yaw,
+                                   "Moving Y", prefix_size, rotsize)
+        text += make_text_rotation(fac.roll, facdiff.roll,
+                                   "Roll", prefix_size, rotsize)
         text += "\n"
 
     if c.td and not mkw_utils.is_single_player():
@@ -316,37 +355,40 @@ def create_infodisplay():
         s = 1 if 1-p1 else -1
         text += "TimeDiff:"+" "*(timesize+size-16)+"Seconds | Frames\n"
         if c.td_absolute:
-            absolute = mkw_utils.get_time_difference_absolute(p1,p2)
+            absolute = mkw_utils.get_time_difference_absolute(p1, p2)
             text += make_text_timediff(absolute, "Absolute", size, timesize)
         if c.td_relative:
-            relative = s*mkw_utils.get_time_difference_relative(p1,p2)
+            relative = s*mkw_utils.get_time_difference_relative(p1, p2)
             text += make_text_timediff(relative, "Relative", size, timesize)
         if c.td_projected:
-            projected = s*mkw_utils.get_time_difference_projected(p1,p2)
+            projected = s*mkw_utils.get_time_difference_projected(p1, p2)
             text += make_text_timediff(projected, "Projected", size, timesize)
         if c.td_crosspath:
-            crosspath = s*mkw_utils.get_time_difference_crosspath(p1,p2)
+            crosspath = s*mkw_utils.get_time_difference_crosspath(p1, p2)
             text += make_text_timediff(crosspath, "CrossPath", size, timesize)
         if c.td_tofinish:
-            tofinish = s*mkw_utils.get_time_difference_tofinish(p1,p2)
+            tofinish = s*mkw_utils.get_time_difference_tofinish(p1, p2)
             text += make_text_timediff(tofinish, "ToFinish", size, timesize)
         if c.td_racecomp:
-            racecomp = mkw_utils.get_time_difference_racecompletion(Memory_History)
-            text += make_text_timediff(racecomp, "RaceComp", size, timesize)  
+            racecomp = mkw_utils.get_time_difference_racecompletion(
+                Memory_History)
+            text += make_text_timediff(racecomp, "RaceComp", size, timesize)
         text += "\n"
 
-    # TODO: figure out why classes.RaceInfoPlayer.stick_x() and 
+    # TODO: figure out why classes.RaceInfoPlayer.stick_x() and
     #       classes.RaceInfoPlayer.stick_y() do not update
     #       (using these as placeholders until further notice)
     if c.stick:
         kart_input = KartInput(addr=race_mgr_player.kart_input())
-        current_input_state = RaceInputState(addr=kart_input.current_input_state())
+        current_input_state = RaceInputState(
+            addr=kart_input.current_input_state())
 
         stick_x = current_input_state.raw_stick_x() - 7
         stick_y = current_input_state.raw_stick_y() - 7
         text += f"X: {stick_x} | Y: {stick_y}\n\n"
 
     return text
+
 
 """    
 @event.on_savestateload
@@ -356,25 +398,27 @@ def on_state_load(fromSlot: bool, slot: int):
         gui.draw_text((10, 10), c.color, create_infodisplay())
 """
 
-    
+
 def main():
     config = configparser.ConfigParser()
 
-    file_path = os.path.join(utils.get_script_dir(), 'modules', 'infodisplay.ini')
+    file_path = os.path.join(utils.get_script_dir(),
+                             'modules', 'infodisplay.ini')
     config.read(file_path)
 
     if not config.sections():
         config = populate_default_config(file_path)
-    
+
     global c
     c = ConfigInstance(config)
-    
-    #Those 2 variables are used to store some parameters from previous frames
+
+    # Those 2 variables are used to store some parameters from previous frames
     global Frame_of_input
     Frame_of_input = 0
     global Memory_History
     size = max(c.history_size, int(c.rotation)+1)
     Memory_History = History(size)
+
 
 if __name__ == '__main__':
     main()
@@ -384,7 +428,7 @@ if __name__ == '__main__':
 def on_frame_advance():
     global Frame_of_input
     global Memory_History
-    
+
     race_mgr = RaceManager()
     newframe = Frame_of_input != mkw_utils.frame_of_input()
     draw = race_mgr.state().value >= RaceState.COUNTDOWN.value
