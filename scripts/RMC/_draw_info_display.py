@@ -3,11 +3,11 @@ import configparser
 import math
 import os
 
-from Modules.mkw_classes.common import SurfaceProperties, eulerAngle
+from Modules.mkw_classes.common import SurfaceProperties
 from Modules.mkw_utils import History 
 
 import Modules.mkw_utils as mkw_utils
-from Modules.mkw_classes import RaceManager, RaceManagerPlayer, RaceState, TimerManager
+from Modules.mkw_classes import RaceManager, RaceManagerPlayer, RaceState
 from Modules.mkw_classes import RaceConfig, RaceConfigScenario, RaceConfigSettings
 from Modules.mkw_classes import KartObject, KartMove, KartSettings, KartBody
 from Modules.mkw_classes import VehicleDynamics, VehiclePhysics, KartBoost, KartJump
