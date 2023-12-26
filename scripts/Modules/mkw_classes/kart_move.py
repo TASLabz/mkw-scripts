@@ -339,7 +339,7 @@ class KartMove:
     def outside_drift_last_dir(player_idx=0) -> vec3:
         kart_move_ref = KartMove.chain(player_idx)
         outside_drift_last_dir_ref = kart_move_ref + 0xA4
-        return memory.read_f32(outside_drift_last_dir_ref)
+        return vec3.read(outside_drift_last_dir_ref)
 
     def inst_outside_drift_last_dir(self) -> vec3:
         outside_drift_last_dir_ref = self.addr + 0xA4
