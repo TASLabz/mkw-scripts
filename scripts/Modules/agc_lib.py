@@ -1,6 +1,6 @@
 from dolphin import gui, memory
-from .mkw_classes import quatf, vec3
-from .mkw_classes import VehiclePhysics, KartMove, RaceConfig, Timer, RaceManagerPlayer
+from .mkw_classes import vec3
+from .mkw_classes import VehiclePhysics, KartMove, RaceConfig, RaceManagerPlayer
 import math
 
 class FrameData:
@@ -198,8 +198,8 @@ def frame_to_file(filename, readid):
 def get_framedata(readid):
     return FrameData(get_addr(readid))
     
-def timerdata_to_file(filename, rid):
-    timerdata = TimerData(readid = rid)
+def timerdata_to_file(filename, read_id):
+    timerdata = TimerData(read_id)
     file = open(filename, 'a')
     if file is None :
         gui.add_osd_message("Error : could not create the data file")
@@ -207,8 +207,8 @@ def timerdata_to_file(filename, rid):
         file.write(str(timerdata))
         file.close()
 
-def get_timerdata(rid):
-    return TimerData(readid = rid)
+def get_timerdata(read_id):
+    return TimerData(read_id)
         
 def file_to_framedatalist(filename):
     datalist = []
@@ -234,9 +234,9 @@ def file_to_framedatalist(filename):
         return metadata, datalist, timerdata, rkg_metadata
 
 
-def framedatalist_to_file(filename, datalist, rid):
-    metadata = get_metadata(rid)
-    timerdata = get_timerdata(rid)
+def framedatalist_to_file(filename, datalist, read_id):
+    metadata = get_metadata(read_id)
+    timerdata = get_timerdata(read_id)
     file = open(filename, 'w')
     if file is None :
         gui.add_osd_message("Error : could not create the data file")

@@ -1,4 +1,4 @@
-from dolphin import event, gui, utils
+from dolphin import event, utils
 import Modules.agc_lib as lib
 from Modules.mkw_classes import RaceManager, RaceState
 import Modules.mkw_utils as mkw_utils

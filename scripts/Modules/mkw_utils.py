@@ -304,17 +304,17 @@ def get_time_difference_racecompletion(history):
     inf = float('inf')
     if curframe.prc>=curframe.grc:
         if curframe.grc>lastframe.prc:
-            l = [history.get_older_frame(k).prc for k in range(history.size)]
+            length = [history.get_older_frame(k).prc for k in range(history.size)]
             i = find_index(curframe.grc, l)
-            t = i + (curframe.grc - l[i])/ (l[i+1] - l[i])
-            return -t
+            time = i + (curframe.grc - length[i])/ (length[i+1] - length[i])
+            return -time
         return -inf
     else:
         if curframe.prc>lastframe.grc:
-            l =[history.get_older_frame(k).grc for k in range(history.size)]
+            length = [history.get_older_frame(k).grc for k in range(history.size)]
             i = find_index(curframe.prc, l)
-            t = i + (curframe.prc - l[i])/ (l[i+1] - l[i])
-            return t
+            time = i + (curframe.prc - length[i])/ (length[i+1] - length[i])
+            return time
         return inf
 
 
