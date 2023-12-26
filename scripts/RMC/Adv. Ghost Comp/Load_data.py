@@ -38,7 +38,7 @@ def on_frame_advance():
         metadata.write(lib.get_metadata_addr(1))
         
     if lib.is_rkg():   
-        if not rkg_metadata is None:
+        if rkg_metadata is not None:
             rkg_metadata.write(lib.get_rkg_metadata_addr())    
         #if not timerdata is None:
             #timerdata.write_rkg()
