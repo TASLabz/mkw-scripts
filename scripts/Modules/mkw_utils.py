@@ -209,7 +209,7 @@ def time_difference_absolute(P1, P2, S1, S2):
     return float('inf')
 
 
-def get_time_difference_absolute(player1, player2):
+def get_time_diff_absolute(player1, player2):
     """Time difference "Absolute" (simple and bad)
     Simply takes the distance player-ghost, and divide it by raw speed (always positive)"""
     P1, S1, P2, S2 = get_physics(player1, player2)
@@ -226,7 +226,7 @@ def time_difference_relative(P1, P2, S1, S2):
     return (P2-P1).length() / s
 
 
-def get_time_difference_relative(player1, player2):
+def get_time_diff_relative(player1, player2):
     """Time difference "Relative" 
     Take distance player-ghost. Divide it by the player's speed "toward" the ghost (dot product)"""
     P1, S1, P2, S2 = get_physics(player1, player2)
@@ -240,7 +240,7 @@ def time_difference_projected(P1, P2, S1, S2):
     return (P2-P1)*S1/(s**2)
 
 
-def get_time_difference_projected(player1, player2):
+def get_time_diff_projected(player1, player2):
     """ Time difference "Projected"
     Take the distance between the player and the plane oriented by the player speed, covering the ghost.
     Then divide it by the player raw speed
@@ -267,7 +267,7 @@ def time_difference_crosspath(P1, P2, S1, S2):
     return t1-t2
 
 
-def get_time_difference_crosspath(player1, player2):
+def get_time_diff_crosspath(player1, player2):
     """Time difference "CrossPath"
     Take both XZ trajectories of the player and the ghost
     Calculate how much time it takes them to reach the crosspoint. (2D only)
@@ -299,7 +299,7 @@ def time_difference_tofinish(P1, P2, S1, S2):
     return t1-t2
 
 
-def get_time_difference_tofinish(player1, player2):
+def get_time_diff_tofinish(player1, player2):
     """Assume player and ghost are not accelerated.
     Calculate the time to the finish line for both, and takes the difference."""
     P1, S1, P2, S2 = get_physics(player1, player2)
@@ -319,7 +319,7 @@ def find_index(value, value_list):
     return find_index(value, value_list[:h])
 
 
-def get_time_difference_racecompletion(history):
+def get_time_diff_racecompletion(history):
     """Use RaceCompletionData History to calculate the frame difference
         The function assume that RaceCompletion is increasing every frames"""
     curframe = history.get_older_frame(0)
@@ -344,16 +344,16 @@ def get_time_difference_racecompletion(history):
 
 
 def get_timediff_settings(string):
-    if string == 'player':
+    if string == 'Player':
         return 0, 1
-    if string == 'ghost':
+    if string == 'Ghost':
         return 1, 0
     pp, sp, pg, sg = get_physics(0, 1)
     player_is_ahead = int(sp*(pg-pp) > 0)
-    if string == 'ahead':
+    if string == 'Ahead':
         return 1-player_is_ahead, player_is_ahead
-    if string == 'behind':
+    if string == 'Behind':
         return player_is_ahead, 1-player_is_ahead
     else:
-        print('TimeDiff setting value not recognized. Default to "player"')
+        print('TimeDiff setting value not recognized. Default to "Player"')
         return 0, 1

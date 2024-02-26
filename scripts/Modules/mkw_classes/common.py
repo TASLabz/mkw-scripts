@@ -63,12 +63,12 @@ class vec3:
     def length_xz(self) -> float:
         return math.sqrt(self.x**2 + self.z**2)
 
-    def forward(self, facing_yaw) -> float:
+    def forwards(self, facing_yaw) -> float:
         speed_yaw = -180/math.pi * math.atan2(self.x, self.z)
         diff_angle_rad = (facing_yaw - speed_yaw)*math.pi/180
         return math.sqrt(self.x**2 + self.z**2)*math.cos(diff_angle_rad)
 
-    def sideway(self, facing_yaw) -> float:
+    def sideways(self, facing_yaw) -> float:
         speed_yaw = -180/math.pi * math.atan2(self.x, self.z)
         diff_angle_rad = (facing_yaw - speed_yaw)*math.pi/180
         return math.sqrt(self.x**2 + self.z**2)*math.sin(diff_angle_rad)

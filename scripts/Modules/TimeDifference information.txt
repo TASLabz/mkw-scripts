@@ -1,58 +1,64 @@
-This file contain some information about the TimeDifference scripts in infodisplay.
+This file contains information about the Time Difference functions in infodisplay,
+as well as the different settings you will find within infodisplay.ini
 
-In infodisplay.ini, you can chose to display or not each time difference calculation.
+By default, "Time Difference" is set to "False". When set to "True", Projected and ToFinish will be displayed.
+If you wish to display all other calculations, use the "(Extra)" option. These are not recommended for TASing.
 
-In infodisplay.ini, "timediff setting" is a setting with 4 possible value :
-	"player" which will use the TimeDifference (Player -> Ghost)
-	"ghost" which will use the TimeDifference (Ghost -> Player)
-	"ahead" which will use the TimeDifference (the one ahead -> the one behind)
-	"behind" which will use the TimeDifference (the one behind -> the one ahead)
-	any other value will default to "player".
+By default, "Comparison Type" is set to "Player" - it has 4 possible values:
+	"Player": Which compares the Player against the Ghost (generally the most useful)
+	"Ghost": Which compares the Ghost against the Player
+	"Ahead": Which compares who is ahead against who is behind
+	"Behind": Which compares who is behind against who is ahead
+NOTE: Any other value will default to "Player" too.
 
-In infodisplay.ini "history size" is a setting used for the TimeDifference RaceComp.
-history size = 200 means the TimeDiff RaceComp can at best detect a timedifference of 200 frames or less.
-It uses memory, so don't use an unecessary large number.
+By default, "History Size" is set to 200. It determines how many frames of history are stored for certain parts
+of infodisplay (in Time Difference, it's used for the RaceComp calculation to store previous race completions).
+WARNING: If you use a number too large, it will take up a large amount of your computer's memory.
 
-Some TimeDifference calculations are not symmetrical. It means this calculation gives different result
-for the time difference between the ghost and the player, and between the player and the ghost. 
-Here's an example : For the TimeDifference Absolute (Player1 -> Player2) : 
-	We take Player1's speed, we take the distance between both players.
-	And we simply define the TimeDiff as the distance divided by the speed.
-	Player1 and Player2 have asymmetrical roles in the calculation. 
-	Therefore : we talk about the timedifference from Player1 to Player2 (and not the timedifference between Player1 and Player2)
+NOTE: Not all Time Difference calculations are symmetrical, since for most of them, the speeds and angles of
+only one of the player and the ghost are considered. This doesn't make the calculations any less accurate, as
+it's perfectly normal to have the time taken for the player to reach the ghost to be different to the time taken
+for the ghost to reach the player. As such, we say "Time Difference FROM player TO ghost" or vice versa.
 
-This is how each one is calculated : 
+Descriptions for each calculation:
 
--TimeDifference Absolute (P1 -> P2) (Not very relevant imo)
-	Take S1 the speed of P1
-	Take D the distance between P1 and P2
-	Return D / S1
+[DEFAULT]
 
--TimeDifference Relative (P1 -> P2) (A bit more relevant maybe)
-	Take S1 the speed of P1 directed "toward" P2. (mathematically, it's a dot product)
-	Take D the distance between P1 and P2
-	Return D / S1
+- Projected (P1 -> P2)
+	- Returns D / S1 (Speed of P1) where D is the distance represented here: https://blounard.s-ul.eu/iMDYhZDI.png
+	- Best general-purpose calculation for non-race-end time difference
+	- Forward movement is taken to be the direction P1 is moving
+	- As with all but RaceComp, becomes more inaccurate mid-turn
 
--TimeDifference Projected (P1 -> P2) (A good one for short distances)
-	Take S1 the speed of P1
-	Take D the distance represented here : https://blounard.s-ul.eu/iMDYhZDI.png
-	Return D / S1
+- ToFinish (P1 -> P2)
+	- Returns T1-T2 where T is Time taken for a player to cross the finish line if they continue at a constant speed
+	- Perfectly accurate approaching the finish line
+	- Useless for all non-race-end calculations
+	- Symmetrical, as both players are fully considered
 
--TimeDifference CrossPath (P1 -> P2) (Another good one for short distances)
-this one is symmetrical
-	With the notation here : https://blounard.s-ul.eu/WYbotlks.png
-	Calculate t1 = TimeDifference (P1 -> C) (in this case, all 3 above timedifference formula will give the same result)
-	Calculate t2 = TimeDifference (P2 -> C) (--------------------------------------------------------------------------)
-	Return t1-t2
+[EXTRA]
 
--TimeDifference ToFinish (P1 -> P2) (Perfectly precise when both player are going straight to the finish line at constant speed. Useless otherwise)
-this one is symmetrical	
-	Calculate t1, the time needed for P1 to cross the finish line if P1 keep going at a constant speed.
-	Calculate t2, the time needed for P2 to cross the finish line if P2 keep going at a constant speed.
-	Return t1-t2
+- Absolute (P1 -> P2)
+	- Returns D / S1 (Speed of P1) where D is the distance between P1 and P2
+	- Incorrectly assumes "forward" is wherever the other player is
+	- Also incorrectly assumes speed is directed towards the other player
+	- Will probably be removed in the future; mostly misleading calculation
 
--TimeDifference RaceComp (P1 -> P2) (Useful even for long distances. Based on RaceCompletion data. Has several flaws)
-this one is symmetrical
-	Store in memory the racecompletion data for both players for the last few frames.
-	Make the player ahead go "back in time" until it's behind the other player.
-	How much frame you had to go "back in time" is how much frame the player was ahead.
+- Relative (P1 -> P2)
+	- Same as Absolute but S1 is the speed of P1 directed "toward" P2, using a dot product
+	- Still incorrectly assumes "forward" is wherever the other player is
+	- However correctly calculates speed with this "forward" direction in mind
+	- So, rarely useful, but at least accurate for some niche scenario
+
+- CrossPath (P1 -> P2) (Another good one for short distances, lacks evolving gain/loss from skewed angles)
+	- Returns T1-T2 where T is Time taken for a player to cross the other player's path, as so: https://blounard.s-ul.eu/WYbotlks.png
+	- Technically accurate long-term, but lacks the evolving time difference from skewed angles
+	- Symmetrical, as both players are fully considered
+
+- RaceComp (P1 -> P2)
+	- Returns how long ago P1 was at the race completion of P2 by storing Race Completion history in memory
+	- Accurate only if P1 and P2 take near-identical paths, due to the nature of Race Completion
+	- Has a delay of however far ahead P1 is to return an accurate result
+	- Takes up a lot of memory very quickly (60 frames of Race Completion history per second of gameplay)
+	- Allows for long distance time difference calculations (irrelevant as this is a micro-optimisation tool)
+	- Symmetrical, as no calculations involving physical values from either player are used
