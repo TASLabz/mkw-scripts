@@ -1,6 +1,6 @@
 from dolphin import memory
 
-from . import CharacterId, VehicleId, RaceConfigPlayerType
+from . import CharacterId, VehicleId, ControllerId, RaceConfigPlayerType
 
 class RaceConfigPlayer:
     def __init__(self, addr):
@@ -40,7 +40,7 @@ class RaceConfigPlayer:
     
     def controller_id(self):
         controller_id_ref = self.addr + 0xD0
-        return memory.read_u32(controller_id_ref)
+        return ControllerId(memory.read_u32(controller_id_ref))
     
     def previous_score(self):
         previous_score_ref = self.addr + 0xD8

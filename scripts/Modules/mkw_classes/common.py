@@ -316,6 +316,12 @@ class CharacterId(Enum):
     PEACH_MENU = 45  # biker outfit
     DAISY_MENU = 46  # biker outfit
     ROSALINA_MENU = 47  # biker outfit
+
+class ControllerId(Enum):
+    WII_WHEEL = 0
+    WII_REMOTE_AND_NUNCHUK = 1
+    CLASSIC_CONTROLLER = 2
+    GAMECUBE_CONTROLLER = 3
     
 class WheelCount(Enum):
     _4_WHEELS = 0

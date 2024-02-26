@@ -3,8 +3,13 @@ from Modules import ttk_lib
 from Modules.mkw_utils import frame_of_input
 from Modules import mkw_translations as translate
 from Modules.mkw_classes import RaceManager, RaceState, KartSettings
+from Modules.mkw_classes import RaceConfig, RaceConfigScenario, RaceConfigPlayer, RaceConfigSettings
 from Modules.framesequence import FrameSequence
 import os
+
+race_config_scenario = RaceConfigScenario(addr=RaceConfig.race_scenario())
+race_config_player = RaceConfigPlayer(addr=race_config_scenario.player(playerIdx=0))
+vehicle_id = race_config_player.vehicle_id().value
 
 flame_slide_bikes = ("Flame Runner", "Mach Bike", "Sugarscoot", "Zip Zip")
 spear_slide_bikes = ("Jet Bubble", "Phantom", "Spear", "Sneakster", "Wario Bike")
@@ -27,7 +32,7 @@ def on_frame_advance():
 
 def main() -> None:
     global player_inputs
-    player_inputs = FrameSequence(check_vehicle(translate.vehicle_id()))
+    player_inputs = FrameSequence(check_vehicle(translate.vehicle(vehicle_id)))
     
     gui.add_osd_message("Startslide: {} ".format(len(player_inputs) > 0))
     
