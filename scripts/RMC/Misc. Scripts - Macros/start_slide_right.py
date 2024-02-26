@@ -3,7 +3,7 @@ from Modules import ttk_lib
 from Modules.mkw_utils import frame_of_input
 from Modules import mkw_translations as translate
 from Modules.mkw_classes import RaceManager, RaceState, KartSettings
-from Modules.mkw_classes import RaceConfig, RaceConfigScenario, RaceConfigPlayer, RaceConfigSettings
+from Modules.mkw_classes import RaceConfig, RaceConfigScenario, RaceConfigPlayer
 from Modules.framesequence import FrameSequence
 import os
 

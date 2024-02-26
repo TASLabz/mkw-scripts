@@ -43,10 +43,15 @@ def on_frame_advance():
         #if not timerdata is None:
             #timerdata.write_rkg()
 
-    if 0 < delayed_frame+1 < len(framedatalist) and racestate >= RaceState.COUNTDOWN.value and not mkw_utils.is_single_player():
+    in_frame_bounds = 0 < delayed_frame+1 < len(framedatalist)
+    in_race = racestate >= RaceState.COUNTDOWN.value
+    single_player = mkw_utils.is_single_player()
+
+    if in_frame_bounds and in_race and not single_player:
         
         #print(timerdata)
-        f1 = lib.FrameData(string = str(framedatalist[delayed_frame])) #Makes a copy so you can modify f1 without affecting the framedatalist
+        # Make a copy so you can modify f1 without affecting the framedatalist
+        f1 = lib.FrameData(string = str(framedatalist[delayed_frame]))
         f2 = framedatalist[delayed_frame+1]
         f1.interpolate(f2, 1-decimal_delay, decimal_delay)
         f1.write(lib.get_addr(1))

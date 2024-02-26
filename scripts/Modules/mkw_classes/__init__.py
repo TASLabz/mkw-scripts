@@ -10,8 +10,9 @@
 from .common import RegionError
 from .common import vec2, vec3, mat34, quatf, eulerAngle
 from .common import ExactTimer
-from .common import CupId, CourseId, VehicleId, CharacterId, ControllerId, WheelCount, VehicleType
-from .common import SpecialFloor, TrickType, SurfaceProperties, RaceConfigPlayerType
+from .common import CupId, CourseId, VehicleId, CharacterId, ControllerId
+from .common import WheelCount, VehicleType, SpecialFloor, TrickType
+from .common import SurfaceProperties, RaceConfigPlayerType
 
 from .input_mgr import InputMgr
 from .player_input import PlayerInput

@@ -6,7 +6,7 @@ class RKGFileHeader:
     A class representing the header of an RKG.
 
     Attributes:
-        file_id (str): "RKGD" in ASCII. Revolution Kart Ghost Data file identifier.
+        file_id (str): "RKGD" in ASCII. File identifier.
         minutes (int): Minutes field of finishing time.
         seconds (int): Seconds field of finishing time.
         milliseconds (int): Milliseconds field of finishing time.
@@ -20,14 +20,14 @@ class RKGFileHeader:
         compressed (bool): Compressed flag
         ghost_type (str): Ghost type ghost is stored as.
         drift_type (str): Drift type ghost used.
-        input_data_length (int): Length of input data when decompressed and without padding.
+        input_data_length (int): Length of input data when decompressed without padding.
         lap_count (int): Total laps ghost drove.
-        lap_split_minutes (list): Minutes field for each of the 5 lap splits. Unused split times are set to 0.
-        lap_split_seconds (list): Seconds field for each of the 5 lap splits. Unused split times are set to 0.
-        lap_split_milliseconds (list): Milliseconds field for each of the 5 lap splits. Unused split times are set to 0.
+        lap_split_min (list): Minutes field for each of the 5 lap splits.
+        lap_split_sec (list): Seconds field for each of the 5 lap splits.
+        lap_split_ms (list): Milliseconds field for each of the 5 lap splits.
         country (str): Country ghost was set in, or 0xFF if sharing location disabled.
-        state (int): Raw State code for Town/State/Province ghost was set in, or 0xFF if sharing location disabled.
-        location (int): Raw Location code for Location ghost was set in. Typically 0x0000; 0xFFFF if sharing location disabled.
+        state (int): Raw State code for Town/State/Province ghost was set in.
+        location (int): Raw Location code for Location ghost was set in.
         mii_data (list): Raw Mii Data for Mii ghost was set with.
         mii_crc (int): CRC16-CCITT-Xmodem of Mii
     """
@@ -48,9 +48,9 @@ class RKGFileHeader:
     drift_type: str
     input_data_length: int
     lap_count: int
-    lap_split_minutes: list
-    lap_split_seconds: list
-    lap_split_milliseconds: list
+    lap_split_min: list
+    lap_split_sec: list
+    lap_split_ms: list
     country: str
     state: int
     location: int
@@ -68,13 +68,15 @@ class RKGFileHeader:
         self.milliseconds = ((raw[0x05] & 0x03) << 8) + raw[0x06]
         self.track = translate.course(raw[0x07] >> 2)
         self.vehicle = translate.vehicle(raw[0x08] >> 2)
-        self.character = translate.character((raw[0x08] & 0x03) << 4) + (raw[0x09] >> 4)
+        self.character = translate.character(
+            (raw[0x08] & 0x03) << 4) + (raw[0x09] >> 4)
         self.year = ((raw[0x09] & 0x0F) << 3) + (raw[0x0A] >> 5)
         self.month = calendar.month_name[(raw[0x0A] & 0x1E) >> 1]
         self.day = ((raw[0x0A] & 0x01) << 4) + (raw[0x0B] >> 4)
         self.controller = translate.controller(raw[0x0B] & 0x0F)
         self.compressed = ((raw[0x0C] & 0x1000) >> 3) != 0
-        self.ghost_type = translate.ghost_type(((raw[0x0C] & 0x01) << 6) + (raw[0x0D] >> 2))
+        self.ghost_type = translate.ghost_type(
+            ((raw[0x0C] & 0x01) << 6) + (raw[0x0D] >> 2))
         self.drift_type = translate.drift_type((raw[0x0D] & 0x10) >> 1)
         self.input_data_length = (raw[0x0E] << 8) + raw[0x0F]
         self.lap_count = raw[0x10]
@@ -87,14 +89,17 @@ class RKGFileHeader:
 
     def read_lap_splits(self, raw: list) -> list:
         """
-        Reads Minutes, Seconds, and Milliseconds fields from raw lap splits and parses into lists.
+        Reads Minutes, Seconds, and Milliseconds fields from raw lap splits
+        and parses into lists.
         """
 
         for lap in range(5):
             offset = 0x11 + lap*0x03
-            self.lap_split_minutes.append(raw[offset] >> 1)
-            self.lap_split_seconds.append(((raw[offset] & 0x01) << 6) + (raw[offset+0x01] >> 2))
-            self.lap_split_milliseconds.append(((raw[offset+0x01] & 0x03) << 8) + (raw[offset+0x02]))
+            self.lap_split_min.append(raw[offset] >> 1)
+            self.lap_split_sec.append(
+                ((raw[offset] & 0x01) << 6) + (raw[offset+0x01] >> 2))
+            self.lap_split_ms.append(
+                ((raw[offset+0x01] & 0x03) << 8) + (raw[offset+0x02]))
 
 class RKGInputDataHeader:
     """
